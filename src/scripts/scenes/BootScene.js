@@ -1,5 +1,5 @@
-import {ResourceLoader} from '../components/resourceLoader.js';
-//BlockBlast/src/scripts/components/resourceLoader.js
+import {ResourceLoader} from '../Components/resourceLoader.js';
+// src/scripts/Components/ResourceLoader.js
 export class BootScene extends Phaser.Scene
 {
     constructor(){
