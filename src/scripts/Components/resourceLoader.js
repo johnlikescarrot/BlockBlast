@@ -1,21 +1,24 @@
-const prodRoute =  'https://static.pchujoy.com/public/games-assets/parchados';
+const prodRoute = 'https://static.pchujoy.com/public/games-assets/parchados';
 
-
-export class ResourceLoader{
- 
+export class ResourceLoader {
     static isProd = true;
 
-    constructor(scene){
+    constructor(scene) {
         this.scene = scene;
     }
 
-    static ReturnPath(){
-        if(this.isProd){
-            return prodRoute
+    static ReturnPath() {
+        // Priority 1: Window override (useful for custom hosting)
+        if (typeof window !== 'undefined' && window.PARCHADOS_ASSETS_PATH) {
+            return window.PARCHADOS_ASSETS_PATH;
         }
-        else{
-            return './src'
+
+        // Priority 2: Production route
+        if (this.isProd) {
+            return prodRoute;
         }
+
+        // Priority 3: Local dev route
+        return './src';
     }
-    
 }
