@@ -1,0 +1,77 @@
+name: "🚀 Ultimate BlockBlast Deployment Beast Mode"
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  security-events: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  analyze:
+    name: 🛡️ Security Analysis (CodeQL)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  build:
+    name: 🏗️ Build & Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🔨 Build Game (Production)
+        run: npm run build
+
+      - name: ✅ Verify Build Output
+        run: |
+          echo "Verifying build artifacts..."
+          test -f dist/index.html || { echo "❌ index.html missing"; (exit 1); }
+          test -f dist/bundle.min.js || { echo "❌ bundle.min.js missing"; (exit 1); }
+          echo "✅ Build verified successfully!"
+
+      - name: 📂 Upload Pages Artifact
+        if: github.event_name == "push" && github.ref == "refs/heads/main"
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "./dist"
+
+  deploy:
+    name: 🚀 Deploy to GitHub Pages
+    if: github.event_name == "push" && github.ref == "refs/heads/main"
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 🌐 Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
