@@ -1,17 +1,18 @@
 const webpack = require('webpack');
-const CopyWebpackPlugin = require('copy-webpack-plugin'); 
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin'); 
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = { 
-   mode: 'development',
+   mode: 'production',
    output: {
       publicPath: 'auto',
-      path: path.resolve(__dirname, '../dist')
+      path: path.resolve(__dirname, '../dist'),
+      filename: 'bundle.[contenthash].js'
    },
-   devtool: 'eval-source-map',
+   devtool: 'source-map',
    module: { 
       rules: [ 
          { 
@@ -39,7 +40,7 @@ module.exports = {
          },
          {
             test: /\.css$/i,
-            use: ['style-loader', 'css-loader'],
+            use: [MiniCssExtractPlugin.loader, 'css-loader'],
          },
       ],
    },
@@ -51,6 +52,21 @@ module.exports = {
       }),
       new HtmlWebpackPlugin({
          template: './index.html',
+         minify: {
+            removeComments: true,
+            collapseWhitespace: true,
+            removeRedundantAttributes: true,
+            useShortDoctype: true,
+            removeEmptyAttributes: true,
+            removeStyleLinkTypeAttributes: true,
+            keepClosingSlash: true,
+            minifyJS: true,
+            minifyCSS: true,
+            minifyURLs: true,
+         },
+      }),
+      new MiniCssExtractPlugin({
+         filename: 'style.[contenthash].css'
       }),
       new Dotenv(),
    ],

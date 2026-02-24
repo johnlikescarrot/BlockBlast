@@ -1,3 +1,4 @@
+import JSEncrypt from "jsencrypt";
 import * as Phaser from 'phaser'
 import {ResourceLoader} from '../Components/resourceLoader.js';
 
