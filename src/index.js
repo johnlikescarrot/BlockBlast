@@ -1,3 +1,4 @@
+import "./style.css";
 import { MainScene } from "./scripts/scenes/MainScene.js";
 import { MenuScene } from "./scripts/scenes/MenuScene.js";
 import { UIScene } from "./scripts/scenes/UIScene.js";
