@@ -1,1 +1,353 @@
-# BlockBlast
+# BlockBlast (Parchados)
+
+BlockBlast is a browser-based block puzzle game built with Phaser 3 framework. Players drag and drop geometric pieces onto an 8x8 game board to form complete rows and columns, which are then cleared for points. The game features a time-based mechanic where players must place pieces before a timer expires, along with power-ups like bombs and reducers that add strategic depth to the gameplay.
+
+The project is designed as an embeddable web game that can be integrated into external platforms. It exposes a global `Parchados.run()` API that allows host applications to customize game behavior through callbacks and configuration options, including high score tracking, sponsor integration, and event handling for analytics and gameplay state changes.
+
+## Game Initialization API
+
+The main entry point for running the game. Accepts configuration options including callbacks for game events, initial high score, and sponsor/season identifiers for integration with external platforms.
+
+```javascript
+// Basic game initialization
+window.Parchados.run();
+
+// Advanced initialization with all options
+window.Parchados.run({
+    highScore: 50000,           // Previous high score to display
+    sponsor: true,              // Enable sponsor branding
+    seasonId: 12,               // Season identifier for leaderboards
+    gameId: 456,                // Game instance identifier
+    onGameStart: (evt) => {
+        console.log('Game started:', evt);
+        // evt contains: { state: 'game_start', name: 'blockblast' }
+    },
+    onGameEnd: (encryptedData) => {
+        // encryptedData is RSA-encrypted JSON containing score and IDs
+        console.log('Game ended with encrypted payload');
+        fetch('/api/submit-score', {
+            method: 'POST',
+            body: JSON.stringify({ data: encryptedData })
+        });
+    },
+    onDataSend: (data) => {
+        // Custom data handler for analytics
+        console.log('Game data:', data);
+    }
+});
+```
+
+## Scene Management System
+
+The game uses Phaser's scene system with four main scenes that handle different game states. BootScene loads initial assets, UIScene manages overlays and audio, MenuScene provides the main menu, and MainScene handles core gameplay.
+
+```javascript
+// Scene hierarchy and initialization order
+const gameOptions = {
+    type: Phaser.AUTO,
+    parent: 'phaser-div',
+    width: 1080,
+    height: 1080,
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+    },
+    scene: [BootScene, UIScene, MenuScene, MainScene],
+    fps: { target: 60 },
+    plugins: {
+        global: [{
+            key: 'rexWebFontLoader',
+            plugin: WebFontLoaderPlugin,
+            start: true
+        }],
+        scene: [{
+            key: 'rexUI',
+            plugin: UIPlugin,
+            mapping: 'rexUI'
+        }]
+    }
+};
+
+const game = new Phaser.Game(gameOptions);
+game.config.metadata = {
+    highScore: 0,
+    sponsor: false,
+    seasonId: 0,
+    gameId: 0,
+    onGameStart: () => {},
+    onGameEnd: () => {},
+    onDataSend: () => {}
+};
+```
+
+## Piece Generation and Management
+
+The game generates random tetromino-style pieces from a predefined list of 39 shapes. Pieces are represented as 5x5 binary strings where '1' indicates a filled cell. The piece system supports multiple colors and power-up variants.
+
+```javascript
+// Piece shape definitions (5x5 grid as 25-character string)
+const piecesList = [
+    "0010000100001000010000100",  // Vertical line (5 blocks)
+    "0000000100001000010000000",  // Vertical line (3 blocks)
+    "0000000000111110000000000",  // Horizontal line (5 blocks)
+    "0000001110011100111000000",  // 3x3 square
+    "0000001100011000000000000",  // 2x2 square
+    "0000000100011100000000000",  // T-shape inverted
+    "0000001000010000110000000",  // L-shape
+    "0000001000011000010000000",  // S-shape
+    "0000001000010000111000000",  // Large L-shape
+];
+
+// Generate a random piece with random color
+function GeneratePiece() {
+    const shapes = piecesList;
+    const colorsList = [
+        "blockblast_piece_shadow.png",
+        "blockblast_piece_a.png",
+        "blockblast_piece_b.png",
+        "blockblast_piece_c.png",
+        // ... up to 14 colors
+    ];
+
+    const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
+    const randomColorIndex = Math.floor(Math.random() * (colorsList.length - 1)) + 1;
+    const colorChar = String.fromCharCode(97 + randomColorIndex);
+
+    // Replace '1' with color character
+    let coloredShape = "";
+    for (let i = 0; i < 25; i++) {
+        coloredShape += randomShape[i] === "1" ? colorChar : "0";
+    }
+
+    return {
+        color: colorsList[randomColorIndex],
+        shape: coloredShape
+    };
+}
+```
+
+## Board Placement Validation
+
+Core gameplay logic that validates whether a piece can be placed at a given position on the 8x8 board. Checks for boundary conditions and collision with existing pieces.
+
+```javascript
+// Check if piece can be placed at position (x, y)
+function CanPutPiece(pieceShape, x, y, boardMatrix) {
+    for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 5; j++) {
+            if (pieceShape.charAt((5 * i) + j) !== '0') {
+                // Check bounds
+                if (i + y > boardMatrix.length - 1 ||
+                    j + x > boardMatrix[0].length - 1 ||
+                    i + y < 0 || j + x < 0) {
+                    return false;
+                }
+                // Check collision with existing pieces
+                if (boardMatrix[j + x][i + y] !== 0) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+// Place piece on board and update state
+function InsertPiece(piece, x, y) {
+    let scorePoints = 0;
+    for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 5; j++) {
+            if (piece.shape.charAt((5 * i) + j) !== '0') {
+                boardMatrix[j + x][i + y] = 1;
+                lineCounterX[i + y] += 1;
+                lineCounterY[j + x] += 1;
+                scorePoints += 10;
+            }
+        }
+    }
+    return scorePoints;
+}
+```
+
+## Line Breaking System
+
+Detects and clears complete rows and columns, calculating combo bonuses based on the number of lines cleared simultaneously.
+
+```javascript
+// Check for complete lines after piece placement
+function ShowBreakingLines(boardSize, lineCounterX, lineCounterY, lineCounterXadd, lineCounterYadd) {
+    const linesToClear = [];
+
+    for (let i = 0; i < boardSize; i++) {
+        // Check horizontal lines
+        if (lineCounterXadd[i] + lineCounterX[i] === boardSize) {
+            linesToClear.push(i);
+        }
+        // Check vertical lines (offset by 8 to distinguish)
+        if (lineCounterYadd[i] + lineCounterY[i] === boardSize) {
+            linesToClear.push(i + 8);
+        }
+    }
+    return linesToClear;
+}
+
+// Calculate combo bonus
+function CalculateComboBonus(linesCleared) {
+    let bonus = 0;
+    for (let i = 1; i <= linesCleared; i++) {
+        bonus += i;
+    }
+    return bonus * 1000;  // 1 line = 1000, 2 lines = 3000, 3 lines = 6000, etc.
+}
+
+// Example: clearing 3 lines simultaneously
+const lines = [0, 3, 10];  // Row 0, Row 3, Column 2 (10-8=2)
+const comboBonus = CalculateComboBonus(3);  // Returns 6000
+```
+
+## Power-Up System
+
+Three power-up types can appear on pieces: Bomb (destroys surrounding cells), Reducer (converts remaining pieces to 1x1 squares), and Rotate (rotates the board).
+
+```javascript
+// Power-up types
+const powerUpsList = ["bomb", "reduct", "rotate"];
+
+// Bomb power-up: destroys 3x3 area around activation point
+function BombBreakingLines(fila, columna, boardMatrix, boardSize) {
+    for (let i = -1; i <= 1; i++) {
+        for (let j = -1; j <= 1; j++) {
+            const nuevaFila = fila + i;
+            const nuevaColumna = columna + j;
+
+            if (nuevaFila >= 0 && nuevaFila < 8 &&
+                nuevaColumna >= 0 && nuevaColumna < 8) {
+                if (!(i === 0 && j === 0)) {  // Skip center
+                    boardMatrix[nuevaFila][nuevaColumna] = 0;
+                }
+            }
+        }
+    }
+}
+
+// Reducer power-up: convert remaining pieces to 1x1 squares
+function ConverterPowerUp(optionsBools, optionsPieces) {
+    const singleSquareShape = "0000000000001000000000000";
+
+    for (let k = 0; k < 3; k++) {
+        if (optionsBools[k]) {
+            optionsPieces[k] = {
+                color: optionsPieces[k].color,
+                shape: singleSquareShape
+            };
+        }
+    }
+}
+```
+
+## Audio Manager
+
+Centralized audio system handling background music and sound effects with volume control and focus handling.
+
+```javascript
+// Initialize audio manager
+const audioManager = new AudioManager(scene);
+audioManager.load();
+audioManager.init();
+
+// Available sound effects
+const sfxKeys = [
+    'alarma',      // Timer warning
+    'destruccion', // Line destruction
+    'preview',     // Piece pickup
+    'soltar',      // Piece placement
+    'aviso',       // Power-up warning
+    'bomba',       // Bomb explosion
+    'reduccion',   // Reducer activation
+    'puntos',      // Points scored
+    'tapete',      // Game over mat
+    'ui_click',    // UI button click
+    'ui_page'      // Page turn
+];
+
+// Control audio playback
+audioManager.menuMusic.play();
+audioManager.gameplayMusic.play();
+audioManager.setAudioVolume(0.5);  // 0 to 1 range
+audioManager.pauseMusic();
+audioManager.resumeMusic();
+
+// Play sound effect
+audioManager.bomba.play();
+audioManager.destruccion.play();
+```
+
+## Panel UI System
+
+Modal panel system for displaying pause menu, options, credits, game over screen, and tutorial pages.
+
+```javascript
+// Create and show UI panels
+const panel = new Panel(scene);
+panel.create(1080);
+panel.createPausePanel(1080);
+panel.createOptionsPanel(1080);
+panel.createCreditsPanel(1080);
+panel.createScorePanel(1080);
+panel.createInstructionsPanel(1080);
+
+// Show/hide panels
+panel.showPause();
+panel.hidePause();
+
+panel.showOptions();
+panel.hideOptions();
+
+panel.showCredits();
+panel.hideCredits();
+
+panel.showInstructions(() => {
+    console.log('Tutorial closed');
+});
+panel.hideInstructions();
+
+// Display game over score
+const finalScore = 150000;
+const highScore = 200000;
+panel.showScore(finalScore, highScore);
+panel.hideScore();
+```
+
+## Resource Loader Configuration
+
+Static utility class for managing asset paths between development and production environments.
+
+```javascript
+// Configure resource loading
+const prodRoute = 'https://static.pchujoy.com/public/games-assets/parchados';
+
+class ResourceLoader {
+    static isProd = true;
+
+    static ReturnPath() {
+        return this.isProd ? prodRoute : './src';
+    }
+}
+
+// Usage in asset loading
+this.load.image('table', ResourceLoader.ReturnPath() + '/images/parchados_chess.png');
+this.load.atlas('piece',
+    ResourceLoader.ReturnPath() + '/images/blockblast_piece/sprites.png',
+    ResourceLoader.ReturnPath() + '/images/blockblast_piece/sprites.json'
+);
+this.load.audio('mainTheme', [
+    ResourceLoader.ReturnPath() + '/audios/title.ogg',
+    ResourceLoader.ReturnPath() + '/audios/title.m4a'
+]);
+```
+
+## Summary
+
+BlockBlast is designed as a modular, embeddable puzzle game that integrates seamlessly with external gaming platforms. The main use cases include embedding the game in web portals with custom event tracking, implementing leaderboard systems through the encrypted score submission API, and white-labeling with sponsor branding. The game tracks session data including scores, gameplay duration, and high scores, which are securely transmitted using RSA encryption.
+
+Integration patterns follow a callback-based architecture where the host application provides handlers for game lifecycle events. The `onGameStart` callback receives game state information for analytics initialization, while `onGameEnd` receives encrypted score payloads for secure server-side validation. The game's responsive scaling (1080x1080 with FIT mode) ensures consistent display across devices, and the audio system includes automatic pause-on-blur handling for a polished user experience.
