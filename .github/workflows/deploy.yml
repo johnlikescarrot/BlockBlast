@@ -2,49 +2,46 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches:
+      - main
+      - master
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  contents: write
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout 🛎️
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js ⚙️
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '18'
 
-      - name: Install dependencies
+      - name: Install Dependencies 🔧
         run: npm install
 
-      - name: Build
+      - name: Build 🏗️
         run: npm run build
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist
+      - name: Post-Build Asset Copy 📂
+        run: |
+          # The index.html references ./src/style.css, so we need to ensure it exists in the dist folder
+          mkdir -p dist/src
+          cp src/style.css dist/src/style.css
+          
+          # Copy assets (images/audios) to dist/src in case the game tries to load them relatively
+          # (Even if isProd=true uses external URLs, this ensures local fallbacks work if configured)
+          if [ -d "src/images" ]; then cp -r src/images dist/src/; fi
+          if [ -d "src/audios" ]; then cp -r src/audios dist/src/; fi
 
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Deploy to GitHub Pages 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          branch: gh-pages
