@@ -1,4 +1,4 @@
-![Deploy to GitHub Pages](https://github.com/${{ github.repository }}/actions/workflows/deploy.yml/badge.svg)
+![Deploy to GitHub Pages](https://github.com/johnlikescarrot/BlockBlast-Parchados/actions/workflows/deploy.yml/badge.svg)
 
 # BlockBlast (Parchados)
 

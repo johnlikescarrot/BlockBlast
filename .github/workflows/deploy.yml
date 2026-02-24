@@ -35,12 +35,15 @@ jobs:
           npm ci
 
       - name: 🛡️ Security Audit
-        run: npm audit --audit-level=high || echo "High-level vulnerabilities found, please review."
+        run: npm audit --audit-level=high
+        continue-on-error: true
 
       - name: 🔑 Inject Environment Secrets
+        env:
+          GAME_PUBLIC_KEY: ${{ secrets.GAME_PUBLIC_KEY }}
         run: |
-          if [ -n "${{ secrets.GAME_PUBLIC_KEY }}" ]; then
-            echo "GAME_PUBLIC_KEY='${{ secrets.GAME_PUBLIC_KEY }}'" > .env
+          if [ -n "$GAME_PUBLIC_KEY" ]; then
+            echo "GAME_PUBLIC_KEY='$GAME_PUBLIC_KEY'" > .env
           else
             echo "⚠️ GAME_PUBLIC_KEY secret not found. Using local .env if available."
           fi
