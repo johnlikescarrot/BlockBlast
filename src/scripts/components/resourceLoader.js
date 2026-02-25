@@ -17,5 +17,11 @@ export class ResourceLoader{
             return './src'
         }
     }
-    
+
+    static ReturnLocalePath(lang) {
+        if (this.isProd) {
+             return `${prodRoute}/scripts/locales/${lang}.json`;
+        }
+        return `./src/scripts/locales/${lang}.json`;
+    }
 }

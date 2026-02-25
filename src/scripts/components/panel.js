@@ -1,358 +1,369 @@
-
-
-export class Panel
-{
-    constructor(scene){
-        // reference to the game scene
+export class Panel {
+    constructor(scene) {
         this.scene = scene;
-
-        this.credits = 
-        [['Programación', 'Diego Johnson','Braulio Baldeon'],
-        ['Arte y animación', 'Edward Torres'],
-        ['Marketing e interfaz', 'Karoline Jimenez'],
-        ['Música y sonido', 'Gunter Brenner'],
-        ['Dirección', 'Jorge García'],
-        ['Productor ejecutivo', 'Phillip Chu Joy']]
+        this.updateCredits();
     }
 
-    create(dim){
-        let background = this.scene.add.image(dim/2, dim/2, 'fade').setDisplaySize(dim, dim).setInteractive();
-        let background2 = this.scene.add.image(dim/2, dim/2, 'fade').setDisplaySize(dim, dim).setInteractive();
-        this.panel = this.scene.add.image(dim/2, dim/2, 'panel').setScale(1);
+    updateCredits() {
+        this.credits = [
+            [this.scene.i18n.t('PROGRAMMING'), 'Diego Johnson', 'Braulio Baldeon'],
+            [this.scene.i18n.t('ART_ANIMATION'), 'Edward Torres'],
+            [this.scene.i18n.t('MARKETING_UI'), 'Karoline Jimenez'],
+            [this.scene.i18n.t('MUSIC_SOUND'), 'Gunter Brenner'],
+            [this.scene.i18n.t('DIRECTION'), 'Jorge García'],
+            [this.scene.i18n.t('EXECUTIVE_PRODUCER'), 'Phillip Chu Joy']
+        ];
+    }
+
+    create(dim) {
+        let background = this.scene.add.image(dim / 2, dim / 2, 'fade').setDisplaySize(dim, dim).setInteractive();
+        let background2 = this.scene.add.image(dim / 2, dim / 2, 'fade').setDisplaySize(dim, dim).setInteractive();
+        this.panel = this.scene.add.image(dim / 2, dim / 2, 'panel').setScale(1);
 
         this.panelContainer = this.scene.add.container(0, 0, [background, this.panel]);
         this.panelContainer.setDepth(10).setVisible(false);
 
-        this.reloadPanel = this.scene.add.image(dim/2, dim/2, 'panel').setScale(.7);
+        this.reloadPanel = this.scene.add.image(dim / 2, dim / 2, 'panel').setScale(.7);
         this.reloadPanelContainer = this.scene.add.container(0, 0, [background2, this.reloadPanel]);
         this.reloadPanelContainer.setDepth(10).setVisible(false);
-
-        this.pauseContainer;
     }
 
-    createPausePanel(dim){
-        //let pauseTitleContainer = this.scene.add.image(dim/2, 250, 'panelUI', 'cartel.png').setScale(.75);
-
-        let pauseTitle = this.scene.add.text(dim/2, 318, 'PAUSA', { 
-            fontFamily: 'Bungee', fontSize: '34px',  color: '#dddddd', align: 'center' }).setOrigin(0.5);
+    createPausePanel(dim) {
+        let pauseTitle = this.scene.add.text(dim / 2, 318, this.scene.i18n.t('PAUSE'), {
+            fontFamily: 'Bungee', fontSize: '34px', color: '#dddddd', align: 'center'
+        }).setOrigin(0.5);
         pauseTitle.setStroke('#503530', 10);
         let closeImage = this.scene.add.image(dim - 190, 315, 'menuUI', 'Equis_NonClicked.png').setInteractive().setScale(.5);
         closeImage.on('pointerdown', () => { this.scene.audioManager.resumeMusic(); this.scene.currentScene.PauseGame(); });
-        
-        let optionsButton = this.scene.add.image(dim/2, dim/2-80, 'pantalla_pausa_UI', 'Botón_opciones_NonClicked.png').setInteractive().setDisplaySize(400,75);
-        optionsButton.on('pointerdown', () => { this.hidePause(); this.showOptions(); 
-            this.scene.audioManager.ui_click.play()
+
+        let optionsButton = this.scene.add.image(dim / 2, dim / 2 - 80, 'pantalla_pausa_UI', 'Botón_opciones_NonClicked.png').setInteractive().setDisplaySize(400, 75);
+        optionsButton.on('pointerdown', () => {
+            this.hidePause(); this.showOptions();
+            this.scene.audioManager.ui_click.play();
         });
 
-        let continueButton = this.scene.add.image(dim/2, dim/2+25, 'pantalla_pausa_UI', 'Botón_Continuar_NonClicked.png').setInteractive().setDisplaySize(400,75);
-        continueButton.on('pointerdown', () => { 
-            this.scene.audioManager.resumeMusic(); 
-            this.scene.currentScene.PauseGame(); 
-            //this.scene.audioManager.buttonClick.play();
+        let continueButton = this.scene.add.image(dim / 2, dim / 2 + 25, 'pantalla_pausa_UI', 'Botón_Continuar_NonClicked.png').setInteractive().setDisplaySize(400, 75);
+        continueButton.on('pointerdown', () => {
+            this.scene.audioManager.resumeMusic();
+            this.scene.currentScene.PauseGame();
         });
 
-        
-
-        let exitButton = this.scene.add.image(dim/2, dim/2+130, 'pantalla_pausa_UI', 'Botón_Salir_NonClicked.png').setInteractive().setDisplaySize(400,75);
-        exitButton.on('pointerdown', () => { this.hidePause(); 
-            this.scene.audioManager.ui_click.play()
-            //this.scene.audioManager.exitButtonClick.play(); 
-            this.scene.currentScene.BackMenu(); });
+        let exitButton = this.scene.add.image(dim / 2, dim / 2 + 130, 'pantalla_pausa_UI', 'Botón_Salir_NonClicked.png').setInteractive().setDisplaySize(400, 75);
+        exitButton.on('pointerdown', () => {
+            this.hidePause();
+            this.scene.audioManager.ui_click.play();
+            this.scene.currentScene.BackMenu();
+        });
 
         this.pauseContainer = this.scene.add.container(0, 0, [pauseTitle, closeImage, continueButton, optionsButton, exitButton]);
         this.pauseContainer.setVisible(false).setDepth(10.1);
     }
-    
-    createReloadPanel(dim){
-        //let pauseTitleContainer = this.scene.add.image(dim/2, 250, 'panelUI', 'cartel.png').setScale(.75);
 
-        let reloadTitle = this.scene.add.text(dim/2, 390, 'Reiniciar', { 
-            fontFamily: 'Bungee', fontSize: '30px',  color: '#dddddd', align: 'center' }).setOrigin(0.5);
+    createReloadPanel(dim) {
+        let reloadTitle = this.scene.add.text(dim / 2, 390, this.scene.i18n.t('RESTART'), {
+            fontFamily: 'Bungee', fontSize: '30px', color: '#dddddd', align: 'center'
+        }).setOrigin(0.5);
         reloadTitle.setStroke('#503530', 10);
         let closeImage = this.scene.add.image(dim - 290, 380, 'menuUI', 'Equis_NonClicked.png').setInteractive().setScale(.5);
         closeImage.on('pointerdown', () => { this.scene.audioManager.resumeMusic(); this.scene.currentScene.ReloadGame(); });
-        
-        let text2 = this.scene.add.text(dim/2, dim/2-40, '¿Seguro que quieres reiniciar?', { 
-            fontFamily: 'Bungee', fontSize: '30px',  color: '#dddddd', align: 'center' }).setOrigin(0.5);
-        text2.setStroke('#503530', 8).setLineSpacing(0).setWordWrapWidth(this.reloadPanel.displayWidth-100);
-        
 
-        let reloadButton = this.scene.add.image(dim/2, dim/2+90, 'pantalla_fin_UI', 'Botón_Reiniciar_NonClicked.png').setInteractive().setScale(1);
-        reloadButton.on('pointerdown', () => { 
+        let text2 = this.scene.add.text(dim / 2, dim / 2 - 40, this.scene.i18n.t('ARE_YOU_SURE_RESTART'), {
+            fontFamily: 'Bungee', fontSize: '30px', color: '#dddddd', align: 'center'
+        }).setOrigin(0.5);
+        text2.setStroke('#503530', 8).setLineSpacing(0).setWordWrapWidth(this.reloadPanel.displayWidth - 100);
+
+        let reloadButton = this.scene.add.image(dim / 2, dim / 2 + 90, 'pantalla_fin_UI', 'Botón_Reiniciar_NonClicked.png').setInteractive().setScale(1);
+        reloadButton.on('pointerdown', () => {
             this.hideReload();
-            this.scene.currentScene.RestartGame(); 
-            //this.scene.audioManager.buttonClick.play();
+            this.scene.currentScene.RestartGame();
         });
-
-    
 
         this.reloadContainer = this.scene.add.container(0, 0, [reloadTitle, closeImage, text2, reloadButton]);
         this.reloadContainer.setVisible(false).setDepth(10.1);
     }
 
-    createFirstTutorialPage(dim){
-        let text1 = this.scene.add.text(dim/2, 440, 'JALA LAS FICHAS HACIA EL TABLERO Y FORMA LÍNEAS PARA DESTRUIRLAS Y GANAR PUNTOS ¡A MÁS LÍNEAS, MÁS PUNTOS!', { 
-            fontFamily: 'Bungee', fontSize: '20px',  color: '#dddddd', align: 'center' }).setOrigin(0.5);
-        text1.setStroke('#503530', 8).setLineSpacing(0).setWordWrapWidth(this.panel.displayWidth-100);
+    createFirstTutorialPage(dim) {
+        let text1 = this.scene.add.text(dim / 2, 440, this.scene.i18n.t('TUTORIAL_PAGE_1_TEXT_1'), {
+            fontFamily: 'Bungee', fontSize: '20px', color: '#dddddd', align: 'center'
+        }).setOrigin(0.5);
+        text1.setStroke('#503530', 8).setLineSpacing(0).setWordWrapWidth(this.panel.displayWidth - 100);
 
-        let image1 = this.scene.add.image(dim/2, 550, 'tutorial', 'linecomplete.png').setScale(.5);
+        let image1 = this.scene.add.image(dim / 2, 550, 'tutorial', 'linecomplete.png').setScale(.5);
 
-        let text2 = this.scene.add.text(dim/2, dim/2+120, 'COLOCA LAS FICHAS CON CUIDADO. SI ES IMPOSIBLE COLOCAR ALGUNA O SE TE ACABA EL TIEMPO, PERDERÁS', { 
-            fontFamily: 'Bungee', fontSize: '20px',  color: '#dddddd', align: 'center' }).setOrigin(0.5);
-        text2.setStroke('#503530', 8).setLineSpacing(0).setWordWrapWidth(this.panel.displayWidth-100);
+        let text2 = this.scene.add.text(dim / 2, dim / 2 + 120, this.scene.i18n.t('TUTORIAL_PAGE_1_TEXT_2'), {
+            fontFamily: 'Bungee', fontSize: '20px', color: '#dddddd', align: 'center'
+        }).setOrigin(0.5);
+        text2.setStroke('#503530', 8).setLineSpacing(0).setWordWrapWidth(this.panel.displayWidth - 100);
 
-        let image2 = this.scene.add.image(dim/2, dim/2+200, 'tutorial', 'timer.png').setScale(.5);
-        
+        let image2 = this.scene.add.image(dim / 2, dim / 2 + 200, 'tutorial', 'timer.png').setScale(.5);
 
-        const textContainer1 = this.scene.add.container(0, 0, 
-            [text1, image1, image2, text2]).setVisible(false);
-        return textContainer1
+        const textContainer1 = this.scene.add.container(0, 0, [text1, image1, image2, text2]).setVisible(false);
+        return textContainer1;
     }
 
-    createSecondTutorialPage(dim){
-        let text1 = this.scene.add.text(dim/2, 440, 'COMPLETA LÍNEAS QUE INCLUYEN PIEZAS ESPECIALES Y APROVECHA SUS VENTAJAS', { 
-            fontFamily: 'Bungee', fontSize: '20px',  color: '#dddddd', align: 'center' }).setOrigin(0.5);
-        text1.setStroke('#503530', 8).setLineSpacing(0).setWordWrapWidth(this.panel.displayWidth-100);
+    createSecondTutorialPage(dim) {
+        let text1 = this.scene.add.text(dim / 2, 440, this.scene.i18n.t('TUTORIAL_PAGE_2_TEXT_1'), {
+            fontFamily: 'Bungee', fontSize: '20px', color: '#dddddd', align: 'center'
+        }).setOrigin(0.5);
+        text1.setStroke('#503530', 8).setLineSpacing(0).setWordWrapWidth(this.panel.displayWidth - 100);
 
-        let image1 = this.scene.add.image(dim/2-200-60, 580, 'tutorial', 'bomb.png').setScale(1);
-        let image2 = this.scene.add.image(dim/2+50-80, 570, 'tutorial', 'bombprep.png').setScale(.4);
-        let image3 = this.scene.add.image(dim/2+300-80, 580, 'tutorial', 'bombexplode.png').setScale(.4);
+        let image1 = this.scene.add.image(dim / 2 - 200 - 60, 580, 'tutorial', 'bomb.png').setScale(1);
+        let image2 = this.scene.add.image(dim / 2 + 50 - 80, 570, 'tutorial', 'bombprep.png').setScale(.4);
+        let image3 = this.scene.add.image(dim / 2 + 300 - 80, 580, 'tutorial', 'bombexplode.png').setScale(.4);
 
-        let text2 = this.scene.add.text(dim/2, dim/2+150, 'LAS BOMBAS DESTRUYEN LOS CUADROS A SU ALREDEDOR', { 
-            fontFamily: 'Bungee', fontSize: '20px',  color: '#dddddd', align: 'center' }).setOrigin(0.5);
-        text2.setStroke('#503530', 8).setLineSpacing(0).setWordWrapWidth(this.panel.displayWidth-100);
+        let text2 = this.scene.add.text(dim / 2, dim / 2 + 150, this.scene.i18n.t('TUTORIAL_PAGE_2_TEXT_2'), {
+            fontFamily: 'Bungee', fontSize: '20px', color: '#dddddd', align: 'center'
+        }).setOrigin(0.5);
+        text2.setStroke('#503530', 8).setLineSpacing(0).setWordWrapWidth(this.panel.displayWidth - 100);
 
-        
-
-        const textContainer2 = this.scene.add.container(0, 0, 
-            [text1, image1, image2,image3, text2]).setVisible(false);
-        return textContainer2
-    }
-    createThirdTutorialPage(dim){
-        let text1 = this.scene.add.text(dim/2, 440, 'EL REDUCTOR TRANSFORMA LAS FICHAS QUE NO HAS USADO AUN EN PEQUEÑOS CUADROS', { 
-            fontFamily: 'Bungee', fontSize: '20px',  color: '#dddddd', align: 'center' }).setOrigin(0.5);
-        text1.setStroke('#503530', 8).setLineSpacing(0).setWordWrapWidth(this.panel.displayWidth-100);
-
-        let image4 = this.scene.add.image(dim/2-200-60, 580, 'tutorial', 'reduct.png').setScale(1);
-        let image5 = this.scene.add.image(dim/2+50-80, 570, 'tutorial', 'reductprep.png').setScale(.4);
-        let image6 = this.scene.add.image(dim/2+300-80, 580, 'tutorial', 'reductworks.png').setScale(.4);
-        
-       
-
-        const textContainer3 = this.scene.add.container(0, 0, 
-            [text1,image4,image5,image6]).setVisible(false);
-        return textContainer3
+        const textContainer2 = this.scene.add.container(0, 0, [text1, image1, image2, image3, text2]).setVisible(false);
+        return textContainer2;
     }
 
-    createInstructionsPanel(dim){      
+    createThirdTutorialPage(dim) {
+        let text1 = this.scene.add.text(dim / 2, 440, this.scene.i18n.t('TUTORIAL_PAGE_3_TEXT_1'), {
+            fontFamily: 'Bungee', fontSize: '20px', color: '#dddddd', align: 'center'
+        }).setOrigin(0.5);
+        text1.setStroke('#503530', 8).setLineSpacing(0).setWordWrapWidth(this.panel.displayWidth - 100);
+
+        let image4 = this.scene.add.image(dim / 2 - 200 - 60, 580, 'tutorial', 'reduct.png').setScale(1);
+        let image5 = this.scene.add.image(dim / 2 + 50 - 80, 570, 'tutorial', 'reductprep.png').setScale(.4);
+        let image6 = this.scene.add.image(dim / 2 + 300 - 80, 580, 'tutorial', 'reductworks.png').setScale(.4);
+
+        const textContainer3 = this.scene.add.container(0, 0, [text1, image4, image5, image6]).setVisible(false);
+        return textContainer3;
+    }
+
+    createInstructionsPanel(dim) {
         this.instructionIndex = 0;
         this.instructionTexts = [this.createFirstTutorialPage(dim), this.createSecondTutorialPage(dim), this.createThirdTutorialPage(dim)];
-  
-        //let intructionsTitleContainer = this.scene.add.image(dim/2, 250, 'panelUI', 'cartel.png').setScale(.75);
 
-        this.intructionsTitle = this.scene.add.text(dim/2, 318, 'TUTORIAL', { 
-            fontFamily: 'Bungee', fontSize: '34px',  color: '#dddddd', align: 'center' }).setOrigin(0.5);
+        this.intructionsTitle = this.scene.add.text(dim / 2, 318, this.scene.i18n.t('TUTORIAL'), {
+            fontFamily: 'Bungee', fontSize: '34px', color: '#dddddd', align: 'center'
+        }).setOrigin(0.5);
         this.intructionsTitle.setStroke('#503530', 10);
         let closeImage = this.scene.add.image(dim - 190, 315, 'menuUI', 'Equis_NonClicked.png').setInteractive().setScale(.5);
-        closeImage.on('pointerdown', () =>{
-            this.hideInstructions()
-            if (this.scene.currentScene.scene.key === 'MainScene')this.scene.currentScene.CloseInstructions(); 
-        } );
+        closeImage.on('pointerdown', () => {
+            this.hideInstructions();
+            if (this.scene.currentScene.scene.key === 'MainScene') this.scene.currentScene.CloseInstructions();
+        });
 
-        this.leftArrow = this.scene.add.image(dim/2-55, dim - 260, 'menuUI', 'Previous_NonClicked.png').setInteractive().setDisplaySize(100,100);
+        this.leftArrow = this.scene.add.image(dim / 2 - 55, dim - 260, 'menuUI', 'Previous_NonClicked.png').setInteractive().setDisplaySize(100, 100);
         this.leftArrow.on('pointerdown', () => this.leftArrowClicked());
 
-        this.rightArrow = this.scene.add.image(dim/2+55, dim - 260, 'menuUI', 'Next_NonClicked.png').setInteractive().setDisplaySize(100,100);
+        this.rightArrow = this.scene.add.image(dim / 2 + 55, dim - 260, 'menuUI', 'Next_NonClicked.png').setInteractive().setDisplaySize(100, 100);
         this.rightArrow.on('pointerdown', () => this.rightArrowClicked());
 
-        this.instructionsContainer = this.scene.add.container(0, 0, 
+        this.instructionsContainer = this.scene.add.container(0, 0,
             [this.intructionsTitle, closeImage, this.instructionTexts[0], this.instructionTexts[1], this.instructionTexts[2], this.leftArrow, this.rightArrow]);
         this.instructionsContainer.setVisible(false).setDepth(10.1);
     }
 
-    createOptionsPanel(dim){
-        //let optionsTitleContainer = this.scene.add.image(dim/2, 250, 'panelUI', 'cartel.png').setScale(.75);
-
-        let optionsTitle = this.scene.add.text(dim/2, 318, 'OPCIONES', { 
-            fontFamily: 'Bungee', fontSize: '34px',  color: '#dddddd', align: 'center' }).setOrigin(0.5);
+    createOptionsPanel(dim) {
+        let optionsTitle = this.scene.add.text(dim / 2, 318, this.scene.i18n.t('OPTIONS'), {
+            fontFamily: 'Bungee', fontSize: '34px', color: '#dddddd', align: 'center'
+        }).setOrigin(0.5);
         optionsTitle.setStroke('#503530', 10);
 
         let closeImage = this.scene.add.image(dim - 190, 315, 'menuUI', 'Equis_NonClicked.png').setInteractive().setScale(.5);
         closeImage.on('pointerdown', () => this.hideOptions());
 
-        let musicTitle = this.scene.add.text(dim/2-200, dim/2 - 65, 'MÚSICA', { 
-            font: '800 34px Bungee', color: '#ebebeb', align: 'center' }).setOrigin(0.5);
+        let musicTitle = this.scene.add.text(dim / 2 - 200, dim / 2 - 65, this.scene.i18n.t('MUSIC'), {
+            font: '800 34px Bungee', color: '#ebebeb', align: 'center'
+        }).setOrigin(0.5);
         musicTitle.setStroke('#503530', 8);
 
         let musicSlider = this.scene.rexUI.add.slider({
-            x: dim/2+115,
-            y: dim/2 - 65,
+            x: dim / 2 + 115,
+            y: dim / 2 - 65,
             width: 370,
             height: 30,
             orientation: 'x',
             value: this.scene.data.get('musicVolume'),
-
-            track: this.scene.add.sprite(0,0,'pantalla_opciones_UI','Barra_vacia.png'),
-            indicator: this.addCropResizeMethod(this.scene.add.sprite(0,0,'pantalla_opciones_UI','Barra_llena.png').setDisplaySize(350,35)),
-            thumb: this.scene.add.sprite(0,0,'pantalla_opciones_UI','Button1_NonClicked.png').setDisplaySize(35,60),
-
-            input: 'drag'|'click',
+            track: this.scene.add.sprite(0, 0, 'pantalla_opciones_UI', 'Barra_vacia.png'),
+            indicator: this.addCropResizeMethod(this.scene.add.sprite(0, 0, 'pantalla_opciones_UI', 'Barra_llena.png').setDisplaySize(350, 35)),
+            thumb: this.scene.add.sprite(0, 0, 'pantalla_opciones_UI', 'Button1_NonClicked.png').setDisplaySize(35, 60),
+            input: 'drag' | 'click',
             valuechangeCallback: function (value) {
                 this.scene.audioManager.menuMusic.volume = value;
                 this.scene.audioManager.gameplayMusic.volume = value;
                 this.scene.data.set('musicVolume', value);
             },
-
         }).layout();
 
-        let sfxTitle = this.scene.add.text(dim/2-200, dim/2+25, 'SONIDO', { 
-            font: '800 34px Bungee', color: '#ebebeb', align: 'center' }).setOrigin(0.5);
+        let sfxTitle = this.scene.add.text(dim / 2 - 200, dim / 2 + 25, this.scene.i18n.t('SOUND'), {
+            font: '800 34px Bungee', color: '#ebebeb', align: 'center'
+        }).setOrigin(0.5);
         sfxTitle.setStroke('#503530', 8);
-        
+
         let sfxSlider = this.scene.rexUI.add.slider({
-            x: dim/2+115,
-            y: dim/2+25,
+            x: dim / 2 + 115,
+            y: dim / 2 + 25,
             width: 370,
             height: 30,
             orientation: 'x',
             value: this.scene.data.get('sfxVolume'),
-
-            track: this.scene.add.sprite(0,0,'pantalla_opciones_UI','Barra_vacia.png'),
-            indicator: this.addCropResizeMethod(this.scene.add.sprite(0,0,'pantalla_opciones_UI','Barra_llena.png').setDisplaySize(350,35)),
-            thumb: this.scene.add.sprite(0,0,'pantalla_opciones_UI','Button1_NonClicked.png').setDisplaySize(35,60),
-
-            input: 'drag'|'click',
+            track: this.scene.add.sprite(0, 0, 'pantalla_opciones_UI', 'Barra_vacia.png'),
+            indicator: this.addCropResizeMethod(this.scene.add.sprite(0, 0, 'pantalla_opciones_UI', 'Barra_llena.png').setDisplaySize(350, 35)),
+            thumb: this.scene.add.sprite(0, 0, 'pantalla_opciones_UI', 'Button1_NonClicked.png').setDisplaySize(35, 60),
+            input: 'drag' | 'click',
             valuechangeCallback: function (value) {
                 this.scene.audioManager.updateSFXVolume(value);
                 this.scene.data.set('sfxVolume', value);
             },
-
         }).layout();
 
-        if ((/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)){
-            musicTitle.setPosition(dim/2-215, dim/2-55);
-            musicSlider.setPosition(dim/2+100, dim/2-55);
-            sfxTitle.setPosition(dim/2-215, dim/2+65);
-            sfxSlider.setPosition(dim/2+100, dim/2+75);
-            this.optionsContainer = this.scene.add.container(0, 0, 
+        if ((/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)) {
+            musicTitle.setPosition(dim / 2 - 215, dim / 2 - 55);
+            musicSlider.setPosition(dim / 2 + 100, dim / 2 - 55);
+            sfxTitle.setPosition(dim / 2 - 215, dim / 2 + 65);
+            sfxSlider.setPosition(dim / 2 + 100, dim / 2 + 75);
+            this.optionsContainer = this.scene.add.container(0, 0,
                 [optionsTitle, closeImage, sfxSlider, sfxTitle, musicTitle, musicSlider]);
         }
-        else
-        {
-            let fullscreenTitle = this.scene.add.text(dim/2-75, dim/2+125, 'PANTALLA COMPLETA', { 
-                font: '800 34px Bungee', color: '#ebebeb', align: 'center' }).setOrigin(0.5);
+        else {
+            let fullscreenTitle = this.scene.add.text(dim / 2 - 75, dim / 2 + 125, this.scene.i18n.t('FULLSCREEN'), {
+                font: '800 34px Bungee', color: '#ebebeb', align: 'center'
+            }).setOrigin(0.5);
             fullscreenTitle.setStroke('#503530', 8);
-            this.fullscreenToggleBall = this.scene.add.image(dim/2+205, dim/2+120, 'pantalla_opciones_UI', 'Button2_clicked.png');
-            
+            this.fullscreenToggleBall = this.scene.add.image(dim / 2 + 205, dim / 2 + 120, 'pantalla_opciones_UI', 'Button2_clicked.png');
+            this.fullscreenToggleContainer = this.scene.add.image(dim / 2 + 230, dim / 2 + 120, 'pantalla_opciones_UI', 'Switch_Off.png').setInteractive();
+            this.fullscreenToggleContainer.on('pointerdown', () => { this.toggle(this.fullscreenToggleBall, this.fullscreenToggleContainer, dim / 2); });
+            this.setToggleFullscreen(this.scene.scale.isFullscreen, dim / 2);
 
-            this.fullscreenToggleContainer = this.scene.add.image(dim/2+230, dim/2+120, 'pantalla_opciones_UI', 'Switch_Off.png').setInteractive();
-            this.fullscreenToggleContainer.on('pointerdown', () => { this.toggle(this.fullscreenToggleBall,this.fullscreenToggleContainer, dim/2); });
-    
-            this.setToggleFullscreen(this.scene.scale.isFullscreen, dim/2);
+            let langTitle = this.scene.add.text(dim / 2 - 200, dim / 2 + 215, this.scene.i18n.t('LANGUAGE'), {
+                font: '800 34px Bungee', color: '#ebebeb', align: 'center'
+            }).setOrigin(0.5);
+            langTitle.setStroke('#503530', 8);
 
-            this.optionsContainer = this.scene.add.container(0, 0, 
-                [optionsTitle, closeImage, sfxSlider, sfxTitle, musicTitle, musicSlider, fullscreenTitle, this.fullscreenToggleContainer, this.fullscreenToggleBall]);
+            const activeColor = '#f0dfa7';
+            const inactiveColor = '#ebebeb';
+
+            let enButton = this.scene.add.text(dim / 2 + 50, dim / 2 + 215, 'EN', {
+                font: '800 34px Bungee', color: this.scene.i18n.language === 'en' ? activeColor : inactiveColor, align: 'center'
+            }).setOrigin(0.5).setInteractive();
+            enButton.setStroke('#503530', 8);
+
+            let esButton = this.scene.add.text(dim / 2 + 150, dim / 2 + 215, 'ES', {
+                font: '800 34px Bungee', color: this.scene.i18n.language === 'es' ? activeColor : inactiveColor, align: 'center'
+            }).setOrigin(0.5).setInteractive();
+            esButton.setStroke('#503530', 8);
+
+            enButton.on('pointerdown', () => {
+                if (this.scene.i18n.language !== 'en') {
+                    this.scene.i18n.setLanguage('en');
+                    this.scene.audioManager.ui_click.play();
+                    this.scene.scene.restart();
+                }
+            });
+
+            esButton.on('pointerdown', () => {
+                if (this.scene.i18n.language !== 'es') {
+                    this.scene.i18n.setLanguage('es');
+                    this.scene.audioManager.ui_click.play();
+                    this.scene.scene.restart();
+                }
+            });
+
+            this.optionsContainer = this.scene.add.container(0, 0,
+                [optionsTitle, closeImage, sfxSlider, sfxTitle, musicTitle, musicSlider, fullscreenTitle, this.fullscreenToggleContainer, this.fullscreenToggleBall, langTitle, enButton, esButton]);
         }
-        
+
         this.optionsContainer.setVisible(false).setDepth(10.1);
     }
 
-    createCreditsPanel(dim){
-        let creditsTitleContainer = this.scene.add.image(dim/2, 535, 'panel').setDisplaySize(800,700);
+    createCreditsPanel(dim) {
+        let creditsTitleContainer = this.scene.add.image(dim / 2, 535, 'panel').setDisplaySize(800, 700);
 
-        let creditsTitle = this.scene.add.text(dim/2, 245, 'CRÉDITOS', { 
-            font: '700 40px Bungee', color: '#F9F9F9', align: 'center' }).setOrigin(0.5);
+        let creditsTitle = this.scene.add.text(dim / 2, 245, this.scene.i18n.t('CREDITS'), {
+            font: '700 40px Bungee', color: '#F9F9F9', align: 'center'
+        }).setOrigin(0.5);
         creditsTitle.setStroke('#662C2A', 11);
 
         let closeImage = this.scene.add.image(dim - 150, 245, 'menuUI', 'Equis_NonClicked.png').setInteractive().setScale(.5);
         closeImage.on('pointerdown', () => this.hideCredits());
 
-        let labels = []
-        let previousChildCount = 0;
-        let modifierX =0
-        let modifierY = 0
-        for (let i = 0; i < this.credits.length; i++){
-            if(i>2){
-                modifierX = 350
-                modifierY = 420
+        let labels = [];
+        let modifierX = 0;
+        let modifierY = 0;
+        for (let i = 0; i < this.credits.length; i++) {
+            if (i > 2) {
+                modifierX = 350;
+                modifierY = 420;
             }
-            let newH = 140*i
-            let label = this.addCreditsLabel(dim/2-300+modifierX, newH+350-modifierY, i);
-            if (previousChildCount < label.list.length - 1) previousChildCount = label.list.length - 1;
+            let newH = 140 * i;
+            let label = this.addCreditsLabel(dim / 2 - 300 + modifierX, newH + 350 - modifierY, i);
             labels.push(label);
         }
 
-        let logo = this.scene.add.image(dim/2, dim-300, 'leapLogo').setScale(1);
+        let logo = this.scene.add.image(dim / 2, dim - 300, 'leapLogo').setScale(1);
 
-        this.creditsContainer = this.scene.add.container(0, 0, [creditsTitleContainer,creditsTitle, logo,closeImage]);
-        for(let i = 0; i < labels.length; i++){ this.creditsContainer.add(labels[i]); }
+        this.creditsContainer = this.scene.add.container(0, 0, [creditsTitleContainer, creditsTitle, logo, closeImage]);
+        for (let i = 0; i < labels.length; i++) { this.creditsContainer.add(labels[i]); }
         this.creditsContainer.setVisible(false).setDepth(10.1);
     }
 
-    addCreditsLabel(x, y, index){
-        
-        let title = this.scene.add.text(x+25, y+10, this.credits[index][0], { 
-            fontFamily: 'Bungee', fontSize: '18px',  color: '#ebebeb', align: 'left' });
-        let creditBar = this.scene.add.image(x, y, 'pantalla_pausa_UI', 'Barra.png').setOrigin(0,0).setDisplaySize(title.getBounds().width+50,50).setDepth(10);
+    addCreditsLabel(x, y, index) {
+        let title = this.scene.add.text(x + 25, y + 10, this.credits[index][0], {
+            fontFamily: 'Bungee', fontSize: '18px', color: '#ebebeb', align: 'left'
+        });
+        let creditBar = this.scene.add.image(x, y, 'pantalla_pausa_UI', 'Barra.png').setOrigin(0, 0).setDisplaySize(title.getBounds().width + 50, 50).setDepth(10);
         title.setStroke('#662C2A', 5).setDepth(11);
 
         let names = [];
-        for(let i = 1; i < this.credits[index].length; i++){
-            let name = this.scene.add.text(x, (30*i)+y+30, this.credits[index][i], { 
-                font: '700 16px Bungee', color: '#ebebeb', align: 'left' });
+        for (let i = 1; i < this.credits[index].length; i++) {
+            let name = this.scene.add.text(x, (30 * i) + y + 30, this.credits[index][i], {
+                font: '700 16px Bungee', color: '#ebebeb', align: 'left'
+            });
             name.setStroke('#854A3A', 5);
             names.push(name);
         }
 
-        let labelContainer = this.scene.add.container(0, 0, [creditBar,title]);
-        for(let i = 0; i < names.length; i++){ labelContainer.add(names[i]); }
+        let labelContainer = this.scene.add.container(0, 0, [creditBar, title]);
+        for (let i = 0; i < names.length; i++) { labelContainer.add(names[i]); }
         labelContainer.setDepth(10);
-        return labelContainer
+        return labelContainer;
     }
 
-    createScorePanel(dim){
-        //let scoreTitle = this.scene.add.image(dim/2, 250, 'scorePanelUI', 'cartel_fin.png').setDisplaySize(560,130);
-        
-
-        //this.crown = this.scene.add.image(dim/2, dim/2-130, 'scorePanelUI', 'corona.png').setScale(.75);
-
-        let scoreTitle = this.scene.add.text(dim/2, 318, 'FIN DE PARTIDA', { 
-            fontFamily: 'Bungee', fontSize: '34px',  color: '#f4f4f4', align: 'center' }).setOrigin(0.5);
+    createScorePanel(dim) {
+        let scoreTitle = this.scene.add.text(dim / 2, 318, this.scene.i18n.t('GAME_OVER'), {
+            fontFamily: 'Bungee', fontSize: '34px', color: '#f4f4f4', align: 'center'
+        }).setOrigin(0.5);
         scoreTitle.setStroke('#553b37', 8);
 
-        let scoreImage = this.scene.add.image(dim/2, dim/2-70, 'pantalla_fin_UI', 'Contador_puntaje.png').setScale(1);
+        let scoreImage = this.scene.add.image(dim / 2, dim / 2 - 70, 'pantalla_fin_UI', 'Contador_puntaje.png').setScale(1);
 
-        this.scoreText = this.scene.add.text(dim/2, dim/2-60, '10000000', { font: '800 30px Bungee', color: '#f0dfa7' });
+        this.scoreText = this.scene.add.text(dim / 2, dim / 2 - 60, '0', { font: '800 30px Bungee', color: '#f0dfa7' });
         this.scoreText.setStroke('#3f2e29', 10).setOrigin(.5);
 
-        let timeLabel = this.scene.add.text(dim/2-165, dim/2+30, 'TIEMPO:', { font: '800 30px Bungee', color: '#f4f4f4' });
+        let timeLabel = this.scene.add.text(dim / 2 - 165, dim / 2 + 30, this.scene.i18n.t('TIME'), { font: '800 30px Bungee', color: '#f4f4f4' });
         timeLabel.setStroke('#553b37', 8);
 
-        this.timeText = this.scene.add.text(dim/2+170, dim/2+70, '00:08:25', { font: '800 30px Bungee', color: '#f0dfa7' });
+        this.timeText = this.scene.add.text(dim / 2 + 170, dim / 2 + 70, '00:00:00', { font: '800 30px Bungee', color: '#f0dfa7' });
         this.timeText.setStroke('#553b37', 8).setOrigin(1);
-        
-        let recordLabel = this.scene.add.text(dim/2-165, dim/2+95, 'RÉCORD:', { font: '800 30px Bungee', color: '#f4f4f4' });
+
+        let recordLabel = this.scene.add.text(dim / 2 - 165, dim / 2 + 95, this.scene.i18n.t('RECORD'), { font: '800 30px Bungee', color: '#f4f4f4' });
         recordLabel.setStroke('#553b37', 8);
 
-        this.recordText = this.scene.add.text(dim/2+170, dim/2+130, '10000000', { font: '800 30px Bungee', color: '#f0dfa7' });
+        this.recordText = this.scene.add.text(dim / 2 + 170, dim / 2 + 130, '0', { font: '800 30px Bungee', color: '#f0dfa7' });
         this.recordText.setStroke('#553b37', 8).setOrigin(1);
 
-        let restartButton = this.scene.add.image(dim/2-150, dim/2+260, 'pantalla_fin_UI', 'Botón_Reiniciar_NonClicked.png').setInteractive();
-        //restartButton.setScale(.75);
-        restartButton.on('pointerdown', () => { this.hideScore(); 
-            this.scene.audioManager.ui_click.play()
-            //this.scene.audioManager.playButtonClick.play(); 
-            this.scene.currentScene.RestartGame(); });
+        let restartButton = this.scene.add.image(dim / 2 - 150, dim / 2 + 260, 'pantalla_fin_UI', 'Botón_Reiniciar_NonClicked.png').setInteractive();
+        restartButton.on('pointerdown', () => {
+            this.hideScore();
+            this.scene.audioManager.ui_click.play();
+            this.scene.currentScene.RestartGame();
+        });
 
-        let menuButton = this.scene.add.image(dim/2+170, dim/2+260, 'pantalla_fin_UI', 'Botón_Salir_NonClicked.png').setInteractive();
-        //menuButton.setDisplaySize(270,130);
-        menuButton.on('pointerdown', () => { this.hideScore(); 
-            this.scene.audioManager.ui_click.play()
-            //this.scene.audioManager.exitButtonClick.play(); 
-            this.scene.currentScene.BackMenu();});
+        let menuButton = this.scene.add.image(dim / 2 + 170, dim / 2 + 260, 'pantalla_fin_UI', 'Botón_Salir_NonClicked.png').setInteractive();
+        menuButton.on('pointerdown', () => {
+            this.hideScore();
+            this.scene.audioManager.ui_click.play();
+            this.scene.currentScene.BackMenu();
+        });
 
-        this.scoreContainer = this.scene.add.container(0, 0, 
-            [scoreTitle,scoreImage, this.scoreText, timeLabel, this.timeText, recordLabel, this.recordText, restartButton, menuButton]);
+        this.scoreContainer = this.scene.add.container(0, 0,
+            [scoreTitle, scoreImage, this.scoreText, timeLabel, this.timeText, recordLabel, this.recordText, restartButton, menuButton]);
         this.scoreContainer.setVisible(false).setDepth(10.1);
     }
 
@@ -360,17 +371,16 @@ export class Panel
         gameObject.resize = function (width, height) {
             gameObject.setCrop(0, 0, width, height);
             return gameObject;
-        }
-    
+        };
         return gameObject;
-    }
+    };
 
-    toggle(target,container, center){
-        let start = center+205
-        let end = center+255
+    toggle(target, container, center) {
+        let start = center + 205;
+        let end = center + 255;
         if (target.x != start) {
-            start = center+255
-            end = center+205
+            start = center + 255;
+            end = center + 205;
         }
         let toggleTween = this.scene.tweens.add({
             targets: target,
@@ -378,169 +388,160 @@ export class Panel
             duration: 250,
             repeat: 0,
             x: {
-              getStart: () => start,
-              getEnd: () => end
+                getStart: () => start,
+                getEnd: () => end
             },
             onComplete: () => {
-                if (start == center+205){
-                    container.setTexture('pantalla_opciones_UI', 'Switch_On.png')
+                if (start == center + 205) {
+                    container.setTexture('pantalla_opciones_UI', 'Switch_On.png');
                     target.setTexture('pantalla_opciones_UI', 'Button2_NonClicked.png');
                     this.scene.scale.startFullscreen();
-                } else  {
-                    container.setTexture('pantalla_opciones_UI', 'Switch_Off.png')
+                } else {
+                    container.setTexture('pantalla_opciones_UI', 'Switch_Off.png');
                     target.setTexture('pantalla_opciones_UI', 'Button2_clicked.png');
                     this.scene.scale.stopFullscreen();
                 }
-                toggleTween?.remove()
+                toggleTween?.remove();
                 toggleTween = null;
             }
         });
     }
 
-    
-
-    setToggleFullscreen(isFullscreen, center){
-        if (!(/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream))
-        {
-            if (isFullscreen){
-                this.fullscreenToggleContainer.setTexture('pantalla_opciones_UI', 'Switch_On.png')
-                this.fullscreenToggleBall.setTexture('pantalla_opciones_UI', 'Button2_NonClicked.png').setPosition(center+255, this.fullscreenToggleBall.y);
-            } 
+    setToggleFullscreen(isFullscreen, center) {
+        if (!(/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)) {
+            if (isFullscreen) {
+                this.fullscreenToggleContainer.setTexture('pantalla_opciones_UI', 'Switch_On.png');
+                this.fullscreenToggleBall.setTexture('pantalla_opciones_UI', 'Button2_NonClicked.png').setPosition(center + 255, this.fullscreenToggleBall.y);
+            }
             else {
-                this.fullscreenToggleContainer.setTexture('pantalla_opciones_UI', 'Switch_Off.png')
-                this.fullscreenToggleBall.setTexture('pantalla_opciones_UI', 'Button2_clicked.png').setPosition(center+205, this.fullscreenToggleBall.y);
+                this.fullscreenToggleContainer.setTexture('pantalla_opciones_UI', 'Switch_Off.png');
+                this.fullscreenToggleBall.setTexture('pantalla_opciones_UI', 'Button2_clicked.png').setPosition(center + 205, this.fullscreenToggleBall.y);
             }
         }
     }
 
-    leftArrowClicked(){
-        this.scene.audioManager.ui_page.play()
-        //this.scene.audioManager.buttonClick.play();
+    leftArrowClicked() {
+        this.scene.audioManager.ui_page.play();
         this.instructionIndex = this.instructionIndex - 1 >= 0 ? this.instructionIndex - 1 : 0;
         this.setInstructionsText();
     }
 
-    rightArrowClicked(){
-        this.scene.audioManager.ui_page.play()
-        //this.scene.audioManager.buttonClick.play();
-        if (this.instructionIndex + 1 < this.instructionTexts.length) this.instructionIndex = this.instructionIndex + 1;
-        else this.hideInstructions();
-        this.setInstructionsText();
+    rightArrowClicked() {
+        this.scene.audioManager.ui_page.play();
+        if (this.instructionIndex + 1 < this.instructionTexts.length) {
+            this.instructionIndex = this.instructionIndex + 1;
+            this.setInstructionsText();
+        } else {
+            this.hideInstructions();
+        }
     }
 
-    setInstructionsText(){
-        for (let i = 0; i < this.instructionTexts.length; i++){
+    setInstructionsText() {
+        for (let i = 0; i < this.instructionTexts.length; i++) {
             this.instructionTexts[i].setVisible(false);
         }
-        if(this.instructionIndex != 0){
+        if (this.instructionIndex != 0) {
             this.leftArrow.setVisible(true);
+        } else {
+            this.leftArrow.setVisible(false);
         }
-       
-        if(this.instructionIndex != this.instructionTexts.length-1)this.rightArrow.setTexture('menuUI', 'Next_NonClicked.png');
-        else this.rightArrow.setTexture('menuUI', 'Equis_NonClicked.png')
+
+        if (this.instructionIndex != this.instructionTexts.length - 1) {
+            this.rightArrow.setTexture('menuUI', 'Next_NonClicked.png');
+        } else {
+            this.rightArrow.setTexture('menuUI', 'Equis_NonClicked.png');
+        }
         this.instructionTexts[this.instructionIndex].setVisible(true);
-        this.intructionsTitle.setText('Tutorial ' + (this.instructionIndex + 1) + '/'+this.instructionTexts.length);
+        this.intructionsTitle.setText(this.scene.i18n.t('TUTORIAL') + ' ' + (this.instructionIndex + 1) + '/' + this.instructionTexts.length);
     }
 
-    showInstructions(callback){
+    showInstructions(callback) {
         this.instructionIndex = 0;
         this.setInstructionsText();
         if (callback != null) this.hideInstructions.callback = callback;
-        this.scene.audioManager.ui_page.play()
-        //this.scene.audioManager.pageOpen.play();
+        this.scene.audioManager.ui_page.play();
         this.instructionsContainer.setVisible(true);
         this.panelContainer.setVisible(true);
     }
 
-    hideInstructions(){
-        this.scene.audioManager.ui_click.play()
-        //this.scene.audioManager.buttonClick.play();
+    hideInstructions() {
+        this.scene.audioManager.ui_click.play();
         this.instructionsContainer.setVisible(false);
         this.panelContainer.setVisible(false);
         if (this.hideInstructions.callback) this.hideInstructions.callback();
     }
 
-    showOptions(){
-        this.scene.audioManager.ui_click.play()
-        //this.scene.audioManager.pageOpen.play();
+    showOptions() {
+        this.scene.audioManager.ui_click.play();
         this.optionsContainer.setVisible(true);
         this.panelContainer.setVisible(true);
-        if (this.scene.currentScene.scene.key === 'MainScene') this.scene.currentScene.scene.optionsButton.setTexture('menuUI', 'Settings_NonClicked.png');
     }
 
-    hideOptions(){
-        this.scene.audioManager.ui_click.play()
-        //this.scene.audioManager.buttonClick.play();
+    hideOptions() {
+        this.scene.audioManager.ui_click.play();
         this.optionsContainer.setVisible(false);
         this.panelContainer.setVisible(false);
-
         if (this.scene.currentScene.scene.key === 'MainScene') this.showPause();
     }
 
-    showCredits(){
-        this.scene.audioManager.ui_click.play()
-        //this.scene.audioManager.pageOpen.play();
-        //this.panel.setDisplaySize(1110, 1200);
+    showCredits() {
+        this.scene.audioManager.ui_click.play();
         this.creditsContainer.setVisible(true);
         this.panelContainer.setVisible(true);
     }
 
-    hideCredits(){
-        this.scene.audioManager.ui_click.play()
-        //this.scene.audioManager.buttonClick.play();
-        //this.panel.setDisplaySize(1110, 1150);
+    hideCredits() {
+        this.scene.audioManager.ui_click.play();
         this.creditsContainer.setVisible(false);
         this.panelContainer.setVisible(false);
     }
 
-    showPause(){
+    showPause() {
         this.pauseContainer.setVisible(true);
         this.panelContainer.setVisible(true);
     }
 
-    hidePause(){
-        this.scene.audioManager.ui_click.play()
-       // this.scene.audioManager.buttonClick.play();
+    hidePause() {
+        this.scene.audioManager.ui_click.play();
         this.pauseContainer.setVisible(false);
         this.panelContainer.setVisible(false);
     }
 
-    showReload(){
+    showReload() {
         this.reloadContainer.setVisible(true);
         this.reloadPanelContainer.setVisible(true);
     }
-    hideReload(){
-        this.scene.audioManager.ui_click.play()
+
+    hideReload() {
+        this.scene.audioManager.ui_click.play();
         this.reloadContainer.setVisible(false);
         this.reloadPanelContainer.setVisible(false);
     }
 
-    showScore(score, newHighScore){
-        console.log("SCORE" + newHighScore)
-        this.panel.setTexture("panel_dark")
+    showScore(score, newHighScore) {
+        this.panel.setTexture("panel_dark");
         this.scoreText.setText(score);
         this.recordText.setText(newHighScore);
         let gameplayTime = this.scene.currentScene.finishTime - this.scene.currentScene.startTime;
-        
         this.timeText.setText(this.secondsToString(gameplayTime));
         this.scoreContainer.setVisible(true);
         this.panelContainer.setVisible(true);
     }
 
-    hideScore(){
-        this.panel.setTexture("panel")
+    hideScore() {
+        this.panel.setTexture("panel");
         this.scoreContainer.setVisible(false);
         this.panelContainer.setVisible(false);
     }
 
     secondsToString(seconds) {
-        const time = Math.floor(seconds)
+        const time = Math.floor(seconds);
         let hour = Math.floor(time / 3600);
-        hour = (hour < 10)? '0' + hour : hour;
+        hour = (hour < 10) ? '0' + hour : hour;
         let minute = Math.floor((time / 60) % 60);
-        minute = (minute < 10)? '0' + minute : minute;
+        minute = (minute < 10) ? '0' + minute : minute;
         let second = time % 60;
-        second = (second < 10)? '0' + second : second;
+        second = (second < 10) ? '0' + second : second;
         return hour + ':' + minute + ':' + second;
     }
 }

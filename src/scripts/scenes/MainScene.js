@@ -1974,7 +1974,7 @@ export class MainScene extends Phaser.Scene{
         //SCORES
         this.scorePoints = 0
         //let scoreContainer = this.add.image(320, 1000, 'menuUI', 'Score.png')
-        this.scoreText = this.add.text(200, 80,"SCORE: ", { 
+        this.scoreText = this.add.text(200, 80, this.uiScene.i18n.t('SCORE'), {
             fontFamily: 'Bungee', fontSize: '60px',  color: '#f4f4f4', align: 'center' }).setOrigin(0.5).setDepth(4)
         this.scoreText.setStroke('#553b37', 8);
 

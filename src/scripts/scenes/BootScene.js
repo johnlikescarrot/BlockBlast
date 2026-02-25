@@ -9,6 +9,8 @@ export class BootScene extends Phaser.Scene
 
     preload(){
         this.load.image('loadingBG', ResourceLoader.ReturnPath()+'/images/bb_portrait.png');
+        this.load.json('locale_en', ResourceLoader.ReturnLocalePath('en'));
+        this.load.json('locale_es', ResourceLoader.ReturnLocalePath('es'));
         this.load.atlas('tutorial', ResourceLoader.ReturnPath()+'/images/tutorial/sprites.png', ResourceLoader.ReturnPath()+'/images/tutorial/sprites.json');
         this.load.atlas('loadingUI', ResourceLoader.ReturnPath()+'/images/loading_ui/sprites.png', ResourceLoader.ReturnPath()+'/images/loading_ui/sprites.json');
         this.load.atlas('menuUI', ResourceLoader.ReturnPath()+'/images/ui/botones/sprites.png', ResourceLoader.ReturnPath()+'/images/ui/botones/sprites.json');
@@ -41,7 +43,7 @@ export class BootScene extends Phaser.Scene
         this.data.set('parentSize', phaserDiv.style.width);
         this.data.set('tutorial', false);
         this.bg = this.add.image(dim/2, dim/2, 'loadingBG').setDisplaySize(dim, dim).setDepth(5).setInteractive();
-        this.playButton = this.add.image(dim/2, dim/2, 'loadingUI', 'Jugar_Clicked.png').setDepth(5).setInteractive();
+        this.playButton = this.add.image(dim/2, dim/2, 'menuUI', 'Play_Clicked.png').setDepth(5).setInteractive();
         
         this.playButton.setVisible(false).on('pointerdown', () => { this.scene.stop(); this.scene.get("MenuScene").uiScene.splashScreenAnim(); });
 
