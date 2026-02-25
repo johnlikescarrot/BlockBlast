@@ -35,6 +35,11 @@ export class Panel {
         }).setOrigin(0.5);
         pauseTitle.setStroke('#503530', 10);
         let closeImage = this.scene.add.image(dim - 190, 315, 'menuUI', 'Equis_NonClicked.png').setInteractive().setScale(.5);
+        closeImage.on('pointerdown', () => {
+            this.scene.audioManager.ui_click.play();
+            this.scene.audioManager.resumeMusic();
+            this.scene.currentScene.PauseGame();
+        });
 
         let optionsButton = this.scene.add.image(dim / 2, dim / 2 - 80, 'pantalla_pausa_UI', 'Botón_opciones_NonClicked.png').setInteractive().setDisplaySize(400, 75);
         optionsButton.on('pointerdown', () => {
@@ -45,6 +50,7 @@ export class Panel {
 
         let continueButton = this.scene.add.image(dim / 2, dim / 2 + 25, 'pantalla_pausa_UI', 'Botón_Continuar_NonClicked.png').setInteractive().setDisplaySize(400, 75);
         continueButton.on('pointerdown', () => {
+            this.scene.audioManager.ui_click.play();
             this.scene.audioManager.resumeMusic();
             this.scene.currentScene.PauseGame();
         });
@@ -66,6 +72,10 @@ export class Panel {
         }).setOrigin(0.5);
         reloadTitle.setStroke('#503530', 10);
         let closeImage = this.scene.add.image(dim - 290, 380, 'menuUI', 'Equis_NonClicked.png').setInteractive().setScale(.5);
+        closeImage.on('pointerdown', () => {
+            this.scene.audioManager.ui_click.play();
+            this.hideReload();
+        });
 
         let text2 = this.scene.add.text(dim / 2, dim / 2 - 40, this.scene.i18n.t('ARE_YOU_SURE_RESTART'), {
             fontFamily: 'Bungee', fontSize: '30px', color: '#dddddd', align: 'center'
@@ -74,7 +84,6 @@ export class Panel {
 
         let reloadButton = this.scene.add.image(dim / 2, dim / 2 + 90, 'pantalla_fin_UI', 'Botón_Reiniciar_NonClicked.png').setInteractive().setScale(1);
         reloadButton.on('pointerdown', () => {
-            this.scene.audioManager.ui_click.play();
             this.hideReload();
             this.scene.currentScene.RestartGame();
         });
@@ -168,6 +177,10 @@ export class Panel {
         optionsTitle.setStroke('#503530', 10);
 
         let closeImage = this.scene.add.image(dim - 190, 315, 'menuUI', 'Equis_NonClicked.png').setInteractive().setScale(.5);
+        closeImage.on('pointerdown', () => {
+            this.scene.audioManager.ui_click.play();
+            this.hideOptions();
+        });
 
         let musicTitle = this.scene.add.text(dim / 2 - 200, dim / 2 - 65, this.scene.i18n.t('MUSIC'), {
             font: '800 34px Bungee', color: '#ebebeb', align: 'center'
@@ -259,7 +272,10 @@ export class Panel {
             fullscreenTitle.setStroke('#503530', 8);
             this.fullscreenToggleBall = this.scene.add.image(dim / 2 + 205, dim / 2 + 120, 'pantalla_opciones_UI', 'Button2_clicked.png');
             this.fullscreenToggleContainer = this.scene.add.image(dim / 2 + 230, dim / 2 + 120, 'pantalla_opciones_UI', 'Switch_Off.png').setInteractive();
-            this.fullscreenToggleContainer.on('pointerdown', () => { this.toggle(this.fullscreenToggleBall, this.fullscreenToggleContainer, dim / 2); });
+            this.fullscreenToggleContainer.on('pointerdown', () => {
+                this.scene.audioManager.ui_click.play();
+                this.toggle(this.fullscreenToggleBall, this.fullscreenToggleContainer, dim / 2);
+            });
             this.setToggleFullscreen(this.scene.scale.isFullscreen, dim / 2);
 
             this.optionsContainer = this.scene.add.container(0, 0,
@@ -278,6 +294,10 @@ export class Panel {
         creditsTitle.setStroke('#662C2A', 11);
 
         let closeImage = this.scene.add.image(dim - 150, 245, 'menuUI', 'Equis_NonClicked.png').setInteractive().setScale(.5);
+        closeImage.on('pointerdown', () => {
+            this.scene.audioManager.ui_click.play();
+            this.hideCredits();
+        });
 
         this.creditsContainer = this.scene.add.container(0, 0, [creditsTitleContainer, creditsTitle, closeImage]);
 
@@ -332,8 +352,8 @@ export class Panel {
 
         let scoreImage = this.scene.add.image(dim / 2, dim / 2 - 70, 'pantalla_fin_UI', 'Contador_puntaje.png').setScale(1);
 
-        this.scoreText = this.scene.add.text(dim / 2, dim / 2 - 60, '0', { font: '800 30px Bungee', color: '#f0dfa7' });
-        this.scoreText.setStroke('#3f2e29', 10).setOrigin(.5);
+        this.scoreDisplay = this.scene.add.text(dim / 2, dim / 2 - 60, '0', { font: '800 30px Bungee', color: '#f0dfa7' });
+        this.scoreDisplay.setStroke('#3f2e29', 10).setOrigin(.5);
 
         let timeLabel = this.scene.add.text(dim / 2 - 165, dim / 2 + 30, this.scene.i18n.t('TIME'), { font: '800 30px Bungee', color: '#f4f4f4' });
         timeLabel.setStroke('#553b37', 8);
@@ -362,7 +382,7 @@ export class Panel {
         });
 
         this.scoreContainer = this.scene.add.container(0, 0,
-            [scoreTitle, scoreImage, this.scoreText, timeLabel, this.timeText, recordLabel, this.recordText, restartButton, menuButton]);
+            [scoreTitle, scoreImage, this.scoreDisplay, timeLabel, this.timeText, recordLabel, this.recordText, restartButton, menuButton]);
         this.scoreContainer.setVisible(false).setDepth(10.1);
     }
 
@@ -517,7 +537,7 @@ export class Panel {
 
     showScore(score, newHighScore) {
         this.panel.setTexture("panel_dark");
-        this.scoreText.setText(score);
+        this.scoreDisplay.setText(score);
         this.recordText.setText(newHighScore);
         let gameplayTime = this.scene.currentScene.finishTime - this.scene.currentScene.startTime;
         this.timeText.setText(this.secondsToString(gameplayTime));
