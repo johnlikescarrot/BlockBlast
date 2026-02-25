@@ -84,6 +84,7 @@ export class Panel {
 
         let reloadButton = this.scene.add.image(dim / 2, dim / 2 + 90, 'pantalla_fin_UI', 'Botón_Reiniciar_NonClicked.png').setInteractive().setScale(1);
         reloadButton.on('pointerdown', () => {
+            this.scene.audioManager.ui_click.play();
             this.hideReload();
             this.scene.currentScene.RestartGame();
         });

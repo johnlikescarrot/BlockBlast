@@ -65,7 +65,6 @@ export class MainScene extends Phaser.Scene{
 
 
     PauseGame(){
-        this.audioManager.ui_click.play()
         
         if(!this.pauseOpen){
             this.audioManager.pauseMusic()
@@ -95,7 +94,6 @@ export class MainScene extends Phaser.Scene{
     }
 
     RestartGame(){
-        this.audioManager.ui_click.play()
         if(this.gameoverTiming){
             clearTimeout(this.gameOverTimeOut)
             this.gameOverTimeOut = null
@@ -108,7 +106,6 @@ export class MainScene extends Phaser.Scene{
     }
 
     ReloadGame(){
-        this.audioManager.ui_click.play()
         if(!this.pauseOpen){
             this.sliderTween?.pause()
             this.isPaused = true
@@ -2123,6 +2120,7 @@ export class MainScene extends Phaser.Scene{
         this.pauseButton.setScale(.8);
         this.pauseButton.on('pointerdown', () => 
             {
+                this.audioManager.ui_click.play();
                 this.PauseGame();
                 //this.uiScene.audioManager.playButtonClick.play();
             });
@@ -2137,6 +2135,7 @@ export class MainScene extends Phaser.Scene{
         this.settingsButton.setScale(.8);
         this.settingsButton.on('pointerdown', () => 
             {
+                this.audioManager.ui_click.play();
                 this.ReloadGame()
                 //this.uiScene.audioManager.playButtonClick.play();
             });
