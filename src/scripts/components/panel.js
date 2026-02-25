@@ -35,10 +35,10 @@ export class Panel {
         }).setOrigin(0.5);
         pauseTitle.setStroke('#503530', 10);
         let closeImage = this.scene.add.image(dim - 190, 315, 'menuUI', 'Equis_NonClicked.png').setInteractive().setScale(.5);
-        closeImage.on('pointerdown', () => { this.scene.audioManager.resumeMusic(); this.scene.currentScene.PauseGame(); });
 
         let optionsButton = this.scene.add.image(dim / 2, dim / 2 - 80, 'pantalla_pausa_UI', 'Botón_opciones_NonClicked.png').setInteractive().setDisplaySize(400, 75);
         optionsButton.on('pointerdown', () => {
+            this.scene.audioManager.ui_click.play();
             this.hidePause();
             this.showOptions();
         });
@@ -51,6 +51,7 @@ export class Panel {
 
         let exitButton = this.scene.add.image(dim / 2, dim / 2 + 130, 'pantalla_pausa_UI', 'Botón_Salir_NonClicked.png').setInteractive().setDisplaySize(400, 75);
         exitButton.on('pointerdown', () => {
+            this.scene.audioManager.ui_click.play();
             this.hidePause();
             this.scene.currentScene.BackMenu();
         });
@@ -65,7 +66,6 @@ export class Panel {
         }).setOrigin(0.5);
         reloadTitle.setStroke('#503530', 10);
         let closeImage = this.scene.add.image(dim - 290, 380, 'menuUI', 'Equis_NonClicked.png').setInteractive().setScale(.5);
-        closeImage.on('pointerdown', () => { this.scene.audioManager.resumeMusic(); this.scene.currentScene.ReloadGame(); });
 
         let text2 = this.scene.add.text(dim / 2, dim / 2 - 40, this.scene.i18n.t('ARE_YOU_SURE_RESTART'), {
             fontFamily: 'Bungee', fontSize: '30px', color: '#dddddd', align: 'center'
@@ -74,6 +74,7 @@ export class Panel {
 
         let reloadButton = this.scene.add.image(dim / 2, dim / 2 + 90, 'pantalla_fin_UI', 'Botón_Reiniciar_NonClicked.png').setInteractive().setScale(1);
         reloadButton.on('pointerdown', () => {
+            this.scene.audioManager.ui_click.play();
             this.hideReload();
             this.scene.currentScene.RestartGame();
         });
@@ -144,6 +145,7 @@ export class Panel {
         this.instructionsTitle.setStroke('#503530', 10);
         let closeImage = this.scene.add.image(dim - 190, 315, 'menuUI', 'Equis_NonClicked.png').setInteractive().setScale(.5);
         closeImage.on('pointerdown', () => {
+            this.scene.audioManager.ui_click.play();
             this.hideInstructions();
             if (this.scene.currentScene.scene.key === 'MainScene') this.scene.currentScene.CloseInstructions();
         });
@@ -166,7 +168,6 @@ export class Panel {
         optionsTitle.setStroke('#503530', 10);
 
         let closeImage = this.scene.add.image(dim - 190, 315, 'menuUI', 'Equis_NonClicked.png').setInteractive().setScale(.5);
-        closeImage.on('pointerdown', () => this.hideOptions());
 
         let musicTitle = this.scene.add.text(dim / 2 - 200, dim / 2 - 65, this.scene.i18n.t('MUSIC'), {
             font: '800 34px Bungee', color: '#ebebeb', align: 'center'
@@ -277,7 +278,6 @@ export class Panel {
         creditsTitle.setStroke('#662C2A', 11);
 
         let closeImage = this.scene.add.image(dim - 150, 245, 'menuUI', 'Equis_NonClicked.png').setInteractive().setScale(.5);
-        closeImage.on('pointerdown', () => this.hideCredits());
 
         this.creditsContainer = this.scene.add.container(0, 0, [creditsTitleContainer, creditsTitle, closeImage]);
 
@@ -349,12 +349,14 @@ export class Panel {
 
         let restartButton = this.scene.add.image(dim / 2 - 150, dim / 2 + 260, 'pantalla_fin_UI', 'Botón_Reiniciar_NonClicked.png').setInteractive();
         restartButton.on('pointerdown', () => {
+            this.scene.audioManager.ui_click.play();
             this.hideScore();
             this.scene.currentScene.RestartGame();
         });
 
         let menuButton = this.scene.add.image(dim / 2 + 170, dim / 2 + 260, 'pantalla_fin_UI', 'Botón_Salir_NonClicked.png').setInteractive();
         menuButton.on('pointerdown', () => {
+            this.scene.audioManager.ui_click.play();
             this.hideScore();
             this.scene.currentScene.BackMenu();
         });
@@ -462,7 +464,6 @@ export class Panel {
     }
 
     hideInstructions() {
-        this.scene.audioManager.ui_click.play();
         this.instructionsContainer.setVisible(false);
         this.panelContainer.setVisible(false);
         if (this._hideInstructionsCallback) {
@@ -473,51 +474,43 @@ export class Panel {
     }
 
     showOptions() {
-        this.scene.audioManager.ui_click.play();
         this.optionsContainer.setVisible(true);
         this.panelContainer.setVisible(true);
         if (this.scene.currentScene.scene.key === 'MenuScene') this.scene.currentScene.optionsButton.setTexture('menuUI', 'Settings_NonClicked.png');
     }
 
     hideOptions() {
-        this.scene.audioManager.ui_click.play();
         this.optionsContainer.setVisible(false);
         this.panelContainer.setVisible(false);
         if (this.scene.currentScene.scene.key === 'MainScene') this.showPause();
     }
 
     showCredits() {
-        this.scene.audioManager.ui_click.play();
         this.creditsContainer.setVisible(true);
         this.panelContainer.setVisible(true);
     }
 
     hideCredits() {
-        this.scene.audioManager.ui_click.play();
         this.creditsContainer.setVisible(false);
         this.panelContainer.setVisible(false);
     }
 
     showPause() {
-        this.scene.audioManager.ui_click.play();
         this.pauseContainer.setVisible(true);
         this.panelContainer.setVisible(true);
     }
 
     hidePause() {
-        this.scene.audioManager.ui_click.play();
         this.pauseContainer.setVisible(false);
         this.panelContainer.setVisible(false);
     }
 
     showReload() {
-        this.scene.audioManager.ui_click.play();
         this.reloadContainer.setVisible(true);
         this.reloadPanelContainer.setVisible(true);
     }
 
     hideReload() {
-        this.scene.audioManager.ui_click.play();
         this.reloadContainer.setVisible(false);
         this.reloadPanelContainer.setVisible(false);
     }

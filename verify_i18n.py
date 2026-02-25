@@ -1,4 +1,4 @@
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, Error as PlaywrightError
 import sys
 
 def run():
@@ -31,6 +31,6 @@ def run():
 if __name__ == "__main__":
     try:
         run()
-    except Exception as e:
+    except (PlaywrightError, AssertionError, Exception) as e:
         print(f"Verification failed: {e}")
         sys.exit(1)

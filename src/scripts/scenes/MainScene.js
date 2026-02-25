@@ -1975,8 +1975,11 @@ export class MainScene extends Phaser.Scene{
         this.scorePoints = 0
         //let scoreContainer = this.add.image(320, 1000, 'menuUI', 'Score.png')
         this.scoreLabelText = this.add.text(200, 80, this.uiScene.i18n.t('SCORE'), {
-            fontFamily: 'Bungee', fontSize: '60px',  color: '#f4f4f4', align: 'center' }).setOrigin(0.5).setDepth(4)
-        this.scoreText.setStroke('#553b37', 8);
+            fontFamily: 'Bungee', fontSize: '60px', color: '#f4f4f4', align: 'center' }).setOrigin(0.5).setDepth(4);
+        this.scoreLabelText.setStroke('#553b37', 8);
+        this.scoreValueText = this.add.text(200, 140, '00000000', {
+            fontFamily: 'Bungee', fontSize: '40px', color: '#f0dfa7', align: 'center' }).setOrigin(0.5).setDepth(4);
+        this.scoreValueText.setStroke('#3f2e29', 10);
 
         //TIMER
         
