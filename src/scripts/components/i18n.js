@@ -1,3 +1,5 @@
+export const SUPPORTED_LOCALES = ["en", "es"];
+
 export class I18nManager {
     constructor(scene) {
         this.scene = scene;
@@ -14,7 +16,7 @@ export class I18nManager {
     }
 
     init() {
-        const languages = ['en', 'es'];
+        const languages = SUPPORTED_LOCALES;
         for (const lang of languages) {
             const cacheKey = `locale_${lang}`;
             if (this.scene.cache.json.exists(cacheKey)) {
@@ -24,9 +26,9 @@ export class I18nManager {
             }
         }
 
-        // Ensure current language is valid among loaded locales, fallback to 'en'
+        // Ensure current language is valid among loaded locales, fallback to 'en' or first available
         if (!this.locales[this.currentLanguage]) {
-            this.currentLanguage = 'en';
+            this.currentLanguage = this.locales.en ? 'en' : Object.keys(this.locales)[0] || 'en';
         }
     }
 
@@ -48,7 +50,6 @@ export class I18nManager {
     t(key) {
         const translation = this.locales[this.currentLanguage]?.[key];
         if (translation === undefined) {
-            // console.warn(`I18nManager: Key "${key}" not found in "${this.currentLanguage}" locale.`);
             return key;
         }
         return translation;

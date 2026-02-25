@@ -45,6 +45,7 @@ export class MainScene extends Phaser.Scene{
     init(data){
         this.data = data;
     }
+    get panel() { return this.uiScene && this.uiScene.panel; }
 
     //MENUS 
     ShowTutorial(){
@@ -485,7 +486,7 @@ export class MainScene extends Phaser.Scene{
     }
     FinishTurn(){
         this.scorePoints += this.newScorePoints
-        this.scoreText.setText(this.scorePoints.toString().padStart(8, '0') )
+        this.scoreValueText.setText(this.scorePoints.toString().padStart(8, '0') )
         if(this.CheckGameOver() && this.refillCounter <3){
             this.sliderTween?.pause()
             this.isPaused = true
@@ -1660,7 +1661,6 @@ export class MainScene extends Phaser.Scene{
         this.startTime = this.time.now * 0.001
 
         //INSTANCES
-        this.panel = this.uiScene.panel;
         this.audioManager = this.uiScene.audioManager;
         this.uiScene.audioManager.gameplayMusic.play();
         this.panel.createPausePanel(this.dim);
@@ -1974,7 +1974,7 @@ export class MainScene extends Phaser.Scene{
         //SCORES
         this.scorePoints = 0
         //let scoreContainer = this.add.image(320, 1000, 'menuUI', 'Score.png')
-        this.scoreText = this.add.text(200, 80, this.uiScene.i18n.t('SCORE'), {
+        this.scoreLabelText = this.add.text(200, 80, this.uiScene.i18n.t('SCORE'), {
             fontFamily: 'Bungee', fontSize: '60px',  color: '#f4f4f4', align: 'center' }).setOrigin(0.5).setDepth(4)
         this.scoreText.setStroke('#553b37', 8);
 
@@ -2047,7 +2047,7 @@ export class MainScene extends Phaser.Scene{
         this.InsertPiece(this.GeneratePiece(),3,3)
         this.isStarting=false
         this.scorePoints = 0
-        this.scoreText.setText(this.scorePoints.toString().padStart(8, '0') )
+        this.scoreValueText.setText(this.scorePoints.toString().padStart(8, '0') )
 
         //CREATE LOADING BAR
         let barX = this.offsetPictures+10

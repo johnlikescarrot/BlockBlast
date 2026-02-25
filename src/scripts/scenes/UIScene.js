@@ -45,7 +45,6 @@ export class UIScene extends Phaser.Scene
         this.dim = this.game.config.width;
         this.i18n = new I18nManager(this);
         this.i18n.init();
-        // this.i18n.setLanguage('en');
         this.audioManager.init();
         //this.animationsManager.createAnimations();
 

@@ -4,39 +4,29 @@ import sys
 def run():
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        # Set viewport to match game dimensions to ensure coordinates work
         context = browser.new_context(viewport={'width': 1080, 'height': 1080})
         page = context.new_page()
 
         print("Navigating to game...")
-        page.goto('http://localhost:8080')
+        page.goto('http://localhost:8080', wait_until="networkidle")
 
-        # Use proper waiting
-        page.wait_for_load_state('networkidle')
-        page.wait_for_timeout(5000) # Give Phaser some extra time to init
+        # Wait for the phaser canvas
+        page.wait_for_selector("canvas", timeout=30000)
 
         # Assertion: Check page title
-        title = page.title()
-        print(f"Page Title: {title}")
-        assert "BlockBlast" in title, f"Expected title to contain 'BlockBlast', but got '{title}'"
+        assert "BlockBlast" in page.title()
+        print("Page title verified.")
 
-        # Take screenshot of boot screen
-        page.screenshot(path='verify_boot.png')
-        print("Captured verify_boot.png")
+        # Take screenshots for manual verification
+        page.screenshot(path='final_verify_boot.png')
 
-        # Click Play button (Center of the 1080x1080 canvas)
-        print("Clicking Play button...")
+        # Click Play button (Center)
         page.mouse.click(540, 540)
-
-        # Wait for transition/splash
         page.wait_for_timeout(5000)
-
-        # Capture Menu screen
-        page.screenshot(path='verify_menu.png')
-        print("Captured verify_menu.png")
+        page.screenshot(path='final_verify_menu.png')
 
         browser.close()
-        print("Verification successful!")
+        print("Verification complete (Title asserted, screenshots saved).")
 
 if __name__ == "__main__":
     try:

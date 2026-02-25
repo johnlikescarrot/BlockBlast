@@ -1,20 +1,23 @@
-import {ResourceLoader} from '../components/resourceLoader.js';
-//BlockBlast/src/scripts/components/resourceLoader.js
-export class BootScene extends Phaser.Scene
-{
-    constructor(){
-        super({key: 'BootScene'})
+import { ResourceLoader } from '../components/resourceLoader.js';
+import { SUPPORTED_LOCALES } from '../components/i18n.js';
+
+export class BootScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'BootScene' });
         this.ready = false;
     }
 
-    preload(){
-        this.load.image('loadingBG', ResourceLoader.ReturnPath()+'/images/bb_portrait.png');
-        this.load.json('locale_en', ResourceLoader.ReturnLocalePath('en'));
-        this.load.json('locale_es', ResourceLoader.ReturnLocalePath('es'));
-        this.load.atlas('tutorial', ResourceLoader.ReturnPath()+'/images/tutorial/sprites.png', ResourceLoader.ReturnPath()+'/images/tutorial/sprites.json');
-        this.load.atlas('loadingUI', ResourceLoader.ReturnPath()+'/images/loading_ui/sprites.png', ResourceLoader.ReturnPath()+'/images/loading_ui/sprites.json');
-        this.load.atlas('menuUI', ResourceLoader.ReturnPath()+'/images/ui/botones/sprites.png', ResourceLoader.ReturnPath()+'/images/ui/botones/sprites.json');
-        this.load.image('leapLogo',ResourceLoader.ReturnPath()+'/images/leap_logo.png')
+    preload() {
+        this.load.image('loadingBG', ResourceLoader.ReturnPath() + '/images/bb_portrait.png');
+
+        SUPPORTED_LOCALES.forEach(locale => {
+            this.load.json(`locale_${locale}`, ResourceLoader.ReturnLocalePath(locale));
+        });
+
+        this.load.atlas('tutorial', ResourceLoader.ReturnPath() + '/images/tutorial/sprites.png', ResourceLoader.ReturnPath() + '/images/tutorial/sprites.json');
+        this.load.atlas('loadingUI', ResourceLoader.ReturnPath() + '/images/loading_ui/sprites.png', ResourceLoader.ReturnPath() + '/images/loading_ui/sprites.json');
+        this.load.atlas('menuUI', ResourceLoader.ReturnPath() + '/images/ui/botones/sprites.png', ResourceLoader.ReturnPath() + '/images/ui/botones/sprites.json');
+        this.load.image('leapLogo', ResourceLoader.ReturnPath() + '/images/leap_logo.png');
 
         this.load.rexWebFont({
             google: {
@@ -27,10 +30,9 @@ export class BootScene extends Phaser.Scene
             url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js',
             sceneKey: 'rexUI'
         });
-
     }
 
-    create(){
+    create() {
         let dim = this.game.config.width;
         this.data.set('isProd', true);
         this.data.set('seasonId', this.game.config.metadata.seasonId);
@@ -42,28 +44,28 @@ export class BootScene extends Phaser.Scene
         let phaserDiv = document.getElementById('phaser-div');
         this.data.set('parentSize', phaserDiv.style.width);
         this.data.set('tutorial', false);
-        this.bg = this.add.image(dim/2, dim/2, 'loadingBG').setDisplaySize(dim, dim).setDepth(5).setInteractive();
-        this.playButton = this.add.image(dim/2, dim/2, 'menuUI', 'Play_Clicked.png').setDepth(5).setInteractive();
-        
+        this.bg = this.add.image(dim / 2, dim / 2, 'loadingBG').setDisplaySize(dim, dim).setDepth(5).setInteractive();
+        this.playButton = this.add.image(dim / 2, dim / 2, 'menuUI', 'Play_Clicked.png').setDepth(5).setInteractive();
+
         this.playButton.setVisible(false).on('pointerdown', () => { this.scene.stop(); this.scene.get("MenuScene").uiScene.splashScreenAnim(); });
 
         this.loadingSlider = this.rexUI.add.slider({
-            x: dim/2,
-            y: dim/2,
+            x: dim / 2,
+            y: dim / 2,
             width: 600,
             height: 60,
             orientation: 'x',
             value: 0,
-            track: this.add.sprite(0,0,'loadingUI','Barra.png'),
-            indicator: this.addCropResizeMethod(this.add.sprite(0,0,'loadingUI','Fill.png').setDisplaySize(680,64)),
-            thumb: this.add.sprite(80,0,'loadingUI','Marcador.png').setScale(1,1),
-    
+            track: this.add.sprite(0, 0, 'loadingUI', 'Barra.png'),
+            indicator: this.addCropResizeMethod(this.add.sprite(0, 0, 'loadingUI', 'Fill.png').setDisplaySize(680, 64)),
+            thumb: this.add.sprite(80, 0, 'loadingUI', 'Marcador.png').setScale(1, 1),
+
             input: 'none',
             space: {
-              top: 10,
-              right: 20,
-              left: -30,
-              bottom: 4
+                top: 10,
+                right: 20,
+                left: -30,
+                bottom: 4
             },
         }).layout().setDepth(5);
 
@@ -73,11 +75,11 @@ export class BootScene extends Phaser.Scene
             duration: 2000,
             repeat: 0,
             value: {
-              getStart: () => 0,
-              getEnd: () => .9
+                getStart: () => 0,
+                getEnd: () => .9
             },
-            onUpdate: function(tween, target){
-                target.getElement('thumb').x = target.getElement('thumb').x+14; // Ajustar la posición del thumb
+            onUpdate: function (tween, target) {
+                target.getElement('thumb').x = target.getElement('thumb').x + 14; // Ajustar la posición del thumb
             },
             onComplete: () => {
                 sliderTween?.remove();
@@ -87,7 +89,7 @@ export class BootScene extends Phaser.Scene
 
         this.nextSceneReady = false;
         this.scene.launch('UIScene', this.data);
-        this.scene.get("UIScene").events.once("create", () => {        
+        this.scene.get("UIScene").events.once("create", () => {
             this.scene.launch('MenuScene', this.data);
             this.scene.sendToBack('MenuScene');
             this.scene.get("MenuScene").events.once("create", () => {
@@ -96,7 +98,7 @@ export class BootScene extends Phaser.Scene
         });
     }
 
-    update(){
+    update() {
         if (this.nextSceneReady && this.loadingSlider.value == .9) {
             this.nextSceneReady = false;
             let sliderTween = this.tweens.add({
@@ -105,11 +107,11 @@ export class BootScene extends Phaser.Scene
                 duration: 500,
                 repeat: 0,
                 value: {
-                  getStart: () => .9,
-                  getEnd: () => 1
+                    getStart: () => .9,
+                    getEnd: () => 1
                 },
-                onUpdate: function(tween, target){
-                    target.getElement('thumb').x = target.getElement('thumb').x+14; // Ajustar la posición del thumb
+                onUpdate: function (tween, target) {
+                    target.getElement('thumb').x = target.getElement('thumb').x + 14; // Ajustar la posición del thumb
                 },
                 onComplete: () => {
                     sliderTween?.remove();
@@ -119,14 +121,14 @@ export class BootScene extends Phaser.Scene
                 }
             });
         }
-    }  
+    }
 
     addCropResizeMethod = function (gameObject) {
         gameObject.resize = function (width, height) {
             gameObject.setCrop(0, 0, width, height);
             return gameObject;
         }
-    
+
         return gameObject;
     }
 }
