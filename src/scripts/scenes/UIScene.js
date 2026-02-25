@@ -1,3 +1,4 @@
+import {I18nManager} from '../components/i18n.js';
 import {Panel} from '../components/panel.js';
 import {AudioManager} from '../components/audioManager.js';
 import {ResourceLoader} from '../components/resourceLoader.js';
@@ -42,6 +43,8 @@ export class UIScene extends Phaser.Scene
     
     create(){
         this.dim = this.game.config.width;
+        this.i18n = new I18nManager(this);
+        this.i18n.init();
         this.audioManager.init();
         //this.animationsManager.createAnimations();
 
