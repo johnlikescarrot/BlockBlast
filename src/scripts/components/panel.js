@@ -183,7 +183,7 @@ export class Panel {
             track: this.scene.add.sprite(0, 0, 'pantalla_opciones_UI', 'Barra_vacia.png'),
             indicator: this.addCropResizeMethod(this.scene.add.sprite(0, 0, 'pantalla_opciones_UI', 'Barra_llena.png').setDisplaySize(350, 35)),
             thumb: this.scene.add.sprite(0, 0, 'pantalla_opciones_UI', 'Button1_NonClicked.png').setDisplaySize(35, 60),
-            input: 'drag' | 'click',
+            input: 'drag',
             valuechangeCallback: function (value) {
                 this.scene.audioManager.menuMusic.volume = value;
                 this.scene.audioManager.gameplayMusic.volume = value;
@@ -206,7 +206,7 @@ export class Panel {
             track: this.scene.add.sprite(0, 0, 'pantalla_opciones_UI', 'Barra_vacia.png'),
             indicator: this.addCropResizeMethod(this.scene.add.sprite(0, 0, 'pantalla_opciones_UI', 'Barra_llena.png').setDisplaySize(350, 35)),
             thumb: this.scene.add.sprite(0, 0, 'pantalla_opciones_UI', 'Button1_NonClicked.png').setDisplaySize(35, 60),
-            input: 'drag' | 'click',
+            input: 'drag',
             valuechangeCallback: function (value) {
                 this.scene.audioManager.updateSFXVolume(value);
                 this.scene.data.set('sfxVolume', value);
@@ -474,6 +474,7 @@ export class Panel {
     showOptions() {
         this.scene.audioManager.ui_click.play();
         this.optionsContainer.setVisible(true);
+        if (this.scene.currentScene.scene.key === 'MenuScene') this.scene.currentScene.optionsButton.setTexture('menuUI', 'Settings_NonClicked.png');
         this.panelContainer.setVisible(true);
     }
 

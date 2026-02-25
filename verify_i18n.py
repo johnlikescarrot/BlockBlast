@@ -1,35 +1,46 @@
 from playwright.sync_api import sync_playwright
-import time
+import sys
 
 def run():
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        page = browser.new_page()
+        # Set viewport to match game dimensions to ensure coordinates work
+        context = browser.new_context(viewport={'width': 1080, 'height': 1080})
+        page = context.new_page()
+
+        print("Navigating to game...")
         page.goto('http://localhost:8080')
-        time.sleep(10) # Wait for Phaser and assets
+
+        # Use proper waiting
+        page.wait_for_load_state('networkidle')
+        page.wait_for_timeout(5000) # Give Phaser some extra time to init
+
+        # Assertion: Check page title
+        title = page.title()
+        print(f"Page Title: {title}")
+        assert "BlockBlast" in title, f"Expected title to contain 'BlockBlast', but got '{title}'"
 
         # Take screenshot of boot screen
-        page.screenshot(path='final_boot_screen.png')
-        print("Captured final_boot_screen.png")
+        page.screenshot(path='verify_boot.png')
+        print("Captured verify_boot.png")
 
-        # Click Play (if visible) - we might need to click the canvas or a specific coord
-        # In our case, the play button is at dim/2, dim/2. Dim is 1080.
-        # So at 540, 540.
+        # Click Play button (Center of the 1080x1080 canvas)
+        print("Clicking Play button...")
         page.mouse.click(540, 540)
-        time.sleep(5)
 
-        # Open options (in MenuScene or MainScene)
-        # In MenuScene, the options button is also in the panel?
-        # Actually, let's just wait and see what's on screen.
+        # Wait for transition/splash
+        page.wait_for_timeout(5000)
 
-        # We can try to click where the Options button usually is.
-        # In MainScene it's at 1010, 73 (pause) and 910, 73 (reload).
-        # Let's try to trigger the options panel directly if possible, or just take more screenshots.
-
-        page.screenshot(path='final_game_screen.png')
-        print("Captured final_game_screen.png")
+        # Capture Menu screen
+        page.screenshot(path='verify_menu.png')
+        print("Captured verify_menu.png")
 
         browser.close()
+        print("Verification successful!")
 
 if __name__ == "__main__":
-    run()
+    try:
+        run()
+    except Exception as e:
+        print(f"Verification failed: {e}")
+        sys.exit(1)
