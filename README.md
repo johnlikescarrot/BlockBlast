@@ -1,3 +1,5 @@
+![Deploy to GitHub Pages](https://github.com/johnlikescarrot/BlockBlast-Parchados/actions/workflows/deploy.yml/badge.svg)
+
 # BlockBlast (Parchados)
 
 BlockBlast is a browser-based block puzzle game built with Phaser 3 framework. Players drag and drop geometric pieces onto an 8x8 game board to form complete rows and columns, which are then cleared for points. The game features a time-based mechanic where players must place pieces before a timer expires, along with power-ups like bombs and reducers that add strategic depth to the gameplay.
