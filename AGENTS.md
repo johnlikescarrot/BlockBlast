@@ -1,8 +1,8 @@
 # BlockBlast (Parchados)
 
-BlockBlast is a browser-based block puzzle game built with Phaser 3 framework. Players drag and drop geometric pieces onto an 8x8 game board to form complete rows and columns, which are then cleared for points. The game features a time-based mechanic where players must place pieces before a timer expires, along with power-ups like bombs and reducers that add strategic depth to the gameplay.
+BlockBlast is a browser-based block puzzle game built with the Phaser 3 framework. Players drag and drop geometric pieces onto an 8x8 game board to form complete rows and columns, which are then cleared for points. The game features a time-based mechanic where players must place pieces before a timer expires, along with power-ups like bombs and reducers that add strategic depth to the gameplay.
 
-The project is designed as an embeddable web game that can be integrated into external platforms. It exposes a global `Parchados.run()` API that allows host applications to customize game behavior through callbacks and configuration options, including high score tracking, sponsor integration, and event handling for analytics and gameplay state changes.
+The project is designed as an embeddable web game that can be integrated into external platforms. It exposes a global `Parchados.run()` API that allows host applications to customize game behavior through callbacks and configuration options, including high score tracking, sponsor integration, and event handling for analytics and gameplay state changes. Score submissions are encrypted using RSA for secure server-side validation.
 
 ## Game Initialization API
 
@@ -214,7 +214,7 @@ Three power-up types can appear on pieces: Bomb (destroys surrounding cells), Re
 const powerUpsList = ["bomb", "reduct", "rotate"];
 
 // Bomb power-up: destroys 3x3 area around activation point
-function BombBreakingLines(fila, columna, boardMatrix, boardSize) {
+function BombBreakingLines(fila, columna, boardMatrix) {
     for (let i = -1; i <= 1; i++) {
         for (let j = -1; j <= 1; j++) {
             const nuevaFila = fila + i;
@@ -250,7 +250,9 @@ function ConverterPowerUp(optionsBools, optionsPieces) {
 Centralized audio system handling background music and sound effects with volume control and focus handling.
 
 ```javascript
-// Initialize audio manager
+import { AudioManager } from './scripts/components/audioManager.js';
+
+// Initialize audio manager in UIScene
 const audioManager = new AudioManager(scene);
 audioManager.load();
 audioManager.init();
@@ -287,6 +289,8 @@ audioManager.destruccion.play();
 Modal panel system for displaying pause menu, options, credits, game over screen, and tutorial pages.
 
 ```javascript
+import { Panel } from './scripts/components/panel.js';
+
 // Create and show UI panels
 const panel = new Panel(scene);
 panel.create(1080);
@@ -323,6 +327,8 @@ panel.hideScore();
 Static utility class for managing asset paths between development and production environments.
 
 ```javascript
+import { ResourceLoader } from './scripts/components/resourceLoader.js';
+
 // Configure resource loading
 const prodRoute = 'https://static.pchujoy.com/public/games-assets/parchados';
 
@@ -344,6 +350,84 @@ this.load.audio('mainTheme', [
     ResourceLoader.ReturnPath() + '/audios/title.ogg',
     ResourceLoader.ReturnPath() + '/audios/title.m4a'
 ]);
+```
+
+## Timer System
+
+Time-based gameplay mechanic that decreases available time as the game progresses, creating increasing difficulty.
+
+```javascript
+// Timer configuration
+const minTimePerTurn = 5;      // Minimum seconds per turn
+const maxTimePerTurn = 25;     // Starting seconds per turn
+
+// Create timer slider using rexUI plugin
+const timeSlider = scene.rexUI.add.slider({
+    x: centerX,
+    y: centerY,
+    width: 700,
+    height: 50,
+    orientation: 'x',
+    value: 1,
+    track: scene.add.sprite(0, 0, 'timerBar', 'Delineado cronometro.png'),
+    indicator: scene.add.sprite(0, 0, 'timerBar', 'verde.png'),
+    thumb: scene.add.sprite(0, 0, 'timerBar', 'Reloj.png'),
+    input: 'none'
+}).layout();
+
+// Animate timer countdown
+const sliderTween = scene.tweens.add({
+    targets: timeSlider,
+    duration: maxTimePerTurn * 1000,
+    value: { getStart: () => 1, getEnd: () => 0 },
+    onUpdate: (tween, target) => {
+        let value = target.value;
+        if (value <= 0.3) {
+            // Flash warning colors
+            target.getElement('indicator').setFrame('rojo.png');
+            audioManager.alarma.play();
+        }
+    },
+    onComplete: () => {
+        console.log('Time expired!');
+        StartGameOver();
+    }
+});
+```
+
+## Drag and Drop Interaction
+
+Touch and mouse input handling for piece placement with visual preview feedback.
+
+```javascript
+// Enable drag on piece containers
+scene.input.on('dragstart', function(pointer, gameObject) {
+    if (!isPaused) {
+        audioManager.preview.play();
+        gameObject.parentContainer.visible = false;
+        currentPiece = optionsPieces[parseInt(gameObject.parentContainer.name)];
+        pointerContainer.visible = true;
+    }
+});
+
+scene.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+    if (!isPaused) {
+        pointerContainer.x = pointer.worldX - 2 * squareSize;
+        pointerContainer.y = pointer.worldY - 2 * squareSize;
+    }
+});
+
+scene.input.on('dragend', function(pointer, gameObject) {
+    if (!isPaused) {
+        pointerContainer.visible = false;
+        if (CanPutPiece(currentPiece.shape, pointerX, pointerY, boardMatrix)) {
+            InsertPiece(currentPiece, pointerX, pointerY);
+        } else {
+            // Return piece to original position
+            gameObject.parentContainer.visible = true;
+        }
+    }
+});
 ```
 
 ## Summary
