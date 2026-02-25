@@ -322,6 +322,42 @@ panel.showScore(finalScore, highScore);
 panel.hideScore();
 ```
 
+## Internationalization (i18n) System
+
+Multi-language support system that manages translations and persists language preferences.
+
+```javascript
+import { I18nManager, SUPPORTED_LOCALES } from './scripts/components/i18n.js';
+
+// Supported languages
+console.log(SUPPORTED_LOCALES);  // ["en", "es"]
+
+// Initialize i18n manager
+const i18n = new I18nManager(scene);
+i18n.init();
+
+// Get current language
+console.log(i18n.language);  // "en" or "es"
+
+// Set language (persisted to localStorage)
+i18n.setLanguage('es');
+
+// Translate keys
+const pauseText = i18n.t('PAUSE');           // "Pausa" in Spanish
+const scoreText = i18n.t('SCORE');           // "Puntuación" in Spanish
+const tutorialText = i18n.t('TUTORIAL');     // "Tutorial" in Spanish
+const gameOverText = i18n.t('GAME_OVER');    // "Fin de Partida" in Spanish
+
+// Available translation keys
+const translationKeys = [
+    'SCORE', 'PAUSE', 'OPTIONS', 'CREDITS', 'TUTORIAL',
+    'GAME_OVER', 'TIME', 'RECORD', 'MUSIC', 'SOUND',
+    'FULLSCREEN', 'LANGUAGE', 'RESTART', 'ARE_YOU_SURE_RESTART',
+    'PROGRAMMING', 'ART_ANIMATION', 'MARKETING_UI',
+    'MUSIC_SOUND', 'DIRECTION', 'EXECUTIVE_PRODUCER'
+];
+```
+
 ## Resource Loader Configuration
 
 Static utility class for managing asset paths between development and production environments.
@@ -337,6 +373,13 @@ class ResourceLoader {
 
     static ReturnPath() {
         return this.isProd ? prodRoute : './src';
+    }
+
+    static ReturnLocalePath(lang) {
+        const safeLang = this.supportedLocales.has(lang) ? lang : 'en';
+        return this.isProd
+            ? `${prodRoute}/scripts/locales/${safeLang}.json`
+            : `./src/scripts/locales/${safeLang}.json`;
     }
 }
 
@@ -428,6 +471,21 @@ scene.input.on('dragend', function(pointer, gameObject) {
         }
     }
 });
+```
+
+## Development and Build Commands
+
+Commands for running the development server and building for production.
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server with hot reload
+npm start
+
+# Build for production (outputs to dist/ folder)
+npm run build
 ```
 
 ## Summary
