@@ -457,6 +457,7 @@ export class MainScene extends Phaser.Scene{
         this.newScorePoints = 0
         this.StopVibration()
         this.audioManager.soltar.play()
+        const landingBounceTargets = [];
         for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
             for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
                 if(piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) != 0){
@@ -478,13 +479,7 @@ export class MainScene extends Phaser.Scene{
                     this.lineCounterY[j+x] += 1
                     this.newScorePoints += 10
 
-                    // Landing bounce effect
-                    this.tweens.add({
-                        targets: [this.board[j+x][i+y], this.idleboard[j+x][i+y]],
-                        scale: { from: 1.2, to: 1 },
-                        duration: JUICE_CONFIG.LAND_BOUNCE_DURATION,
-                        ease: 'Bounce.easeOut'
-                    });
+                    landingBounceTargets.push(this.board[j+x][i+y], this.idleboard[j+x][i+y]);
                 }
 
 
@@ -493,6 +488,15 @@ export class MainScene extends Phaser.Scene{
 
 
 
+
+        if (landingBounceTargets.length) {
+            this.tweens.add({
+                targets: landingBounceTargets,
+                scale: { from: 1.2, to: 1 },
+                duration: JUICE_CONFIG.LAND_BOUNCE_DURATION,
+                ease: "Bounce.easeOut"
+            });
+        }
         console.log("CHECK=========================================")
 
         if(!this.isStarting){
@@ -589,29 +593,23 @@ export class MainScene extends Phaser.Scene{
                     this.bloomTimer.remove();
                     this.bloomTimer = null;
                 }
-                if (this.comboBloom) {
-                    this.boardContainer?.postFX?.remove?.(this.comboBloom);
+                if (this.comboBloom) { this.tweens.killTweensOf(this.comboBloom);
+                    this.boardContainer?.postFX?.remove?.(this.comboBloom); this.comboBloom = null;
                 }
 
                 // Dynamic strength based on number of lines
                 const dynamicStrength = JUICE_CONFIG.BLOOM_STRENGTH + (this.linesToClear.length - JUICE_CONFIG.COMBO_THRESHOLD);
-
-                this.comboBloom = this.boardContainer?.postFX?.addBloom?.(
-                    JUICE_CONFIG.BLOOM_COLOR,
-                    JUICE_CONFIG.BLOOM_BLUR_X,
-                    JUICE_CONFIG.BLOOM_BLUR_Y,
-                    dynamicStrength,
-                    JUICE_CONFIG.BLOOM_STEPS
-                );
-                if (this.comboBloom) {
+                const bloom = this.boardContainer?.postFX?.addBloom?.(
+                    JUICE_CONFIG.BLOOM_COLOR, JUICE_CONFIG.BLOOM_BLUR_X, JUICE_CONFIG.BLOOM_BLUR_Y, dynamicStrength, JUICE_CONFIG.BLOOM_STEPS);
+                if (bloom) { this.comboBloom = bloom;
                     this.bloomTimer = this.time.delayedCall(JUICE_CONFIG.COMBO_BLOOM_DURATION, () => {
                         this.tweens.add({
-                            targets: this.comboBloom,
+                            targets: bloom,
                             strength: 0,
                             duration: 200,
                             onComplete: () => {
-                                this.boardContainer?.postFX?.remove?.(this.comboBloom);
-                                this.comboBloom = null;
+                                this.boardContainer?.postFX?.remove?.(bloom);
+                                if (this.comboBloom === bloom) this.comboBloom = null;
                                 this.bloomTimer = null;
                             }
                         });
