@@ -64,7 +64,6 @@ export class UIScene extends Phaser.Scene
         this.graphics.fillStyle(0x000000, 1);
         this.graphics.fillRect(0, 0, this.dim, this.dim);
         this.splashScreen = this.add.image(this.dim/2, this.dim/2, 'logoPChuJoy')
-            .setPostPipeline("WipePostFX")
             .setDisplaySize(this.dim, this.dim).setDepth(10).setAlpha(0);
 
         window.addEventListener('resize', () => {
@@ -91,28 +90,35 @@ export class UIScene extends Phaser.Scene
     splashScreenAnim(){
         this.graphics.setVisible(true);
         this.splashScreen.setAlpha(1);
-        let wipe = this.splashScreen.postFX.addWipe(0, 1, 0); // direction, axis, reveal
-
-        this.tweens.add({
-            targets: wipe,
-            progress: 1,
-            duration: 1000,
-            ease: 'Quint.easeOut',
-            onComplete: () => {
-                this.time.delayedCall(UI_CONFIG.SPLASH_DELAY, () => {
-                    this.tweens.add({
-                        targets: wipe,
-                        progress: 0,
-                        duration: 800,
-                        ease: 'Quint.easeIn',
-                        onComplete: () => {
-                            this.graphics.setVisible(false);
-                            this.splashScreen.setVisible(false);
-                        }
+        if (this.splashScreen.postFX) {
+            let wipe = this.splashScreen.postFX.addWipe(0.1, 0, 1); // wipeWidth, direction, axis
+            this.tweens.add({
+                targets: wipe,
+                progress: 1,
+                duration: 1000,
+                ease: "Quint.easeOut",
+                onComplete: () => {
+                    this.time.delayedCall(UI_CONFIG.SPLASH_DELAY, () => {
+                        this.tweens.add({
+                            targets: wipe,
+                            progress: 0,
+                            duration: 800,
+                            ease: "Quint.easeIn",
+                            onComplete: () => {
+                                this.splashScreen.postFX.remove(wipe);
+                                this.graphics.setVisible(false);
+                                this.splashScreen.setVisible(false);
+                            }
+                        });
                     });
-                });
-            }
-        });
+                }
+            });
+        } else {
+            this.time.delayedCall(UI_CONFIG.SPLASH_DELAY + 1000, () => {
+                this.graphics.setVisible(false);
+                this.splashScreen.setVisible(false);
+            });
+        }
     }
 
     setCurrentScene(scene){

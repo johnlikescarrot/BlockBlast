@@ -1,10 +1,10 @@
 const UI_CONFIG = {
     SHOW_DURATION: 600,
     HIDE_DURATION: 300,
-    BLUR_QUALITY: 1,
-    BLUR_X: 1,
-    BLUR_Y: 1,
-    BLUR_STRENGTH: 2
+    BOKEH_RADIUS: 0.5,
+    BOKEH_AMOUNT: 1.0,
+    BOKEH_CONTRAST: 0,
+    BOKEH_TARGET_RADIUS: 10
 };
 export class Panel {
     constructor(scene) {
@@ -36,12 +36,14 @@ export class Panel {
         });
         if (this.scene.currentScene && !this.blurFX) {
             // Transcendent Bokeh Transition
-            this.blurFX = this.scene.currentScene.cameras.main.postFX?.addBokeh?.(0.5, 1.0, 0);
-            this.scene.tweens.add({
-                targets: this.blurFX,
-                radius: 10,
-                duration: UI_CONFIG.SHOW_DURATION
-            });
+            this.blurFX = this.scene.currentScene.cameras.main.postFX?.addBokeh?.(UI_CONFIG.BOKEH_RADIUS, UI_CONFIG.BOKEH_AMOUNT, UI_CONFIG.BOKEH_CONTRAST);
+            if (this.blurFX) {
+                this.scene.tweens.add({
+                    targets: this.blurFX,
+                    radius: UI_CONFIG.BOKEH_TARGET_RADIUS,
+                    duration: UI_CONFIG.SHOW_DURATION
+                });
+            }
         }
     }
 
