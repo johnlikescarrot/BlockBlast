@@ -95,7 +95,7 @@ export class MainScene extends Phaser.Scene{
 
     RestartGame(){
         if(this.gameoverTiming){
-            clearTimeout(this.gameOverTimeOut)
+            if(this.gameOverTimeOut) this.gameOverTimeOut.remove()
             this.gameOverTimeOut = null
         }
         this.gamefinish = true
@@ -462,6 +462,7 @@ export class MainScene extends Phaser.Scene{
         console.log("CHECK=========================================")
         
         if(!this.isStarting){
+            this.particles.explode(20, (x * this.squareSize) + this.offsetX + (this.squareSize * 2), (y * this.squareSize) + this.offsetY + (this.squareSize * 2));
             this.refillCounter +=1
             this.CreateNumbersText(x,y,this.newScorePoints)
             this.audioManager.puntos.play()
@@ -533,7 +534,10 @@ export class MainScene extends Phaser.Scene{
             this.FinishTurn()
             return
         }
-        if(this.animationsIterator === 0)this.PauseTimer()
+        if(this.animationsIterator === 0) {
+            this.PauseTimer();
+            this.cameras.main.shake(150, 0.005);
+        }
         
         this.piecesToClear = []
         this.colorsToRestore = []
@@ -611,9 +615,9 @@ export class MainScene extends Phaser.Scene{
         }
         else{
             //MANDAR LA SIGUIENTE ANIMACION
-            setTimeout(() => {
+            this.time.delayedCall(50, () => {
                 this.BreakLine(x,y)
-            }, 50);
+            });
         }
 
         
@@ -706,6 +710,7 @@ export class MainScene extends Phaser.Scene{
             }
             else{
                 if(!bomb)this.MakeAnimation(filas,columnas,"destroyFx")
+                this.particles.explode(10, (filas * this.squareSize) + this.offsetX, (columnas * this.squareSize) + this.offsetY);
                 this.board[filas][columnas].anims.pause()
                 this.idleboard[filas][columnas].anims.pause()
                 this.board[filas][columnas].setTint(0xffffff)
@@ -1379,6 +1384,16 @@ export class MainScene extends Phaser.Scene{
     }
 
 
+    blinkTimerIndicator(indicator) {
+        this.tweens.add({
+            targets: indicator,
+            alpha: 0.5,
+            duration: 100,
+            yoyo: true,
+            onComplete: () => indicator.setAlpha(1)
+        });
+    }
+
     ShowTime(){
         console.log("TIMER IS WORKING")
         this.sliderTween?.remove();
@@ -1425,11 +1440,13 @@ export class MainScene extends Phaser.Scene{
                     let currentFrame = indicator.frame.name;
                     if(currentFrame === 'verde.png'){
                         indicator.setFrame('rojo.png')
+                        this.blinkTimerIndicator(indicator);
                         this.audioManager.alarma.play()
 
                     }
                     else{
                         indicator.setFrame('verde.png')
+                        this.blinkTimerIndicator(indicator);
                     }
                     
                 }
@@ -1451,10 +1468,9 @@ export class MainScene extends Phaser.Scene{
 
         this.isPaused=true
         this.gameoverTiming = true
-        setTimeout(() => {
-                
+        this.time.delayedCall(1500, () => {
             this.audioManager.tapete.play()
-    }, 1500);
+        });
         this.tweens.add({
             targets: this.finalScreen,
             y: 550, // Posición final en el eje Y
@@ -1463,10 +1479,9 @@ export class MainScene extends Phaser.Scene{
             delay: 1500 // Retardo antes de que empiece el tween
         });
         
-        this.gameOverTimeOut = setTimeout(() => {
-                
-                this.StartGameOver()
-        }, 2500);
+        this.gameOverTimeOut = this.time.delayedCall(2500, () => {
+            this.StartGameOver()
+        });
                 
     }
 
@@ -1653,6 +1668,19 @@ export class MainScene extends Phaser.Scene{
 
         this.uiScene = this.scene.get('UIScene');
         this.uiScene.setCurrentScene(this);
+
+        // Particle Manager for Juiciness
+        this.particles = this.add.particles(0, 0, 'originalPiece', {
+            frame: 'square.png',
+            scale: { start: 0.4, end: 0 },
+            alpha: { start: 1, end: 0 },
+            lifespan: 600,
+            speed: { min: 150, max: 300 },
+            angle: { min: 0, max: 360 },
+            gravityY: 400,
+            emitting: false
+        });
+        this.particles.setDepth(15);
         
         this.dim = this.game.config.width;
         this.startTime = this.time.now * 0.001
@@ -2232,10 +2260,9 @@ export class MainScene extends Phaser.Scene{
         }, this);
         //this.ReductAnimation()
 
-        setTimeout(() => {
-                
-            this.ShowTutorial()  
-        }, 500);
+        this.time.delayedCall(500, () => {
+            this.ShowTutorial()
+        });
                  
     }
     
