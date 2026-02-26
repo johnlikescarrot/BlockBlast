@@ -2155,10 +2155,10 @@ export class MainScene extends Phaser.Scene{
                 //this.uiScene.audioManager.playButtonClick.play();
             });
         this.pauseButton.on('pointerover', function (event) {
-            this.setTexture('inGameUI', 'Pausa_Clicked.png'); this.tweens.add({ targets: this, scale: 1.1, duration: 80 });
+            this.setTexture('inGameUI', 'Pausa_Clicked.png'); this.scene.tweens.add({ targets: this, scale: 0.88, duration: 80 });
         });
         this.pauseButton.on('pointerout', function (event) {
-            this.setTexture('inGameUI', 'Pausa_NonClicked.png'); this.tweens.add({ targets: this, scale: 1.0, duration: 80 });
+            this.setTexture('inGameUI', 'Pausa_NonClicked.png'); this.scene.tweens.add({ targets: this, scale: 0.8, duration: 80 });
         });
 
         this.settingsButton = this.add.image(910, 73, 'inGameUI', 'Reinicio_NonClicked.png').setInteractive().setDepth(6);
@@ -2170,10 +2170,10 @@ export class MainScene extends Phaser.Scene{
                 //this.uiScene.audioManager.playButtonClick.play();
             });
         this.settingsButton.on('pointerover', function (event) {
-            this.setTexture('inGameUI', 'Reinicio_Clicked.png'); this.tweens.add({ targets: this, scale: 1.1, duration: 80 });
+            this.setTexture('inGameUI', 'Reinicio_Clicked.png'); this.scene.tweens.add({ targets: this, scale: 0.88, duration: 80 });
         });
         this.settingsButton.on('pointerout', function (event) {
-            this.setTexture('inGameUI', 'Reinicio_NonClicked.png'); this.tweens.add({ targets: this, scale: 1.0, duration: 80 });
+            this.setTexture('inGameUI', 'Reinicio_NonClicked.png'); this.scene.tweens.add({ targets: this, scale: 0.8, duration: 80 });
         });
         
         this.pointerAdd = 0

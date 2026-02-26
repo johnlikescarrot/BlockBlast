@@ -59,7 +59,7 @@ export class UIScene extends Phaser.Scene
         this.graphics.fillRect(0, 0, this.dim, this.dim);
         this.splashScreen = this.add.image(this.dim/2, this.dim/2, 'logoPChuJoy')
             .setDisplaySize(this.dim, this.dim).setDepth(10).setAlpha(0);
-        this.tweens.add({ targets: this.splashScreen, scale: 1.05, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        this.splashPulse = this.tweens.add({ targets: this.splashScreen, scale: 1.05, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
         window.addEventListener('resize', () => {
             let phaserDiv = document.getElementById('phaser-div');
@@ -107,6 +107,7 @@ export class UIScene extends Phaser.Scene
                     onComplete: () => {
                         this.graphics.setVisible(false);
                         this.splashScreen.setVisible(false);
+                        if (this.splashPulse) this.splashPulse.stop();
                         splashTween2?.remove();
                         splashTween2 = null;
                     }

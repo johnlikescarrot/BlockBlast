@@ -44,8 +44,7 @@ export class Panel {
         let optionsButton = this.scene.add.image(dim / 2, dim / 2 - 80, 'pantalla_pausa_UI', 'Botón_opciones_NonClicked.png').setInteractive().setDisplaySize(400, 75);
         optionsButton.on('pointerdown', () => {
             this.scene.audioManager.ui_click.play();
-            this.hidePause();
-            this.showOptions();
+            this.hidePause(() => this.showOptions());
         });
 
         let continueButton = this.scene.add.image(dim / 2, dim / 2 + 25, 'pantalla_pausa_UI', 'Botón_Continuar_NonClicked.png').setInteractive().setDisplaySize(400, 75);
@@ -488,13 +487,15 @@ export class Panel {
 
     hideInstructions() {
         this.scene.tweens.add({ targets: this.instructionsContainer, scale: 0.8, alpha: 0, duration: 200, ease: "Power2.easeIn" });
-        this.scene.tweens.add({ targets: this.panelContainer, alpha: 0, duration: 200, onComplete: () => { this.instructionsContainer.setVisible(false);
-        this.panelContainer.setVisible(false); } });
-        if (this._hideInstructionsCallback) {
-            const cb = this._hideInstructionsCallback;
-            this._hideInstructionsCallback = null;
-            cb();
-        }
+        this.scene.tweens.add({ targets: this.panelContainer, alpha: 0, duration: 200, onComplete: () => {
+            this.instructionsContainer.setVisible(false);
+            this.panelContainer.setVisible(false);
+            if (this._hideInstructionsCallback) {
+                const cb = this._hideInstructionsCallback;
+                this._hideInstructionsCallback = null;
+                cb();
+            }
+        } });
     }
 
     showOptions() {
@@ -507,9 +508,11 @@ export class Panel {
 
     hideOptions() {
         this.scene.tweens.add({ targets: this.optionsContainer, scale: 0.8, alpha: 0, duration: 200, ease: "Power2.easeIn" });
-        this.scene.tweens.add({ targets: this.panelContainer, alpha: 0, duration: 200, onComplete: () => { this.optionsContainer.setVisible(false);
-        this.panelContainer.setVisible(false); } });
-        if (this.scene.currentScene.scene.key === 'MainScene') this.showPause();
+        this.scene.tweens.add({ targets: this.panelContainer, alpha: 0, duration: 200, onComplete: () => {
+            this.optionsContainer.setVisible(false);
+            this.panelContainer.setVisible(false);
+            if (this.scene.currentScene.scene.key === 'MainScene') this.showPause();
+        } });
     }
 
     showCredits() {
@@ -532,10 +535,13 @@ export class Panel {
         this.scene.tweens.add({ targets: this.panelContainer, alpha: 1, duration: 200 });
     }
 
-    hidePause() {
+    hidePause(callback) {
         this.scene.tweens.add({ targets: this.pauseContainer, scale: 0.8, alpha: 0, duration: 200, ease: "Power2.easeIn" });
-        this.scene.tweens.add({ targets: this.panelContainer, alpha: 0, duration: 200, onComplete: () => { this.pauseContainer.setVisible(false);
-        this.panelContainer.setVisible(false); } });
+        this.scene.tweens.add({ targets: this.panelContainer, alpha: 0, duration: 200, onComplete: () => {
+            this.pauseContainer.setVisible(false);
+            this.panelContainer.setVisible(false);
+            if (callback) callback();
+        } });
     }
 
     showReload() {
