@@ -2,28 +2,29 @@ import * as Phaser from 'phaser'
 import {ResourceLoader} from '../components/resourceLoader.js';
 const JUICE_CONFIG = {
     SHAKE_DURATION: 200,
-    SHAKE_INTENSITY_PER_LINE: 0.005,
-    FLASH_DURATION: 100,
+    SHAKE_INTENSITY_PER_LINE: 0.008,
+    FLASH_DURATION: 150,
     FLASH_COLOR: 0xffffff,
-    GHOST_ALPHA: 0.3,
-    LAND_SHAKE_DURATION: 100,
-    LAND_SHAKE_INTENSITY: 0.002,
-    SCORE_ANIM_DURATION: 500,
+    GHOST_ALPHA: 0.4,
+    LAND_SHAKE_DURATION: 150,
+    LAND_SHAKE_INTENSITY: 0.003,
+    SCORE_ANIM_DURATION: 600,
     PIECE_DIMENSION: 5,
-    COMBO_THRESHOLD: 3,
-    COMBO_BLOOM_DURATION: 500,
+    COMBO_THRESHOLD: 2,
+    COMBO_BLOOM_DURATION: 600,
     BLOOM_COLOR: 0xffffff,
-    BLOOM_BLUR_X: 1,
-    BLOOM_BLUR_Y: 1,
-    BLOOM_STRENGTH: 2,
-    BLOOM_STEPS: 3,
+    BLOOM_BLUR_X: 2,
+    BLOOM_BLUR_Y: 2,
+    BLOOM_STRENGTH: 3,
+    BLOOM_STEPS: 4,
     GLOW_COLOR: 0xffffff,
-    GLOW_OUTER_STRENGTH: 2,
+    GLOW_OUTER_STRENGTH: 3,
     GLOW_INNER_STRENGTH: 0,
     GLOW_KNOCKOUT: false,
     GLOW_QUALITY: 0.1,
     GLOW_SAMPLES: 10,
-    TUTORIAL_INITIAL_DELAY: 500
+    TUTORIAL_INITIAL_DELAY: 800,
+    LAND_BOUNCE_DURATION: 300
 };
 
 
@@ -476,6 +477,14 @@ export class MainScene extends Phaser.Scene{
                     this.lineCounterX[i+y] += 1
                     this.lineCounterY[j+x] += 1
                     this.newScorePoints += 10
+
+                    // Landing bounce effect
+                    this.tweens.add({
+                        targets: [this.board[j+x][i+y], this.idleboard[j+x][i+y]],
+                        scale: { from: 1.2, to: 1 },
+                        duration: JUICE_CONFIG.LAND_BOUNCE_DURATION,
+                        ease: 'Bounce.easeOut'
+                    });
                 }
 
 
@@ -583,18 +592,29 @@ export class MainScene extends Phaser.Scene{
                 if (this.comboBloom) {
                     this.boardContainer?.postFX?.remove?.(this.comboBloom);
                 }
+
+                // Dynamic strength based on number of lines
+                const dynamicStrength = JUICE_CONFIG.BLOOM_STRENGTH + (this.linesToClear.length - JUICE_CONFIG.COMBO_THRESHOLD);
+
                 this.comboBloom = this.boardContainer?.postFX?.addBloom?.(
                     JUICE_CONFIG.BLOOM_COLOR,
                     JUICE_CONFIG.BLOOM_BLUR_X,
                     JUICE_CONFIG.BLOOM_BLUR_Y,
-                    JUICE_CONFIG.BLOOM_STRENGTH,
+                    dynamicStrength,
                     JUICE_CONFIG.BLOOM_STEPS
                 );
                 if (this.comboBloom) {
                     this.bloomTimer = this.time.delayedCall(JUICE_CONFIG.COMBO_BLOOM_DURATION, () => {
-                        this.boardContainer?.postFX?.remove?.(this.comboBloom);
-                        this.comboBloom = null;
-                        this.bloomTimer = null;
+                        this.tweens.add({
+                            targets: this.comboBloom,
+                            strength: 0,
+                            duration: 200,
+                            onComplete: () => {
+                                this.boardContainer?.postFX?.remove?.(this.comboBloom);
+                                this.comboBloom = null;
+                                this.bloomTimer = null;
+                            }
+                        });
                     });
                 }
             }
@@ -2202,12 +2222,13 @@ export class MainScene extends Phaser.Scene{
         this.pY = 0
                 // GHOST PIECE INIT
         this.ghostContainer = this.add.container(0, 0).setDepth(2).setAlpha(JUICE_CONFIG.GHOST_ALPHA);
+        // Apply glow to the whole container for better performance
+        this.ghostContainer.postFX?.addGlow?.(JUICE_CONFIG.GLOW_COLOR, JUICE_CONFIG.GLOW_OUTER_STRENGTH, JUICE_CONFIG.GLOW_INNER_STRENGTH, JUICE_CONFIG.GLOW_KNOCKOUT, JUICE_CONFIG.GLOW_QUALITY, JUICE_CONFIG.GLOW_SAMPLES);
         this.ghostSquares = [];
         for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++) {
             this.ghostSquares[i] = [];
             for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++) {
                 this.ghostSquares[i][j] = this.add.image(0, 0, 'originalPiece', 'square.png').setVisible(false);
-                this.ghostSquares[i][j].postFX?.addGlow?.(JUICE_CONFIG.GLOW_COLOR, JUICE_CONFIG.GLOW_OUTER_STRENGTH, JUICE_CONFIG.GLOW_INNER_STRENGTH, JUICE_CONFIG.GLOW_KNOCKOUT, JUICE_CONFIG.GLOW_QUALITY, JUICE_CONFIG.GLOW_SAMPLES);
                 this.ghostContainer.add(this.ghostSquares[i][j]);
             }
         }

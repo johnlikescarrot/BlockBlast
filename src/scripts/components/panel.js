@@ -1,10 +1,10 @@
 const UI_CONFIG = {
-    SHOW_DURATION: 600,
-    HIDE_DURATION: 300,
-    BLUR_QUALITY: 1,
-    BLUR_X: 1,
-    BLUR_Y: 1,
-    BLUR_STRENGTH: 2
+    SHOW_DURATION: 400,
+    HIDE_DURATION: 250,
+    BLUR_QUALITY: 2,
+    BLUR_X: 2,
+    BLUR_Y: 2,
+    BLUR_STRENGTH: 3
 };
 export class Panel {
     constructor(scene) {
