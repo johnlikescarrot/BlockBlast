@@ -1,0 +1,26 @@
+
+> bb_prototype@1.0.0 start
+> webpack-dev-server --config webpack/base.js --open
+
+clean-webpack-plugin: options.output.path not defined. Plugin disabled...
+<i> [webpack-dev-server] Project is running at:
+<i> [webpack-dev-server] Loopback: http://localhost:8080/
+<i> [webpack-dev-server] On Your Network (IPv4): http://192.168.0.2:8080/
+<i> [webpack-dev-server] Content not from webpack is served from '/app/public' directory
+asset main.js 31.5 MiB [emitted] (name: main)
+asset index.html 922 bytes [emitted]
+runtime modules 27.4 KiB 13 modules
+modules by path ./node_modules/phaser3-rex-plugins/plugins/ 1.45 MiB 963 modules
+modules by path ./node_modules/phaser3-rex-plugins/templates/ 945 KiB 748 modules
+modules by path ./node_modules/webpack-dev-server/client/ 71.8 KiB 16 modules
+modules by path ./src/ 177 KiB 11 modules
+modules by path ./node_modules/style-loader/dist/runtime/*.js 5.84 KiB 6 modules
+modules by path ./node_modules/webpack/hot/*.js 5.17 KiB 4 modules
+modules by path ./node_modules/html-entities/lib/*.js 81.8 KiB
+  ./node_modules/html-entities/lib/index.js 7.91 KiB [built] [code generated]
+  + 3 modules
+modules by path ./node_modules/css-loader/dist/runtime/*.js 2.74 KiB
+  ./node_modules/css-loader/dist/runtime/sourceMaps.js 505 bytes [built] [code generated]
+  ./node_modules/css-loader/dist/runtime/api.js 2.25 KiB [built] [code generated]
++ 5 modules
+webpack 5.97.1 compiled successfully in 7129 ms

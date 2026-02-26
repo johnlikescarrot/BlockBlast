@@ -1,0 +1,87 @@
+
+> bb_prototype@1.0.0 start
+> webpack-dev-server --config webpack/base.js --open
+
+clean-webpack-plugin: options.output.path not defined. Plugin disabled...
+<i> [webpack-dev-server] Project is running at:
+<i> [webpack-dev-server] Loopback: http://localhost:8080/
+<i> [webpack-dev-server] On Your Network (IPv4): http://192.168.0.2:8080/
+<i> [webpack-dev-server] Content not from webpack is served from '/app/public' directory
+asset main.js 31.2 MiB [emitted] (name: main)
+asset index.html 922 bytes [emitted]
+runtime modules 27.4 KiB 13 modules
+modules by path ./node_modules/phaser3-rex-plugins/plugins/ 1.45 MiB 963 modules
+modules by path ./node_modules/phaser3-rex-plugins/templates/ 945 KiB 748 modules
+modules by path ./node_modules/webpack-dev-server/client/ 71.8 KiB 16 modules
+modules by path ./src/ 86.5 KiB 11 modules
+modules by path ./node_modules/style-loader/dist/runtime/*.js 5.84 KiB 6 modules
+modules by path ./node_modules/webpack/hot/*.js 5.17 KiB 4 modules
+modules by path ./node_modules/html-entities/lib/*.js 81.8 KiB
+  ./node_modules/html-entities/lib/index.js 7.91 KiB [built] [code generated]
+  + 3 modules
+modules by path ./node_modules/css-loader/dist/runtime/*.js 2.74 KiB
+  ./node_modules/css-loader/dist/runtime/sourceMaps.js 505 bytes [built] [code generated]
+  ./node_modules/css-loader/dist/runtime/api.js 2.25 KiB [built] [code generated]
++ 5 modules
+
+ERROR in ./src/scripts/scenes/MainScene.js
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /app/src/scripts/scenes/MainScene.js: Unexpected token (1762:9)
+
+  1760 |             emitting: false
+  1761 |         });
+> 1762 |         });
+       |          ^
+  1763 |         this.particles.setDepth(15);
+  1764 |
+  1765 |         this.dim = this.game.config.width;
+    at constructor (/app/node_modules/@babel/parser/lib/index.js:353:19)
+    at Parser.raise (/app/node_modules/@babel/parser/lib/index.js:3277:19)
+    at Parser.unexpected (/app/node_modules/@babel/parser/lib/index.js:3297:16)
+    at Parser.parsePropertyName (/app/node_modules/@babel/parser/lib/index.js:11529:18)
+    at Parser.parseClassElementName (/app/node_modules/@babel/parser/lib/index.js:13145:17)
+    at Parser.parseClassMemberWithIsStatic (/app/node_modules/@babel/parser/lib/index.js:13052:22)
+    at Parser.parseClassMember (/app/node_modules/@babel/parser/lib/index.js:13024:10)
+    at /app/node_modules/@babel/parser/lib/index.js:12978:14
+    at Parser.withSmartMixTopicForbiddingContext (/app/node_modules/@babel/parser/lib/index.js:11903:14)
+    at Parser.parseClassBody (/app/node_modules/@babel/parser/lib/index.js:12960:10)
+    at Parser.parseClass (/app/node_modules/@babel/parser/lib/index.js:12938:22)
+    at Parser.parseExportDeclaration (/app/node_modules/@babel/parser/lib/index.js:13383:25)
+    at Parser.maybeParseExportDeclaration (/app/node_modules/@babel/parser/lib/index.js:13345:31)
+    at Parser.parseExport (/app/node_modules/@babel/parser/lib/index.js:13272:29)
+    at Parser.parseStatementContent (/app/node_modules/@babel/parser/lib/index.js:12342:27)
+    at Parser.parseStatementLike (/app/node_modules/@babel/parser/lib/index.js:12229:17)
+    at Parser.parseModuleItem (/app/node_modules/@babel/parser/lib/index.js:12206:17)
+    at Parser.parseBlockOrModuleBlockBody (/app/node_modules/@babel/parser/lib/index.js:12786:36)
+    at Parser.parseBlockBody (/app/node_modules/@babel/parser/lib/index.js:12779:10)
+    at Parser.parseProgram (/app/node_modules/@babel/parser/lib/index.js:12106:10)
+    at Parser.parseTopLevel (/app/node_modules/@babel/parser/lib/index.js:12096:25)
+    at Parser.parse (/app/node_modules/@babel/parser/lib/index.js:13895:10)
+    at parse (/app/node_modules/@babel/parser/lib/index.js:13937:38)
+    at parser (/app/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/app/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/app/node_modules/@babel/core/lib/transformation/index.js:21:50)
+    at run.next (<anonymous>)
+    at transform (/app/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at step (/app/node_modules/gensync/index.js:261:32)
+    at /app/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/app/node_modules/gensync/index.js:223:11)
+ @ ./src/index.js 8:0-58 66:43-52
+
+webpack 5.97.1 compiled with 1 error in 6449 ms
+assets by status 922 bytes [cached] 1 asset
+assets by path *.js 31.9 MiB
+  asset main.js 31.5 MiB [emitted] (name: main)
+  asset main.501f332e9cc5040dd95a.hot-update.js 362 KiB [emitted] [immutable] [hmr] (name: main)
+asset main.501f332e9cc5040dd95a.hot-update.json 28 bytes [emitted] [immutable] [hmr]
+Entrypoint main 31.9 MiB = main.js 31.5 MiB main.501f332e9cc5040dd95a.hot-update.js 362 KiB
+cached modules 10.1 MiB [cached] 1757 modules
+runtime modules 27.4 KiB 13 modules
+javascript modules 95.2 KiB
+  ./src/index.js 4.45 KiB [code generated]
+  ./src/scripts/scenes/MainScene.js 90.8 KiB [built] [code generated]
+webpack 5.97.1 compiled successfully in 1091 ms
+<i> [webpack-dev-server] Gracefully shutting down. To force exit, press ^C again. Please wait...

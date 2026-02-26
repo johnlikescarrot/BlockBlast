@@ -1,4 +1,7 @@
-export class Panel {
+import os
+
+# RECONSTRUCT PANEL.JS
+panel_content = """export class Panel {
     constructor(scene) {
         this.scene = scene;
         this.updateCredits();
@@ -595,4 +598,51 @@ export class Panel {
         second = (second < 10) ? '0' + second : second;
         return hour + ':' + minute + ':' + second;
     }
-}
+}"""
+
+with open('src/scripts/components/panel.js', 'w') as f:
+    f.write(panel_content)
+
+# RECONSTRUCT MAINSCENE.JS (partial, as it's very large, but focusing on the logic)
+# Actually, I have the full file content from the read call earlier.
+# I will fix the indentation and the duplicate } in the Python script.
+
+with open('src/scripts/scenes/MainScene.js', 'r') as f:
+    main_content = f.read()
+
+# Fix the specific corrupted block in MainScene.js
+import re
+main_content = re.sub(r'ShowContainerWithFade\(scene, fila, columna, fadeInDuration, displayDuration, fadeOutDuration, container\) \{.*?\}\s+\}\s+BreakLine',
+'''ShowContainerWithFade(scene, fila, columna, fadeInDuration, displayDuration, fadeOutDuration, container) {
+
+        container.x = (fila*this.LAYOUT.SQUARE_SIZE )+this.LAYOUT.OFFSET_X
+        container.y =(columna*this.LAYOUT.SQUARE_SIZE )+this.LAYOUT.OFFSET_Y
+        // Crear el tween para el fade in
+        scene.tweens.add({
+            targets: container,
+            alpha: 1, // Opacidad completa
+            duration: fadeInDuration,
+            onComplete: () => {
+                // Después del fade in, esperar el displayDuration y luego hacer fade out
+                scene.time.delayedCall(displayDuration, () => {
+                    scene.tweens.add({
+                        targets: container,
+                        alpha: 0, // Volver a transparente
+                        duration: fadeOutDuration,
+                        onComplete: () => {
+                            // Destruir el contenedor después del fade out
+                            container.destroy();
+                        }
+                    });
+                });
+            }
+        });
+    }
+
+    BreakLine''', main_content, flags=re.DOTALL)
+
+# Ensure the floating animation doesn't have literal \n or double braces
+# ... logic already looks okay in the raw string, just need to make sure the write is clean.
+
+with open('src/scripts/scenes/MainScene.js', 'w') as f:
+    f.write(main_content)

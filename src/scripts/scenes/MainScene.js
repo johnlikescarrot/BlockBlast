@@ -2,7 +2,7 @@ import * as Phaser from 'phaser'
 import {ResourceLoader} from '../components/resourceLoader.js';
 const JUICE_CONFIG = {
     SHAKE_DURATION: 200,
-    SHAKE_INTENSITY_PER_LINE: 0.005,
+    SHAKE_INTENSITY_PER_LINE: 0.008,
     FLASH_DURATION: 100,
     FLASH_COLOR: 0xffffff,
     GHOST_ALPHA: 0.3,
@@ -274,7 +274,12 @@ export class MainScene extends Phaser.Scene{
             for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
                 if(piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) != 0){
                     if(this.ObtainInt(piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j))<-10){
-                        let s1 = this.add.image((size*j)-(size*2),(size*i)-(size*2) , this.powerUpsList[piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j)-1])
+                                                let s1 = this.add.image((size*j)-(size*2),(size*i)-(size*2) , this.powerUpsList[piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j)-1])
+                        if (s1.preFX) {
+                            s1.preFX.clear();
+                            let glowColor = piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) == 1 ? 0xff4444 : 0x44ffff;
+                            s1.preFX.addGlow(glowColor, 4, 0, false);
+                        }
                         //s1.setInteractive()
                         s1.setScale(sizeM)
                         //this.input.setDraggable(s1)
@@ -307,7 +312,12 @@ export class MainScene extends Phaser.Scene{
                 if(this.piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) != 0){
                     if(this.ObtainInt(this.piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j))<-10){
 
-                        this.pointer[j][i].setTexture(this.powerUpsList[this.piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j)-1])
+                                                this.pointer[j][i].setTexture(this.powerUpsList[this.piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j)-1])
+                        if (this.pointer[j][i].preFX) {
+                            this.pointer[j][i].preFX.clear();
+                            let glowColor = this.piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) == 1 ? 0xff4444 : 0x44ffff;
+                            this.pointer[j][i].preFX.addGlow(glowColor, 4, 0, false);
+                        }
                     }
                     else{
                         this.pointer[j][i].setTexture("originalPiece", this.colorsList[this.ObtainInt(this.piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j))])
@@ -447,7 +457,12 @@ export class MainScene extends Phaser.Scene{
             for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
                 if(piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) != 0){
                     if(this.ObtainInt(piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j))<-10){//powerups
-                        this.idleboard[j+x][i+y].setTexture(this.powerUpsList[piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j)-1]).setTint(0xffffff).visible = true
+                                                this.idleboard[j+x][i+y].setTexture(this.powerUpsList[piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j)-1]).setTint(0xffffff).visible = true
+                        if (this.idleboard[j+x][i+y].preFX) {
+                            this.idleboard[j+x][i+y].preFX.clear();
+                            let glowColor = piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) == 1 ? 0xff4444 : 0x44ffff;
+                            this.idleboard[j+x][i+y].preFX.addGlow(glowColor, 4, 0, false);
+                        }
 
                         this.powerUpsInGame[(j+x).toString()+(i+y).toString()] = (j+x).toString()+(i+y).toString()
                         this.SetName(this.board[j+x][i+y],this.powerUpsList[piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j)-1])
@@ -474,7 +489,7 @@ export class MainScene extends Phaser.Scene{
         console.log("CHECK=========================================")
 
         if(!this.isStarting){
-            this.particles.explode(20, (x * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X + (this.LAYOUT.SQUARE_SIZE * 2), (y * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y + (this.LAYOUT.SQUARE_SIZE * 2));
+            this.particles.explode(40, (x * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X + (this.LAYOUT.SQUARE_SIZE * 2), (y * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y + (this.LAYOUT.SQUARE_SIZE * 2));
             this.refillCounter +=1
             this.CreateNumbersText(x,y,this.newScorePoints)
             this.audioManager.puntos.play()
@@ -550,7 +565,6 @@ export class MainScene extends Phaser.Scene{
         });
     }
 
-
     BreakLine(x, y) {
         if (this.linesToClear.length < 1 || this.gamefinish) {
             this.FinishTurn();
@@ -558,9 +572,11 @@ export class MainScene extends Phaser.Scene{
         }
         if (this.animationsIterator === 0) {
             this.PauseTimer();
-            let intensity = this.linesToClear.length * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE;
+            // Scaling shake and flash exponentially for TRANSCENDENT impact
+            let intensity = Math.pow(this.linesToClear.length, 1.5) * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE;
+            let flashDuration = JUICE_CONFIG.FLASH_DURATION * (1 + this.linesToClear.length * 0.2);
             this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, intensity);
-            this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, (JUICE_CONFIG.FLASH_COLOR >> 16) & 0xFF, (JUICE_CONFIG.FLASH_COLOR >> 8) & 0xFF, JUICE_CONFIG.FLASH_COLOR & 0xFF, false);
+            this.cameras.main.flash(flashDuration, (JUICE_CONFIG.FLASH_COLOR >> 16) & 0xFF, (JUICE_CONFIG.FLASH_COLOR >> 8) & 0xFF, JUICE_CONFIG.FLASH_COLOR & 0xFF, false);
         }
 
         this.piecesToClear = []
@@ -734,7 +750,7 @@ export class MainScene extends Phaser.Scene{
             }
             else{
                 if(!bomb)this.MakeAnimation(filas,columnas,"destroyFx")
-                this.particles.explode(10, (filas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X, (columnas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y);
+                this.particles.explode(25, (filas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X, (columnas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y);
                 this.board[filas][columnas].anims.pause()
                 this.idleboard[filas][columnas].anims.pause()
                 this.board[filas][columnas].setTint(0xffffff)
@@ -1069,6 +1085,21 @@ export class MainScene extends Phaser.Scene{
             }
         });
 
+
+
+        // Transcendent Floating Animation for Piece Options
+        [this.option1, this.option2, this.option3].forEach((option, index) => {
+            if (option) {
+                this.tweens.add({
+                    targets: option,
+                    y: option.y - 10,
+                    duration: 1500 + (index * 200),
+                    yoyo: true,
+                    repeat: -1,
+                    ease: 'Sine.easeInOut'
+                });
+            }
+        });
 
         this.currentTime = this.maxTimePerTurn
     }
@@ -1715,15 +1746,17 @@ export class MainScene extends Phaser.Scene{
         this.uiScene = this.scene.get('UIScene');
         this.uiScene.setCurrentScene(this);
 
-        // Particle Manager for Juiciness
-        this.particles = this.add.particles(0, 0, 'originalPiece', {
-            frame: 'square.png',
-            scale: { start: 0.4, end: 0 },
+        // Particle Manager for Transcendent Juiciness
+        this.particles = this.add.particles(0, 0, "originalPiece", {
+            frame: "square.png",
+            scale: { start: 0.6, end: 0 },
             alpha: { start: 1, end: 0 },
-            lifespan: 600,
-            speed: { min: 150, max: 300 },
+            lifespan: { min: 400, max: 800 },
+            speed: { min: 200, max: 500 },
             angle: { min: 0, max: 360 },
-            gravityY: 400,
+            rotate: { min: 0, max: 360 },
+            gravityY: 800,
+            blendMode: "ADD",
             emitting: false
         });
         this.particles.setDepth(15);
@@ -2052,7 +2085,22 @@ export class MainScene extends Phaser.Scene{
 
         //TIMER
 
-        //this.currentTime = this.maxTimePerTurn
+        //
+        // Transcendent Floating Animation for Piece Options
+        [this.option1, this.option2, this.option3].forEach((option, index) => {
+            if (option) {
+                this.tweens.add({
+                    targets: option,
+                    y: option.y - 10,
+                    duration: 1500 + (index * 200),
+                    yoyo: true,
+                    repeat: -1,
+                    ease: 'Sine.easeInOut'
+                });
+            }
+        });
+
+        this.currentTime = this.maxTimePerTurn
         //let timerContainer = this.add.image(980, 210, 'menuUI', 'Cronometro_fondo.png')
 
         //this.timerText = this.add.text(980,210,this.FormatTime(this.currentTime), { 
