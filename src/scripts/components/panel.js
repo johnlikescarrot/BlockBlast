@@ -4,6 +4,30 @@ export class Panel {
         this.updateCredits();
         this._hideInstructionsCallback = null;
     }
+    animateShow(container) {
+        container.setVisible(true);
+        container.setScale(0.8);
+        this.scene.tweens.add({
+            targets: container,
+            scale: 1,
+            duration: 300,
+            ease: 'Back.easeOut'
+        });
+    }
+
+    animateHide(container, onComplete) {
+        this.scene.tweens.add({
+            targets: container,
+            scale: 0.8,
+            duration: 200,
+            ease: 'Back.easeIn',
+            onComplete: () => {
+                container.setVisible(false);
+                if (onComplete) onComplete();
+            }
+        });
+    }
+
 
     updateCredits() {
         this.credits = [
@@ -480,13 +504,14 @@ export class Panel {
         this.setInstructionsText();
         this._hideInstructionsCallback = callback || null;
         this.scene.audioManager.ui_page.play();
-        this.instructionsContainer.setVisible(true);
+        this.animateShow(this.instructionsContainer);
         this.panelContainer.setVisible(true);
     }
 
     hideInstructions() {
-        this.instructionsContainer.setVisible(false);
-        this.panelContainer.setVisible(false);
+        this.animateHide(this.instructionsContainer, () => {
+            this.panelContainer.setVisible(false);
+        });
         if (this._hideInstructionsCallback) {
             const cb = this._hideInstructionsCallback;
             this._hideInstructionsCallback = null;
@@ -495,45 +520,49 @@ export class Panel {
     }
 
     showOptions() {
-        this.optionsContainer.setVisible(true);
+        this.animateShow(this.optionsContainer);
         this.panelContainer.setVisible(true);
         if (this.scene.currentScene.scene.key === 'MenuScene') this.scene.currentScene.optionsButton.setTexture('menuUI', 'Settings_NonClicked.png');
     }
 
     hideOptions() {
-        this.optionsContainer.setVisible(false);
-        this.panelContainer.setVisible(false);
-        if (this.scene.currentScene.scene.key === 'MainScene') this.showPause();
+        this.animateHide(this.optionsContainer, () => {
+            this.panelContainer.setVisible(false);
+            if (this.scene.currentScene.scene.key === 'MainScene') this.showPause();
+        });
     }
 
     showCredits() {
-        this.creditsContainer.setVisible(true);
+        this.animateShow(this.creditsContainer);
         this.panelContainer.setVisible(true);
     }
 
     hideCredits() {
-        this.creditsContainer.setVisible(false);
-        this.panelContainer.setVisible(false);
+        this.animateHide(this.creditsContainer, () => {
+            this.panelContainer.setVisible(false);
+        });
     }
 
     showPause() {
-        this.pauseContainer.setVisible(true);
+        this.animateShow(this.pauseContainer);
         this.panelContainer.setVisible(true);
     }
 
     hidePause() {
-        this.pauseContainer.setVisible(false);
-        this.panelContainer.setVisible(false);
+        this.animateHide(this.pauseContainer, () => {
+            this.panelContainer.setVisible(false);
+        });
     }
 
     showReload() {
-        this.reloadContainer.setVisible(true);
+        this.animateShow(this.reloadContainer);
         this.reloadPanelContainer.setVisible(true);
     }
 
     hideReload() {
-        this.reloadContainer.setVisible(false);
-        this.reloadPanelContainer.setVisible(false);
+        this.animateHide(this.reloadContainer, () => {
+            this.reloadPanelContainer.setVisible(false);
+        });
     }
 
     showScore(score, newHighScore) {
@@ -542,14 +571,15 @@ export class Panel {
         this.recordText.setText(newHighScore);
         let gameplayTime = this.scene.currentScene.finishTime - this.scene.currentScene.startTime;
         this.timeText.setText(this.secondsToString(gameplayTime));
-        this.scoreContainer.setVisible(true);
+        this.animateShow(this.scoreContainer);
         this.panelContainer.setVisible(true);
     }
 
     hideScore() {
         this.panel.setTexture("panel");
-        this.scoreContainer.setVisible(false);
-        this.panelContainer.setVisible(false);
+        this.animateHide(this.scoreContainer, () => {
+            this.panelContainer.setVisible(false);
+        });
     }
 
     secondsToString(seconds) {
