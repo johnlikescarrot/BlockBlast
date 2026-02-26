@@ -571,9 +571,11 @@ export class MainScene extends Phaser.Scene{
         }
         if (this.animationsIterator === 0) {
             this.PauseTimer();
-            let intensity = this.linesToClear.length * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE;
-            this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, intensity);
-            this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, (JUICE_CONFIG.FLASH_COLOR >> 16) & 0xFF, (JUICE_CONFIG.FLASH_COLOR >> 8) & 0xFF, JUICE_CONFIG.FLASH_COLOR & 0xFF, false);
+            let comboCount = this.linesToClear.length;
+            let shakeIntensity = comboCount * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE * 1.5;
+            this.cameras.main.zoomTo(1.05, 100, "Sine.easeInOut", true);
+            this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, shakeIntensity);
+            this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, 255, 255, 255, false);
 
             if (this.linesToClear.length >= JUICE_CONFIG.COMBO_THRESHOLD) {
                 if (this.bloomTimer) {
@@ -669,6 +671,7 @@ export class MainScene extends Phaser.Scene{
             this.CreateComboText(filas,columnas,combo,numberCombo)
 
             this.RecountLineCounters()
+            this.cameras.main.zoomTo(1.0, 200, "Sine.easeInOut", true);
             this.PauseTimer()
             this.FinishTurn()
 
@@ -890,6 +893,7 @@ export class MainScene extends Phaser.Scene{
         this.boardMatrix = this.RotateMatrixAntiClockwise(this.boardMatrix)
         this.board = this.RotateMatrixAntiClockwise(this.board)
         this.RecountLineCounters()
+            this.cameras.main.zoomTo(1.0, 200, "Sine.easeInOut", true);
         this.RenameBoard()
         this.boardAngle = newAngle
 
@@ -2202,6 +2206,9 @@ export class MainScene extends Phaser.Scene{
         this.pY = 0
                 // GHOST PIECE INIT
         this.ghostContainer = this.add.container(0, 0).setDepth(2).setAlpha(JUICE_CONFIG.GHOST_ALPHA);
+        if (this.ghostContainer.postFX) {
+            this.ghostContainer.postFX.addShadow(0, 2, 0.1, 1, 0x000000, 4, 0.3);
+        }
         this.ghostSquares = [];
         for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++) {
             this.ghostSquares[i] = [];

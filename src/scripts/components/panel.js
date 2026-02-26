@@ -12,6 +12,13 @@ export class Panel {
         this.updateCredits();
         this._hideInstructionsCallback = null;
         this.blurFX = null;
+        this.scene.input.on("pointermove", (pointer) => {
+            if (this.panelContainer && this.panelContainer.visible) {
+                let centerX = this.scene.cameras.main.width / 2;
+                let dx = (pointer.x - centerX) / centerX;
+                this.panelContainer.setRotation(dx * 0.02);
+            }
+        });
     }
     animateShow(container) {
         container.setVisible(true);
@@ -24,7 +31,12 @@ export class Panel {
             easeParams: [1, 0.5]
         });
         if (this.scene.currentScene && !this.blurFX) {
-            this.blurFX = this.scene.currentScene.cameras.main.postFX?.addBlur?.(UI_CONFIG.BLUR_QUALITY, UI_CONFIG.BLUR_X, UI_CONFIG.BLUR_Y, UI_CONFIG.BLUR_STRENGTH);
+            this.blurFX = this.scene.currentScene.cameras.main.postFX?.addBlur?.(UI_CONFIG.BLUR_QUALITY, UI_CONFIG.BLUR_X, UI_CONFIG.BLUR_Y, 0);
+            this.scene.tweens.add({
+                targets: this.blurFX,
+                strength: UI_CONFIG.BLUR_STRENGTH,
+                duration: UI_CONFIG.SHOW_DURATION
+            });
         }
     }
 
@@ -37,8 +49,27 @@ export class Panel {
             onComplete: () => {
                 container.setVisible(false);
                 if (this.blurFX) {
+            this.scene.tweens.add({
+                targets: this.blurFX,
+                strength: 0,
+                duration: UI_CONFIG.HIDE_DURATION
+            });
                     this.scene.currentScene?.cameras?.main?.postFX?.remove?.(this.blurFX);
                     this.blurFX = null;
+        this.scene.input.on("pointermove", (pointer) => {
+            if (this.panelContainer && this.panelContainer.visible) {
+                let centerX = this.scene.cameras.main.width / 2;
+                let dx = (pointer.x - centerX) / centerX;
+                this.panelContainer.setRotation(dx * 0.02);
+            }
+        });
+        this.scene.input.on("pointermove", (pointer) => {
+            if (this.panelContainer && this.panelContainer.visible) {
+                let centerX = this.scene.cameras.main.width / 2;
+                let dx = (pointer.x - centerX) / centerX;
+                this.panelContainer.setRotation(dx * 0.02);
+            }
+        });
                 }
                 if (onComplete) onComplete();
             }
