@@ -24,7 +24,7 @@ export class Panel {
             easeParams: [1, 0.5]
         });
         if (this.scene.currentScene && !this.blurFX) {
-            this.blurFX = this.scene.currentScene.cameras.main.postFX.addBlur(UI_CONFIG.BLUR_QUALITY, UI_CONFIG.BLUR_X, UI_CONFIG.BLUR_Y, UI_CONFIG.BLUR_STRENGTH);
+            this.blurFX = this.scene.currentScene?.cameras?.main?.postFX?.addBlur?.(UI_CONFIG.BLUR_QUALITY, UI_CONFIG.BLUR_X, UI_CONFIG.BLUR_Y, UI_CONFIG.BLUR_STRENGTH);
         }
     }
 
@@ -37,7 +37,7 @@ export class Panel {
             onComplete: () => {
                 container.setVisible(false);
                 if (this.scene.currentScene && this.blurFX) {
-                    this.scene.currentScene.cameras.main.postFX.remove(this.blurFX);
+                    this.scene.currentScene?.cameras?.main?.postFX?.remove?.(this.blurFX);
                     this.blurFX = null;
                 }
                 if (onComplete) onComplete();

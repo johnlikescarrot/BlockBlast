@@ -22,8 +22,8 @@ const JUICE_CONFIG = {
     GLOW_INNER_STRENGTH: 0,
     GLOW_KNOCKOUT: false,
     GLOW_QUALITY: 0.1,
-    GLOW_SAMPLES: 10
-    TUTORIAL_DELAY: 500
+    GLOW_SAMPLES: 10,
+    TUTORIAL_INITIAL_DELAY: 500
 };
 
 
@@ -582,12 +582,12 @@ export class MainScene extends Phaser.Scene{
                     this.bloomTimer = null;
                 }
                 if (this.comboBloom) {
-                    this.boardContainer.postFX.remove(this.comboBloom);
+                    this.boardContainer?.postFX?.remove?.(this.comboBloom);
                 }
-                this.comboBloom = this.boardContainer.postFX.addBloom(JUICE_CONFIG.BLOOM_COLOR, JUICE_CONFIG.BLOOM_BLUR_X, JUICE_CONFIG.BLOOM_BLUR_Y, JUICE_CONFIG.BLOOM_STRENGTH, JUICE_CONFIG.BLOOM_STEPS);
+                this.comboBloom = this.boardContainer?.postFX?.addBloom?.(JUICE_CONFIG.BLOOM_COLOR, JUICE_CONFIG.BLOOM_BLUR_X, JUICE_CONFIG.BLOOM_BLUR_Y, JUICE_CONFIG.BLOOM_STRENGTH, JUICE_CONFIG.BLOOM_STEPS);
                 this.bloomTimer = this.time.delayedCall(JUICE_CONFIG.COMBO_BLOOM_DURATION, () => {
                     if (this.comboBloom) {
-                        this.boardContainer.postFX.remove(this.comboBloom);
+                        this.boardContainer?.postFX?.remove?.(this.comboBloom);
                         this.comboBloom = null;
                     }
                     this.bloomTimer = null;
@@ -1760,7 +1760,7 @@ export class MainScene extends Phaser.Scene{
             blendMode: 'ADD'
         });
         this.particles.setDepth(15);
-        this.particles.postFX.addBloom(JUICE_CONFIG.BLOOM_COLOR, JUICE_CONFIG.BLOOM_BLUR_X, JUICE_CONFIG.BLOOM_BLUR_Y, JUICE_CONFIG.BLOOM_STRENGTH, JUICE_CONFIG.BLOOM_STEPS);
+        this.particles?.postFX?.addBloom?.(JUICE_CONFIG.BLOOM_COLOR, JUICE_CONFIG.BLOOM_BLUR_X, JUICE_CONFIG.BLOOM_BLUR_Y, JUICE_CONFIG.BLOOM_STRENGTH, JUICE_CONFIG.BLOOM_STEPS);
 
         this.dim = this.game.config.width;
         this.startTime = this.time.now * 0.001
@@ -2202,7 +2202,7 @@ export class MainScene extends Phaser.Scene{
             this.ghostSquares[i] = [];
             for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++) {
                 this.ghostSquares[i][j] = this.add.image(0, 0, 'originalPiece', 'square.png').setVisible(false);
-                this.ghostSquares[i][j].postFX.addGlow(JUICE_CONFIG.GLOW_COLOR, JUICE_CONFIG.GLOW_OUTER_STRENGTH, JUICE_CONFIG.GLOW_INNER_STRENGTH, JUICE_CONFIG.GLOW_KNOCKOUT, JUICE_CONFIG.GLOW_QUALITY, JUICE_CONFIG.GLOW_SAMPLES);
+                this.ghostSquares[i][j]?.postFX?.addGlow?.(JUICE_CONFIG.GLOW_COLOR, JUICE_CONFIG.GLOW_OUTER_STRENGTH, JUICE_CONFIG.GLOW_INNER_STRENGTH, JUICE_CONFIG.GLOW_KNOCKOUT, JUICE_CONFIG.GLOW_QUALITY, JUICE_CONFIG.GLOW_SAMPLES);
                 this.ghostContainer.add(this.ghostSquares[i][j]);
             }
         }
@@ -2351,7 +2351,7 @@ export class MainScene extends Phaser.Scene{
         }, this);
         //this.ReductAnimation()
 
-        this.time.delayedCall(JUICE_CONFIG.TUTORIAL_DELAY, () => {
+        this.time.delayedCall(JUICE_CONFIG.TUTORIAL_INITIAL_DELAY, () => {
             this.ShowTutorial()
         });
 
