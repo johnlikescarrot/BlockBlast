@@ -43,6 +43,13 @@ The game uses Phaser's scene system with four main scenes that handle different 
 
 ```javascript
 // Scene hierarchy and initialization order
+import { BootScene } from "./scripts/scenes/BootScene.js";
+import { UIScene } from "./scripts/scenes/UIScene.js";
+import { MenuScene } from "./scripts/scenes/MenuScene.js";
+import { MainScene } from "./scripts/scenes/MainScene.js";
+import WebFontLoaderPlugin from 'phaser3-rex-plugins/plugins/webfontloader-plugin.js';
+import UIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
+
 const gameOptions = {
     type: Phaser.AUTO,
     parent: 'phaser-div',
@@ -100,7 +107,6 @@ const piecesList = [
 
 // Generate a random piece with random color
 function GeneratePiece() {
-    const shapes = piecesList;
     const colorsList = [
         "blockblast_piece_shadow.png",
         "blockblast_piece_a.png",
@@ -109,7 +115,7 @@ function GeneratePiece() {
         // ... up to 14 colors
     ];
 
-    const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
+    const randomShape = piecesList[Math.floor(Math.random() * piecesList.length)];
     const randomColorIndex = Math.floor(Math.random() * (colorsList.length - 1)) + 1;
     const colorChar = String.fromCharCode(97 + randomColorIndex);
 
@@ -133,9 +139,10 @@ Core gameplay logic that validates whether a piece can be placed at a given posi
 ```javascript
 // Check if piece can be placed at position (x, y)
 function CanPutPiece(pieceShape, x, y, boardMatrix) {
-    for (let i = 0; i < 5; i++) {
-        for (let j = 0; j < 5; j++) {
-            if (pieceShape.charAt((5 * i) + j) !== '0') {
+    const PIECE_DIMENSION = 5;
+    for (let i = 0; i < PIECE_DIMENSION; i++) {
+        for (let j = 0; j < PIECE_DIMENSION; j++) {
+            if (pieceShape.charAt((PIECE_DIMENSION * i) + j) !== '0') {
                 // Check bounds
                 if (i + y > boardMatrix.length - 1 ||
                     j + x > boardMatrix[0].length - 1 ||
