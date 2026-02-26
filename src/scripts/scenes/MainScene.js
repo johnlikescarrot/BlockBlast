@@ -5,7 +5,7 @@ const JUICE_CONFIG = {
     SHAKE_INTENSITY_PER_LINE: 0.005,
     FLASH_DURATION: 100,
     FLASH_COLOR: 0xffffff,
-    FLASH_ALPHA: 0.3,
+    GHOST_ALPHA: 0.3,
     LAND_SHAKE_DURATION: 100,
     LAND_SHAKE_INTENSITY: 0.002,
     SCORE_ANIM_DURATION: 500,
@@ -178,9 +178,9 @@ export class MainScene extends Phaser.Scene{
         let counterPiece = 0
         let counterAux= 0
         let startCount = false
-        for(let i = 0; i < 5; i++){
-            for(let j = 0; j < 5; j++){
-                if(piece.charAt((j*5)+i) != 0){
+        for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
+            for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
+                if(piece.charAt((j * JUICE_CONFIG.PIECE_DIMENSION)+i) != 0){
                     counterPiece+=1
                     break
                 }
@@ -195,9 +195,9 @@ export class MainScene extends Phaser.Scene{
         let counterPiece = 0
         let counterAux= 0
         let startCount = false
-        for(let i = 0; i < 5; i++){
-            for(let j = 0; j < 5; j++){
-                if(piece.charAt((i*5)+j) != 0){
+        for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
+            for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
+                if(piece.charAt((i * JUICE_CONFIG.PIECE_DIMENSION)+j) != 0){
                     counterPiece+=1
                     break
                 }
@@ -232,7 +232,7 @@ export class MainScene extends Phaser.Scene{
             case 4:
                 this.posOptionX = 7
                 break
-            case 5:
+            case JUICE_CONFIG.PIECE_DIMENSION:
                 this.posOptionX = 24
                 break
             default:
@@ -252,7 +252,7 @@ export class MainScene extends Phaser.Scene{
             case 4:
                 this.posOptionY = 25
                 break
-            case 5:
+            case JUICE_CONFIG.PIECE_DIMENSION:
                 this.posOptionY = 42
                 break
             default:
@@ -270,18 +270,18 @@ export class MainScene extends Phaser.Scene{
     CreatePiece(piece, x, y, size, sizeM, pieceWord){
         size = size*sizeM
         const container = this.add.container(x,y)
-        for(let i = 0; i < 5; i++){
-            for(let j = 0; j < 5; j++){
-                if(piece.shape.charAt((5*i)+j) != 0){
-                    if(this.ObtainInt(piece.shape.charAt((5*i)+j))<-10){
-                        let s1 = this.add.image((size*j)-(size*2),(size*i)-(size*2) , this.powerUpsList[piece.shape.charAt((5*i)+j)-1])
+        for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
+            for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
+                if(piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) != 0){
+                    if(this.ObtainInt(piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j))<-10){
+                        let s1 = this.add.image((size*j)-(size*2),(size*i)-(size*2) , this.powerUpsList[piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j)-1])
                         //s1.setInteractive()
                         s1.setScale(sizeM)
                         //this.input.setDraggable(s1)
                         container.add(s1)
                     }
                     else{
-                        let s1 = this.add.image((size*j)-(size*2),(size*i)-(size*2) , pieceWord, this.colorsList[this.ObtainInt(piece.shape.charAt((5*i)+j))])
+                        let s1 = this.add.image((size*j)-(size*2),(size*i)-(size*2) , pieceWord, this.colorsList[this.ObtainInt(piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j))])
                         //s1.setInteractive()
                         s1.setScale(sizeM)
                         //this.input.setDraggable(s1)
@@ -290,7 +290,7 @@ export class MainScene extends Phaser.Scene{
 
                 }
                 if(i==2&&j==2){
-                    let s2 = this.add.image((size*j)-(size*2),(size*i)-(size*2) ,pieceWord,this.colorsList[this.ObtainInt(piece.shape.charAt((5*i)+j))])
+                    let s2 = this.add.image((size*j)-(size*2),(size*i)-(size*2) ,pieceWord,this.colorsList[this.ObtainInt(piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j))])
                     s2.setAlpha(0.000001)
                     s2.setScale(2.5)
                     s2.setInteractive()
@@ -302,15 +302,15 @@ export class MainScene extends Phaser.Scene{
         return container
     }
     ChangePointer(){
-        for(let i = 0; i < 5; i++){
-            for(let j = 0; j < 5; j++){
-                if(this.piece.shape.charAt((5*i)+j) != 0){
-                    if(this.ObtainInt(this.piece.shape.charAt((5*i)+j))<-10){
+        for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
+            for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
+                if(this.piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) != 0){
+                    if(this.ObtainInt(this.piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j))<-10){
 
-                        this.pointer[j][i].setTexture(this.powerUpsList[this.piece.shape.charAt((5*i)+j)-1])
+                        this.pointer[j][i].setTexture(this.powerUpsList[this.piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j)-1])
                     }
                     else{
-                        this.pointer[j][i].setTexture("originalPiece", this.colorsList[this.ObtainInt(this.piece.shape.charAt((5*i)+j))])
+                        this.pointer[j][i].setTexture("originalPiece", this.colorsList[this.ObtainInt(this.piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j))])
                     }
                     this.pointer[j][i].alpha = 1
 
@@ -395,9 +395,9 @@ export class MainScene extends Phaser.Scene{
 
     //PIECES MANAGEMENT IN GAME
     CanPutPiece(piece, x,y){
-        for(let i = 0; i < 5; i++){
-            for(let j = 0; j < 5; j++){
-                if(piece.charAt((5*i)+j) != 0){
+        for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
+            for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
+                if(piece.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) != 0){
                     if(i+y > this.boardMatrix.length-1 || j + x >this.boardMatrix[0].length-1|| i+y<0||j+x<0){
 
                         return false
@@ -418,10 +418,10 @@ export class MainScene extends Phaser.Scene{
         this.piecesToClear = []
         this.colorsToRestore = []
         let list = new Array()
-        for(let i = 0; i < 5; i++){
-            for(let j = 0; j < 5; j++){
-                if(piece.shape.charAt((5*i)+j) != 0){
-                    if(piece.shape.charAt((5*i)+j) == 1){
+        for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
+            for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
+                if(piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) != 0){
+                    if(piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) == 1){
                         //this.BombBreakingLines(j+x,i+y)
                     }
                     this.board[j+x][i+y].setTint(899499)
@@ -443,20 +443,20 @@ export class MainScene extends Phaser.Scene{
         this.newScorePoints = 0
         this.StopVibration()
         this.audioManager.soltar.play()
-        for(let i = 0; i < 5; i++){
-            for(let j = 0; j < 5; j++){
-                if(piece.shape.charAt((5*i)+j) != 0){
-                    if(this.ObtainInt(piece.shape.charAt((5*i)+j))<-10){//powerups
-                        this.idleboard[j+x][i+y].setTexture(this.powerUpsList[piece.shape.charAt((5*i)+j)-1]).setTint(0xffffff).visible = true
+        for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
+            for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
+                if(piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) != 0){
+                    if(this.ObtainInt(piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j))<-10){//powerups
+                        this.idleboard[j+x][i+y].setTexture(this.powerUpsList[piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j)-1]).setTint(0xffffff).visible = true
 
                         this.powerUpsInGame[(j+x).toString()+(i+y).toString()] = (j+x).toString()+(i+y).toString()
-                        this.SetName(this.board[j+x][i+y],this.powerUpsList[piece.shape.charAt((5*i)+j)-1])
+                        this.SetName(this.board[j+x][i+y],this.powerUpsList[piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j)-1])
                     }
                     else{//piezas normales
-                        let colorForPiece = this.colorsList[this.ObtainInt(piece.shape.charAt((5*i)+j))]
+                        let colorForPiece = this.colorsList[this.ObtainInt(piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j))]
                         this.board[j+x][i+y].setTexture("piece",colorForPiece).setTint(0xffffff).visible = true
                         this.idleboard[j+x][i+y].play("idle_"+colorForPiece[17],true).visible = true
-                        this.SetName(this.board[j+x][i+y],this.colorsList[this.ObtainInt(piece.shape.charAt((5*i)+j))])
+                        this.SetName(this.board[j+x][i+y],this.colorsList[this.ObtainInt(piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j))])
                     }
 
                     this.boardMatrix[j+x][i+y] = 1
@@ -474,7 +474,7 @@ export class MainScene extends Phaser.Scene{
         console.log("CHECK=========================================")
 
         if(!this.isStarting){
-            this.particles.explode(20, (x * this.squareSize) + this.offsetX + (this.squareSize * 2), (y * this.squareSize) + this.offsetY + (this.squareSize * 2));
+            this.particles.explode(20, (x * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X + (this.LAYOUT.SQUARE_SIZE * 2), (y * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y + (this.LAYOUT.SQUARE_SIZE * 2));
             this.refillCounter +=1
             this.CreateNumbersText(x,y,this.newScorePoints)
             this.audioManager.puntos.play()
@@ -526,8 +526,8 @@ export class MainScene extends Phaser.Scene{
 
     ShowContainerWithFade(scene, fila, columna, fadeInDuration, displayDuration, fadeOutDuration, container) {
 
-        container.x = (fila*this.squareSize )+this.offsetX
-        container.y =(columna*this.squareSize )+this.offsetY
+        container.x = (fila*this.LAYOUT.SQUARE_SIZE )+this.LAYOUT.OFFSET_X
+        container.y =(columna*this.LAYOUT.SQUARE_SIZE )+this.LAYOUT.OFFSET_Y
         // Crear el tween para el fade in
         scene.tweens.add({
             targets: container,
@@ -560,7 +560,7 @@ export class MainScene extends Phaser.Scene{
             this.PauseTimer();
             let intensity = this.linesToClear.length * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE;
             this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, intensity);
-            this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, 255, 255, 255, false);
+            this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, (JUICE_CONFIG.FLASH_COLOR >> 16) & 0xFF, (JUICE_CONFIG.FLASH_COLOR >> 8) & 0xFF, JUICE_CONFIG.FLASH_COLOR & 0xFF, false);
         }
 
         this.piecesToClear = []
@@ -734,7 +734,7 @@ export class MainScene extends Phaser.Scene{
             }
             else{
                 if(!bomb)this.MakeAnimation(filas,columnas,"destroyFx")
-                this.particles.explode(10, (filas * this.squareSize) + this.offsetX, (columnas * this.squareSize) + this.offsetY);
+                this.particles.explode(10, (filas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X, (columnas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y);
                 this.board[filas][columnas].anims.pause()
                 this.idleboard[filas][columnas].anims.pause()
                 this.board[filas][columnas].setTint(0xffffff)
@@ -1142,10 +1142,10 @@ export class MainScene extends Phaser.Scene{
         let auxX = 0
         let startChecking = false
         //console.log("checking piece " + piece)
-        for(let i = 0; i < 5; i++){
-            for(let j = 0; j < 5; j++){
+        for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
+            for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
 
-                if(piece.charAt((5*i)+j) != 0){
+                if(piece.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) != 0){
                     if(x >= 0 && x<=7 && y >= 0 && y<=7 ){
                         //console.log("starts at " + i.toString() + " " + j.toString())
                         if(!startChecking)auxX = x-j
@@ -1201,10 +1201,10 @@ export class MainScene extends Phaser.Scene{
         let deleteY = false
         let score = 0
         //console.log("checking piece " + piece)
-        for(let i = 0; i < 5; i++){
-            for(let j = 0; j < 5; j++){
+        for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
+            for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
 
-                if(piece.charAt((5*i)+j) != 0){
+                if(piece.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) != 0){
                     score+=3
                     deleteX = false
                     deleteY = false
@@ -1323,9 +1323,9 @@ export class MainScene extends Phaser.Scene{
         this.lineCounterYadd = [0,0,0,0,0,0,0,0]
 
         let counterPoints = 0
-        for(let i = 0; i < 5; i++){
-            for(let j = 0; j < 5; j++){
-                if(piece.charAt((5*i)+j) != 0){
+        for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
+            for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
+                if(piece.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) != 0){
                     if(i+y > this.boardMatrix.length-1 || j + x >this.boardMatrix[0].length-1|| i+y<0||j+x<0){
 
                         return -1
@@ -1754,9 +1754,7 @@ export class MainScene extends Phaser.Scene{
         this.boardSize = 8
 
         this.LAYOUT = { OFFSET_X: 113, OFFSET_Y: 232, SQUARE_SIZE: 88 };
-        this.offsetX = this.LAYOUT.OFFSET_X;
-        this.offsetY = this.LAYOUT.OFFSET_Y;
-        this.squareSize = this.LAYOUT.SQUARE_SIZE;
+
         this.canCheck = false
         this.refillCounter = 0
         this.secondsToAdd = 0
@@ -1922,9 +1920,9 @@ export class MainScene extends Phaser.Scene{
         //PREVIEW
         this.add.image(this.offsetPictures+400,this.offsetPictures+10,"preview_space").setDepth(3)
 
-        this.halfBoxX = (this.boardSize/2*this.squareSize)+this.offsetX-(this.squareSize/2)
+        this.halfBoxX = (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_X-(this.LAYOUT.SQUARE_SIZE/2)
 
-        this.halfBoxY = (this.boardSize/2*this.squareSize)+this.offsetY-(this.squareSize/2)
+        this.halfBoxY = (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_Y-(this.LAYOUT.SQUARE_SIZE/2)
         console.log("HALF"+this.halfBox)
         this.add.image(this.offsetPictures,this.offsetPictures,"b_box").setDepth(1)
         let boardTable = this.add.image(this.offsetPictures-120-this.halfBoxX,this.offsetPictures-this.halfBoxY,"table").setDepth(3)
@@ -1968,8 +1966,8 @@ export class MainScene extends Phaser.Scene{
             this.board[i] = []
             this.idleboard[i] = []
             for(let j = 0; j < this.boardSize; j++){
-                this.board[i][j] = this.add.sprite(((i-this.boardSize/2)*this.squareSize)+(this.squareSize/2), ((j-this.boardSize/2)*this.squareSize)+(this.squareSize/2),"piece", this.colorsList[0])
-                this.idleboard[i][j] = this.add.sprite((i*this.squareSize)+this.offsetX, (j*this.squareSize)+this.offsetY,"piece", this.colorsList[0]).setVisible(false)
+                this.board[i][j] = this.add.sprite(((i-this.boardSize/2)*this.LAYOUT.SQUARE_SIZE)+(this.LAYOUT.SQUARE_SIZE/2), ((j-this.boardSize/2)*this.LAYOUT.SQUARE_SIZE)+(this.LAYOUT.SQUARE_SIZE/2),"piece", this.colorsList[0])
+                this.idleboard[i][j] = this.add.sprite((i*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_X, (j*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_Y,"piece", this.colorsList[0]).setVisible(false)
                 //this.board[i][j].visible = false
                 this.board[i][j].name = i.toString()+j.toString()+this.colorsList[0]
                 this.boardContainer.add(this.board[i][j])
@@ -1988,8 +1986,8 @@ export class MainScene extends Phaser.Scene{
                 }, this);
             }
         }
-        this.boardContainer.x += (this.boardSize/2*this.squareSize)+this.offsetX-(this.squareSize/2)
-        this.boardContainer.y += (this.boardSize/2*this.squareSize)+this.offsetY-(this.squareSize/2)
+        this.boardContainer.x += (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_X-(this.LAYOUT.SQUARE_SIZE/2)
+        this.boardContainer.y += (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_Y-(this.LAYOUT.SQUARE_SIZE/2)
         this.boardContainer.setDepth(3)
         this.idleBoardContainer.setDepth(4)
         this.boardMatrix = []
@@ -2005,7 +2003,7 @@ export class MainScene extends Phaser.Scene{
         for(let i = 0; i < this.boardSize; i++){
             this.animationBoard[i] = []
             for(let j = 0; j < this.boardSize; j++){
-                this.animationBoard[i][j] = this.add.sprite(((i-this.boardSize/2)*this.squareSize)+(this.squareSize/2), ((j-this.boardSize/2)*this.squareSize)+(this.squareSize/2),"piece", this.colorsList[0]).setOrigin(.5)
+                this.animationBoard[i][j] = this.add.sprite(((i-this.boardSize/2)*this.LAYOUT.SQUARE_SIZE)+(this.LAYOUT.SQUARE_SIZE/2), ((j-this.boardSize/2)*this.LAYOUT.SQUARE_SIZE)+(this.LAYOUT.SQUARE_SIZE/2),"piece", this.colorsList[0]).setOrigin(.5)
 
 
                 this.animationBoard[i][j].visible = false
@@ -2020,8 +2018,8 @@ export class MainScene extends Phaser.Scene{
         }
         //this.MakeAnimation(1,7,"destroyFx")
         //this.MakeAnimation(3,7,"bombFx")
-        this.animationBoardContainer.x += (this.boardSize/2*this.squareSize)+this.offsetX-(this.squareSize/2)
-        this.animationBoardContainer.y += (this.boardSize/2*this.squareSize)+this.offsetY-(this.squareSize/2)-10
+        this.animationBoardContainer.x += (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_X-(this.LAYOUT.SQUARE_SIZE/2)
+        this.animationBoardContainer.y += (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_Y-(this.LAYOUT.SQUARE_SIZE/2)-10
         this.animationBoardContainer.setDepth(4)
 
         this.option1anim = this.add.sprite(965-23, 340-27,"piece", this.colorsList[0]).setOrigin(.5).setDepth(6).setScale(2)
@@ -2165,7 +2163,7 @@ export class MainScene extends Phaser.Scene{
         this.pX = 0
         this.pY = 0
                 // GHOST PIECE INIT
-        this.ghostContainer = this.add.container(0, 0).setDepth(2).setAlpha(JUICE_CONFIG.FLASH_ALPHA);
+        this.ghostContainer = this.add.container(0, 0).setDepth(2).setAlpha(JUICE_CONFIG.GHOST_ALPHA);
         this.ghostSquares = [];
         for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++) {
             this.ghostSquares[i] = [];
@@ -2177,10 +2175,10 @@ export class MainScene extends Phaser.Scene{
         this.pointer = []
         const pointerContainer = this.add.container(-800,-800)
 
-        for(let i = 0; i < 5; i++){
+        for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
             this.pointer[i] = []
-            for(let j = 0; j < 5; j++){
-                this.pointer[i][j] = this.add.image((i*this.squareSize), (j*this.squareSize), "square")
+            for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
+                this.pointer[i][j] = this.add.image((i*this.LAYOUT.SQUARE_SIZE), (j*this.LAYOUT.SQUARE_SIZE), "square")
                 pointerContainer.add(this.pointer[i][j])
             }
         }
@@ -2238,7 +2236,7 @@ export class MainScene extends Phaser.Scene{
         if (this.sys.game.device.os.android || this.sys.game.device.os.iOS) {
             // Código específico para dispositivos móviles
             console.log("Ejecutando en un dispositivo móvil");
-            this.pointerAdd = this.squareSize*2
+            this.pointerAdd = this.LAYOUT.SQUARE_SIZE*2
             // Puedes agregar aquí el código específico que deseas ejecutar solo en dispositivos móviles
         } else {
             // Código para dispositivos no móviles
@@ -2273,9 +2271,9 @@ export class MainScene extends Phaser.Scene{
                     this.pX = pointer.worldX
                     this.pY = pointer.worldY
                 }
-                pointerContainer.x = this.pX-2*this.squareSize 
+                pointerContainer.x = this.pX-2*this.LAYOUT.SQUARE_SIZE
 
-                pointerContainer.y = (this.pY-2*this.squareSize)-this.pointerAdd
+                pointerContainer.y = (this.pY-2*this.LAYOUT.SQUARE_SIZE)-this.pointerAdd
                 pointerContainer.visible = true
                 this.canCheck = true
             }
@@ -2285,9 +2283,9 @@ export class MainScene extends Phaser.Scene{
         this.input.on('drag', (pointer, gameObject, dragX, dragY) =>
         {
             if(!this.isPaused){
-                pointerContainer.x = this.pX-2*this.squareSize 
+                pointerContainer.x = this.pX-2*this.LAYOUT.SQUARE_SIZE
 
-                pointerContainer.y = (this.pY-2*this.squareSize)-this.pointerAdd
+                pointerContainer.y = (this.pY-2*this.LAYOUT.SQUARE_SIZE)-this.pointerAdd
             }
 
         });
@@ -2300,7 +2298,7 @@ export class MainScene extends Phaser.Scene{
                 pointerContainer.x = -800
 
                 pointerContainer.y =  -800
-                if (this.CanPutPiece(this.piece.shape, this.pointerX, this.pointerY, this.boardMatrix)) {
+                if (this.CanPutPiece(this.piece.shape, this.pointerX, this.pointerY)) {
                     this.piecesToDelete = [];
                     this.InsertPiece(this.piece, this.pointerX, this.pointerY);
                     this.cameras.main.shake(JUICE_CONFIG.LAND_SHAKE_DURATION, JUICE_CONFIG.LAND_SHAKE_INTENSITY);
@@ -2329,8 +2327,8 @@ export class MainScene extends Phaser.Scene{
 
     update(time, deltaTime){
         //console.log("CONV REFILL COUNTER "+ this.refillCounter)
-        this.pointerX = Phaser.Math.Clamp((Phaser.Math.FloorTo((this.pX-this.offsetX+50)/this.squareSize)),0,10)-2
-        this.pointerY = Phaser.Math.Clamp((Phaser.Math.FloorTo(((this.pY-this.pointerAdd)- this.offsetY+50)/this.squareSize)),0,10)-2
+        this.pointerX = Phaser.Math.Clamp((Phaser.Math.FloorTo((this.pX-this.LAYOUT.OFFSET_X+50)/this.LAYOUT.SQUARE_SIZE)),0,10)-2
+        this.pointerY = Phaser.Math.Clamp((Phaser.Math.FloorTo(((this.pY-this.pointerAdd)- this.LAYOUT.OFFSET_Y+50)/this.LAYOUT.SQUARE_SIZE)),0,10)-2
 
         if((this.lastPointerX != this.pointerX || this.lastPointerY != this.pointerY)&&!this.isPaused){
             this.lastPointerX = this.pointerX
@@ -2346,7 +2344,7 @@ export class MainScene extends Phaser.Scene{
 
             if(this.canCheck){
 
-                if(this.CanPutPiece(this.piece.shape,this.pointerX, this.pointerY,this.boardMatrix)){
+                if(this.CanPutPiece(this.piece.shape, this.pointerX, this.pointerY)){
                     this.piecesToDelete = this.DrawPiece(this.piece, this.pointerX,this.pointerY,this.board)
                 }
             }
