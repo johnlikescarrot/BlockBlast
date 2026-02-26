@@ -25,6 +25,7 @@ export class MenuScene extends Phaser.Scene
     }
 
     create(){
+        this.cameras.main.fadeIn(500, 0, 0, 0);
         let dim = this.game.config.width;
         this.uiScene = this.scene.get('UIScene');
         this.uiScene.setCurrentScene(this);
@@ -74,10 +75,13 @@ export class MenuScene extends Phaser.Scene
         this.startButton.setScale(1);
         this.startButton.on('pointerdown', () => 
             {
+                this.cameras.main.fadeOut(300, 0, 0, 0);
+                this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
                 this.nextSceneReady = false;
                 this.showLoading();
                 this.uiScene.audioManager.ui_click.play()
                 //this.uiScene.audioManager.playButtonClick.play();
+                });
             });
         this.startButton.on('pointerover', function (event) {
             this.setTexture('menuUI', 'Play_Clicked.png');

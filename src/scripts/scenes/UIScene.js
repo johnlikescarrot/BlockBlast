@@ -42,6 +42,7 @@ export class UIScene extends Phaser.Scene
 
     
     create(){
+        this.cameras.main.fadeIn(500, 0, 0, 0);
         this.dim = this.game.config.width;
         this.i18n = new I18nManager(this);
         this.i18n.init();

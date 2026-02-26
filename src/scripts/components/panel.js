@@ -3,6 +3,7 @@ export class Panel {
         this.scene = scene;
         this.updateCredits();
         this._hideInstructionsCallback = null;
+        this.blurFX = null;
     }
     animateShow(container) {
         container.setVisible(true);
@@ -14,6 +15,9 @@ export class Panel {
             ease: 'Elastic.easeOut',
             easeParams: [1, 0.5]
         });
+        if (this.scene.currentScene && !this.blurFX) {
+            this.blurFX = this.scene.currentScene.cameras.main.postFX.addBlur(1, 1, 1, 2);
+        }
     }
 
     animateHide(container, onComplete) {
@@ -24,6 +28,10 @@ export class Panel {
             ease: 'Back.easeIn',
             onComplete: () => {
                 container.setVisible(false);
+                if (this.scene.currentScene && this.blurFX) {
+                    this.scene.currentScene.cameras.main.postFX.remove(this.blurFX);
+                    this.blurFX = null;
+                }
                 if (onComplete) onComplete();
             }
         });

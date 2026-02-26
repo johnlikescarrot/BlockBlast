@@ -561,6 +561,14 @@ export class MainScene extends Phaser.Scene{
             let intensity = this.linesToClear.length * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE;
             this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, intensity);
             this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, (JUICE_CONFIG.FLASH_COLOR >> 16) & 0xFF, (JUICE_CONFIG.FLASH_COLOR >> 8) & 0xFF, JUICE_CONFIG.FLASH_COLOR & 0xFF, false);
+
+            // Transcendent Bloom on combo
+            if (this.linesToClear.length >= 3) {
+                const bloom = this.boardContainer.postFX.addBloom(0xffffff, 1, 1, 2, 3);
+                this.time.delayedCall(500, () => {
+                    this.boardContainer.postFX.remove(bloom);
+                });
+            }
         }
 
         this.piecesToClear = []
@@ -1715,18 +1723,20 @@ export class MainScene extends Phaser.Scene{
         this.uiScene = this.scene.get('UIScene');
         this.uiScene.setCurrentScene(this);
 
-        // Particle Manager for Juiciness
+        // Particle Manager for Juiciness (Modern Phaser 3.60+ API)
         this.particles = this.add.particles(0, 0, 'originalPiece', {
             frame: 'square.png',
             scale: { start: 0.4, end: 0 },
             alpha: { start: 1, end: 0 },
-            lifespan: 600,
-            speed: { min: 150, max: 300 },
+            lifespan: 800,
+            speed: { min: 200, max: 400 },
             angle: { min: 0, max: 360 },
-            gravityY: 400,
-            emitting: false
+            gravityY: 600,
+            emitting: false,
+            blendMode: 'ADD'
         });
         this.particles.setDepth(15);
+        this.particles.postFX.addBloom(0xffffff, 1, 1, 2, 3);
 
         this.dim = this.game.config.width;
         this.startTime = this.time.now * 0.001
@@ -2168,6 +2178,7 @@ export class MainScene extends Phaser.Scene{
             this.ghostSquares[i] = [];
             for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++) {
                 this.ghostSquares[i][j] = this.add.image(0, 0, 'originalPiece', 'square.png').setVisible(false);
+                this.ghostSquares[i][j].postFX.addGlow(0xffffff, 2, 0, false, 0.1, 10);
                 this.ghostContainer.add(this.ghostSquares[i][j]);
             }
         }
