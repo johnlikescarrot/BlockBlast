@@ -575,7 +575,6 @@ export class MainScene extends Phaser.Scene{
             this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, intensity);
             this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, (JUICE_CONFIG.FLASH_COLOR >> 16) & 0xFF, (JUICE_CONFIG.FLASH_COLOR >> 8) & 0xFF, JUICE_CONFIG.FLASH_COLOR & 0xFF, false);
 
-            // Transcendent Bloom on combo
             if (this.linesToClear.length >= JUICE_CONFIG.COMBO_THRESHOLD) {
                 if (this.bloomTimer) {
                     this.bloomTimer.remove();
@@ -584,14 +583,20 @@ export class MainScene extends Phaser.Scene{
                 if (this.comboBloom) {
                     this.boardContainer?.postFX?.remove?.(this.comboBloom);
                 }
-                this.comboBloom = this.boardContainer?.postFX?.addBloom?.(JUICE_CONFIG.BLOOM_COLOR, JUICE_CONFIG.BLOOM_BLUR_X, JUICE_CONFIG.BLOOM_BLUR_Y, JUICE_CONFIG.BLOOM_STRENGTH, JUICE_CONFIG.BLOOM_STEPS);
-                this.bloomTimer = this.time.delayedCall(JUICE_CONFIG.COMBO_BLOOM_DURATION, () => {
-                    if (this.comboBloom) {
+                this.comboBloom = this.boardContainer?.postFX?.addBloom?.(
+                    JUICE_CONFIG.BLOOM_COLOR,
+                    JUICE_CONFIG.BLOOM_BLUR_X,
+                    JUICE_CONFIG.BLOOM_BLUR_Y,
+                    JUICE_CONFIG.BLOOM_STRENGTH,
+                    JUICE_CONFIG.BLOOM_STEPS
+                );
+                if (this.comboBloom) {
+                    this.bloomTimer = this.time.delayedCall(JUICE_CONFIG.COMBO_BLOOM_DURATION, () => {
                         this.boardContainer?.postFX?.remove?.(this.comboBloom);
                         this.comboBloom = null;
-                    }
-                    this.bloomTimer = null;
-                });
+                        this.bloomTimer = null;
+                    });
+                }
             }
         }
 

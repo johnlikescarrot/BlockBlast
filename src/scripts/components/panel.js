@@ -36,7 +36,7 @@ export class Panel {
             ease: 'Back.easeIn',
             onComplete: () => {
                 container.setVisible(false);
-                if (this.scene.currentScene && this.blurFX) {
+                if (this.blurFX) {
                     this.scene.currentScene?.cameras?.main?.postFX?.remove?.(this.blurFX);
                     this.blurFX = null;
                 }
