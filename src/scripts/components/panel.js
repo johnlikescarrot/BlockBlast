@@ -35,10 +35,11 @@ export class Panel {
             easeParams: [1, 0.5]
         });
         if (this.scene.currentScene && !this.blurFX) {
-            this.blurFX = this.scene.currentScene.cameras.main.postFX?.addBlur?.(UI_CONFIG.BLUR_QUALITY, UI_CONFIG.BLUR_X, UI_CONFIG.BLUR_Y, 0);
+            // Transcendent Bokeh Transition
+            this.blurFX = this.scene.currentScene.cameras.main.postFX?.addBokeh?.(0.5, 1.0, 0);
             this.scene.tweens.add({
                 targets: this.blurFX,
-                strength: UI_CONFIG.BLUR_STRENGTH,
+                radius: 10,
                 duration: UI_CONFIG.SHOW_DURATION
             });
         }
@@ -58,7 +59,7 @@ export class Panel {
         if (this.blurFX) {
             this.scene.tweens.add({
                 targets: this.blurFX,
-                strength: 0,
+                radius: 0,
                 duration: UI_CONFIG.HIDE_DURATION,
                 onComplete: () => {
                     if (this.blurFX) {

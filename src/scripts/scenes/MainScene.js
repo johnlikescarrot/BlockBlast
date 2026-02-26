@@ -608,7 +608,10 @@ export class MainScene extends Phaser.Scene{
         this.lineCounterXadd = [0,0,0,0,0,0,0,0]
         this.lineCounterYadd = [0,0,0,0,0,0,0,0]
 
-        this.audioManager.destruccion.play()
+        this.audioManager.destruccion.play({ detune: comboCount * 100 });
+        this.barrel.setActive(true);
+        this.barrel.amount = 1.02;
+        this.time.delayedCall(200, () => { this.barrel.amount = 1.0; this.barrel.setActive(false); });
         //RECORRER CADA LINEA Y ROMPER EL PRIMER ELEMENTO
         for(let i = 0; i < this.linesToClear.length; i++){
             let aux = this.linesToClear[i]
@@ -672,7 +675,7 @@ export class MainScene extends Phaser.Scene{
             this.CreateComboText(filas,columnas,combo,numberCombo)
 
             this.RecountLineCounters()
-            this.cameras.main.zoomTo(1.0, 200, 'Sine.easeInOut', true);
+            this.cameras.main.zoomTo(1.0, 200, "Sine.easeInOut", true);
             this.PauseTimer()
             this.FinishTurn()
 
@@ -1758,6 +1761,9 @@ export class MainScene extends Phaser.Scene{
 
         this.uiScene = this.scene.get('UIScene');
         this.events.once('shutdown', () => { this.cameras.main.setZoom(1); });
+        this.vignette = this.cameras.main.postFX.addVignette(0.5, 0.5, 0.8, 0);
+        this.barrel = this.cameras.main.postFX.addBarrel(1.0);
+        this.barrel.setActive(false);
         this.uiScene.setCurrentScene(this);
 
         // Particle Manager for Juiciness (Modern Phaser 3.60+ API)
@@ -2210,7 +2216,9 @@ export class MainScene extends Phaser.Scene{
         this.pY = 0
                 // GHOST PIECE INIT
         this.ghostContainer = this.add.container(0, 0).setDepth(2).setAlpha(JUICE_CONFIG.GHOST_ALPHA);
-        if (this.ghostContainer.postFX) { this.ghostContainer.postFX.addShadow(0, 2, 0.1, 1, 0x000000, 4, 0.3); }
+        if (this.ghostContainer.postFX) {
+            this.ghostContainer.postFX.addShadow(0, 2, 0.1, 1, 0x000000, 4, 0.3);
+        }
         this.ghostSquares = [];
         for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++) {
             this.ghostSquares[i] = [];
@@ -2351,6 +2359,8 @@ export class MainScene extends Phaser.Scene{
                     this.piecesToDelete = [];
                     this.InsertPiece(this.piece, this.pointerX, this.pointerY);
                     this.cameras.main.shake(JUICE_CONFIG.LAND_SHAKE_DURATION, JUICE_CONFIG.LAND_SHAKE_INTENSITY);
+                    this.cameras.main.setScroll(0, -5);
+                    this.time.delayedCall(50, () => this.cameras.main.setScroll(0, 0));
 
 
 
@@ -2405,6 +2415,14 @@ export class MainScene extends Phaser.Scene{
             this.xCounters[i].setText(this.lineCounterY[i]);
         }
         this.updateGhostPiece(this.pointerX, this.pointerY, this.piece.shape);
+        // Transcendent Pulse Logic
+        if (this.timeSlider && this.timeSlider.value <= 0.3) {
+            let pulse = Math.abs(Math.sin(time * 0.01)) * 0.4;
+            this.vignette.strength = 0.3 + pulse;
+        } else {
+            this.vignette.strength = Phaser.Math.Linear(this.vignette.strength, 0, 0.1);
+        }
+
 
         //this.timeSlider.thumb.x = this.timeSlider.track.x + this.timeSlider.track.width * this.timeSlider.value - (this.timeSlider.thumb.width / 2);
 
