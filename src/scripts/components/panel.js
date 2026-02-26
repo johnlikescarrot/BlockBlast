@@ -10,16 +10,17 @@ export class Panel {
         this.scene.tweens.add({
             targets: container,
             scale: 1,
-            duration: 300,
-            ease: 'Back.easeOut'
+            duration: 600,
+            ease: 'Elastic.easeOut',
+            easeParams: [1, 0.5]
         });
     }
 
     animateHide(container, onComplete) {
         this.scene.tweens.add({
             targets: container,
-            scale: 0.8,
-            duration: 200,
+            scale: 0,
+            duration: 300,
             ease: 'Back.easeIn',
             onComplete: () => {
                 container.setVisible(false);

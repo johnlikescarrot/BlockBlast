@@ -482,9 +482,20 @@ export class MainScene extends Phaser.Scene{
         //this.currentTime += (this.secondsToAdd*2)
         
     }
-    FinishTurn(){
-        this.scorePoints += this.newScorePoints
-        this.scoreValueText.setText(this.scorePoints.toString().padStart(8, '0') )
+        FinishTurn(){
+        let startScore = this.scorePoints;
+        this.scorePoints += this.newScorePoints;
+
+        this.tweens.addCounter({
+            from: startScore,
+            to: this.scorePoints,
+            duration: 500,
+            onUpdate: (tween) => {
+                const val = Math.floor(tween.getValue());
+                this.scoreValueText.setText(val.toString().padStart(8, '0'));
+            }
+        });
+
         if(this.CheckGameOver() && this.refillCounter <3){
             this.sliderTween?.pause()
             this.isPaused = true
@@ -534,9 +545,11 @@ export class MainScene extends Phaser.Scene{
             this.FinishTurn()
             return
         }
-        if(this.animationsIterator === 0) {
+                if(this.animationsIterator === 0) {
             this.PauseTimer();
-            this.cameras.main.shake(150, 0.005);
+            let intensity = this.linesToClear.length * 0.005;
+            this.cameras.main.shake(200, intensity);
+            this.cameras.main.flash(100, 255, 255, 255, 0.3);
         }
         
         this.piecesToClear = []
@@ -1485,6 +1498,28 @@ export class MainScene extends Phaser.Scene{
                 
     }
 
+        updateGhostPiece(x, y, shape) {
+        if (!this.canCheck || !this.CanPutPiece(shape, x, y)) {
+            this.ghostContainer.setVisible(false);
+            return;
+        }
+
+        this.ghostContainer.setVisible(true);
+        this.ghostContainer.setPosition(this.offsetX, this.offsetY);
+
+        for (let i = 0; i < 5; i++) {
+            for (let j = 0; j < 5; j++) {
+                let ghostSquare = this.ghostSquares[j][i];
+                if (shape.charAt((5 * i) + j) !== '0') {
+                    ghostSquare.setVisible(true);
+                    ghostSquare.setPosition((j + x) * this.squareSize, (i + y) * this.squareSize);
+                } else {
+                    ghostSquare.setVisible(false);
+                }
+            }
+        }
+    }
+
     encrypt(data) {
         const encrypt = new JSEncrypt();
         encrypt.setPublicKey(process.env.GAME_PUBLIC_KEY);
@@ -1706,9 +1741,11 @@ export class MainScene extends Phaser.Scene{
         this.counter = 0
         this.boardAngle = 0
         this.boardSize = 8
-        this.squareSize = 88
-        this.offsetX = 113
-        this.offsetY = 232
+
+        this.LAYOUT = { OFFSET_X: 113, OFFSET_Y: 232, SQUARE_SIZE: 88 };
+        this.offsetX = this.LAYOUT.OFFSET_X;
+        this.offsetY = this.LAYOUT.OFFSET_Y;
+        this.squareSize = this.LAYOUT.SQUARE_SIZE;
         this.canCheck = false
         this.refillCounter = 0
         this.secondsToAdd = 0
@@ -2116,6 +2153,16 @@ export class MainScene extends Phaser.Scene{
         //CREATE POINTER
         this.pX = 0
         this.pY = 0
+                // GHOST PIECE INIT
+        this.ghostContainer = this.add.container(0, 0).setDepth(2).setAlpha(0.3);
+        this.ghostSquares = [];
+        for (let i = 0; i < 8; i++) {
+            this.ghostSquares[i] = [];
+            for (let j = 0; j < 8; j++) {
+                this.ghostSquares[i][j] = this.add.image(0, 0, 'originalPiece', 'square.png').setVisible(false);
+                this.ghostContainer.add(this.ghostSquares[i][j]);
+            }
+        }
         this.pointer = []
         const pointerContainer = this.add.container(-800,-800)
 
@@ -2242,10 +2289,14 @@ export class MainScene extends Phaser.Scene{
                 pointerContainer.x = -800
                 
                 pointerContainer.y =  -800
-                if(this.CanPutPiece(this.piece.shape,this.pointerX, this.pointerY,this.boardMatrix)){
+                                if(this.CanPutPiece(this.piece.shape,this.pointerX, this.pointerY,this.boardMatrix)){
                     this.piecesToDelete = []
                     this.InsertPiece(this.piece,this.pointerX, this.pointerY)
                     
+                    // SQUASH AND STRETCH
+                    this.cameras.main.shake(100, 0.002);
+
+
                     
                     
                     
@@ -2281,7 +2332,7 @@ export class MainScene extends Phaser.Scene{
             this.lineCounterYadd = [0,0,0,0,0,0,0,0]
             this.linesToClear = []
             this.StopVibration()
-            this.RestoreColors()
+            this.RestoreColors(); this.ghostContainer.setVisible(false);
             
             
             if(this.canCheck){
@@ -2295,8 +2346,9 @@ export class MainScene extends Phaser.Scene{
         }
         for(let i = 0; i < this.boardSize; i++){
             this.yCounters[i].setText(this.lineCounterX[i])
-            this.xCounters[i].setText(this.lineCounterY[i])
+            this.xCounters[i].setText(this.lineCounterY[i]);
         }
+        this.updateGhostPiece(this.pointerX, this.pointerY, this.piece.shape);
 
         //this.timeSlider.thumb.x = this.timeSlider.track.x + this.timeSlider.track.width * this.timeSlider.value - (this.timeSlider.thumb.width / 2);
 
