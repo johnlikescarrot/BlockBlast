@@ -672,7 +672,7 @@ export class MainScene extends Phaser.Scene{
             this.CreateComboText(filas,columnas,combo,numberCombo)
 
             this.RecountLineCounters()
-            this.cameras.main.zoomTo(1.0, 200, "Sine.easeInOut", true);
+            this.cameras.main.zoomTo(1.0, 200, 'Sine.easeInOut', true);
             this.PauseTimer()
             this.FinishTurn()
 
@@ -2210,9 +2210,7 @@ export class MainScene extends Phaser.Scene{
         this.pY = 0
                 // GHOST PIECE INIT
         this.ghostContainer = this.add.container(0, 0).setDepth(2).setAlpha(JUICE_CONFIG.GHOST_ALPHA);
-        if (this.ghostContainer.postFX) {
-            this.ghostContainer.postFX.addShadow(0, 2, 0.1, 1, 0x000000, 4, 0.3);
-        }
+        if (this.ghostContainer.postFX) { this.ghostContainer.postFX.addShadow(0, 2, 0.1, 1, 0x000000, 4, 0.3); }
         this.ghostSquares = [];
         for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++) {
             this.ghostSquares[i] = [];
