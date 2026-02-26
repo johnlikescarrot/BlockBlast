@@ -9,9 +9,22 @@ const JUICE_CONFIG = {
     LAND_SHAKE_DURATION: 100,
     LAND_SHAKE_INTENSITY: 0.002,
     SCORE_ANIM_DURATION: 500,
-    PIECE_DIMENSION: 5
+    PIECE_DIMENSION: 5,
+    COMBO_THRESHOLD: 3,
+    COMBO_BLOOM_DURATION: 500,
+    BLOOM_COLOR: 0xffffff,
+    BLOOM_BLUR_X: 1,
+    BLOOM_BLUR_Y: 1,
+    BLOOM_STRENGTH: 2,
+    BLOOM_STEPS: 3,
+    GLOW_COLOR: 0xffffff,
+    GLOW_OUTER_STRENGTH: 2,
+    GLOW_INNER_STRENGTH: 0,
+    GLOW_KNOCKOUT: false,
+    GLOW_QUALITY: 0.1,
+    GLOW_SAMPLES: 10,
+    TUTORIAL_INITIAL_DELAY: 500
 };
-
 
 
 class Piece {
@@ -561,6 +574,30 @@ export class MainScene extends Phaser.Scene{
             let intensity = this.linesToClear.length * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE;
             this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, intensity);
             this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, (JUICE_CONFIG.FLASH_COLOR >> 16) & 0xFF, (JUICE_CONFIG.FLASH_COLOR >> 8) & 0xFF, JUICE_CONFIG.FLASH_COLOR & 0xFF, false);
+
+            if (this.linesToClear.length >= JUICE_CONFIG.COMBO_THRESHOLD) {
+                if (this.bloomTimer) {
+                    this.bloomTimer.remove();
+                    this.bloomTimer = null;
+                }
+                if (this.comboBloom) {
+                    this.boardContainer?.postFX?.remove?.(this.comboBloom);
+                }
+                this.comboBloom = this.boardContainer?.postFX?.addBloom?.(
+                    JUICE_CONFIG.BLOOM_COLOR,
+                    JUICE_CONFIG.BLOOM_BLUR_X,
+                    JUICE_CONFIG.BLOOM_BLUR_Y,
+                    JUICE_CONFIG.BLOOM_STRENGTH,
+                    JUICE_CONFIG.BLOOM_STEPS
+                );
+                if (this.comboBloom) {
+                    this.bloomTimer = this.time.delayedCall(JUICE_CONFIG.COMBO_BLOOM_DURATION, () => {
+                        this.boardContainer?.postFX?.remove?.(this.comboBloom);
+                        this.comboBloom = null;
+                        this.bloomTimer = null;
+                    });
+                }
+            }
         }
 
         this.piecesToClear = []
@@ -1715,18 +1752,20 @@ export class MainScene extends Phaser.Scene{
         this.uiScene = this.scene.get('UIScene');
         this.uiScene.setCurrentScene(this);
 
-        // Particle Manager for Juiciness
+        // Particle Manager for Juiciness (Modern Phaser 3.60+ API)
         this.particles = this.add.particles(0, 0, 'originalPiece', {
             frame: 'square.png',
             scale: { start: 0.4, end: 0 },
             alpha: { start: 1, end: 0 },
-            lifespan: 600,
-            speed: { min: 150, max: 300 },
+            lifespan: 800,
+            speed: { min: 200, max: 400 },
             angle: { min: 0, max: 360 },
-            gravityY: 400,
-            emitting: false
+            gravityY: 600,
+            emitting: false,
+            blendMode: 'ADD'
         });
         this.particles.setDepth(15);
+        this.particles.postFX?.addBloom?.(JUICE_CONFIG.BLOOM_COLOR, JUICE_CONFIG.BLOOM_BLUR_X, JUICE_CONFIG.BLOOM_BLUR_Y, JUICE_CONFIG.BLOOM_STRENGTH, JUICE_CONFIG.BLOOM_STEPS);
 
         this.dim = this.game.config.width;
         this.startTime = this.time.now * 0.001
@@ -2168,6 +2207,7 @@ export class MainScene extends Phaser.Scene{
             this.ghostSquares[i] = [];
             for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++) {
                 this.ghostSquares[i][j] = this.add.image(0, 0, 'originalPiece', 'square.png').setVisible(false);
+                this.ghostSquares[i][j].postFX?.addGlow?.(JUICE_CONFIG.GLOW_COLOR, JUICE_CONFIG.GLOW_OUTER_STRENGTH, JUICE_CONFIG.GLOW_INNER_STRENGTH, JUICE_CONFIG.GLOW_KNOCKOUT, JUICE_CONFIG.GLOW_QUALITY, JUICE_CONFIG.GLOW_SAMPLES);
                 this.ghostContainer.add(this.ghostSquares[i][j]);
             }
         }
@@ -2316,7 +2356,7 @@ export class MainScene extends Phaser.Scene{
         }, this);
         //this.ReductAnimation()
 
-        this.time.delayedCall(500, () => {
+        this.time.delayedCall(JUICE_CONFIG.TUTORIAL_INITIAL_DELAY, () => {
             this.ShowTutorial()
         });
 

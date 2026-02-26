@@ -5,6 +5,11 @@ import {ResourceLoader} from '../components/resourceLoader.js';
 //import {AnimationsManager} from '../managers/animationsManager.js';
 import * as Phaser from 'phaser';
 
+const UI_CONFIG = {
+    FADE_IN_DURATION: 500,
+    SPLASH_FADE_DURATION: 500,
+    SPLASH_DELAY: 2000
+};
 export class UIScene extends Phaser.Scene
 {
     constructor(){
@@ -42,6 +47,7 @@ export class UIScene extends Phaser.Scene
 
     
     create(){
+        this.cameras.main.fadeIn(UI_CONFIG.FADE_IN_DURATION, 0, 0, 0);
         this.dim = this.game.config.width;
         this.i18n = new I18nManager(this);
         this.i18n.init();
@@ -86,7 +92,7 @@ export class UIScene extends Phaser.Scene
         let splashTween = this.tweens.add({
             targets: this.splashScreen,
             ease: 'sine.inout',
-            duration: 500,
+            duration: UI_CONFIG.SPLASH_FADE_DURATION,
             repeat: 0,
             alpha: {
               getStart: () => 0,
@@ -96,9 +102,9 @@ export class UIScene extends Phaser.Scene
                 let splashTween2 = this.tweens.add({
                     targets: this.splashScreen,
                     ease: 'sine.inout',
-                    duration: 500,
+                    duration: UI_CONFIG.SPLASH_FADE_DURATION,
                     repeat: 0,
-                    delay: 2000,
+                    delay: UI_CONFIG.SPLASH_DELAY,
                     alpha: {
                       getStart: () => 1,
                       getEnd: () => 0
