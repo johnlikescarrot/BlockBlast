@@ -344,7 +344,7 @@ i18n.setLanguage('es');
 
 // Translate keys
 const pauseText = i18n.t('PAUSE');           // "Pausa" in Spanish
-const scoreText = i18n.t('SCORE');           // "Puntuación" in Spanish
+const scoreText = i18n.t('SCORE');           // "Puntuacion" in Spanish
 const tutorialText = i18n.t('TUTORIAL');     // "Tutorial" in Spanish
 const gameOverText = i18n.t('GAME_OVER');    // "Fin de Partida" in Spanish
 
