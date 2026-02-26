@@ -1350,7 +1350,7 @@ export class MainScene extends Phaser.Scene{
             if(this.lineCounterY[i]+this.lineCounterYadd[i]>7)counterPoints+=1
         }
 
-        return this.counter
+        return counterPoints
     }
 
     MakeAnimation(x,y,effect){
@@ -1749,7 +1749,6 @@ export class MainScene extends Phaser.Scene{
         this.powerUpsInGame = {}
         this.queuePieces = new Queue()
 
-        this.counter = 0
         this.boardAngle = 0
         this.boardSize = 8
 
