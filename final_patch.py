@@ -1,58 +1,73 @@
-import sys
+import sys, re
 
 def patch_main_scene():
     path = 'src/scripts/scenes/MainScene.js'
     with open(path, 'r') as f: content = f.read()
 
-    # Shadows
+    # 1. Shadows
     content = content.replace(
         'this.ghostContainer = this.add.container(0, 0).setDepth(2).setAlpha(JUICE_CONFIG.GHOST_ALPHA);',
         'this.ghostContainer = this.add.container(0, 0).setDepth(2).setAlpha(JUICE_CONFIG.GHOST_ALPHA);\n        if (this.ghostContainer.postFX) {\n            this.ghostContainer.postFX.addShadow(0, 2, 0.1, 1, 0x000000, 4, 0.3);\n        }'
     )
-    content = content.replace(
-        'pointerContainer.y = (this.pY-2*this.LAYOUT.SQUARE_SIZE)-this.pointerAdd',
-        'pointerContainer.y = (this.pY-2*this.LAYOUT.SQUARE_SIZE)-this.pointerAdd\n                if (pointerContainer.postFX) {\n                    pointerContainer.postFX.clear();\n                    pointerContainer.postFX.addShadow(0, 5, 0.1, 1, 0x000000, 6, 0.5);\n                }'
+
+    # Dragstart shadow
+    content = re.sub(
+        r'(pointerContainer\.visible = true\s+this\.canCheck = true)',
+        r'if (pointerContainer.postFX) { pointerContainer.postFX.clear(); pointerContainer.postFX.addShadow(0, 5, 0.1, 1, 0x000000, 6, 0.5); }\n                \1',
+        content, count=1
     )
-    # Glow
+
+    # 2. Glow - prevent stacking
     content = content.replace(
         'this.piecesToClear.push(this.idleboard[j][i])',
-        'this.piecesToClear.push(this.idleboard[j][i])\n                    if (this.idleboard[j][i].postFX) { this.idleboard[j][i].postFX.addGlow(0xffffff, 2, 0); }'
+        'this.piecesToClear.push(this.idleboard[j][i])\n                    if (this.idleboard[j][i].postFX) { this.idleboard[j][i].postFX.clear(); this.idleboard[j][i].postFX.addGlow(0xffffff, 2, 0); }'
     )
     content = content.replace(
         'this.piecesToClear.push(this.idleboard[i][j])',
-        'this.piecesToClear.push(this.idleboard[i][j])\n                    if (this.idleboard[i][j].postFX) { this.idleboard[i][j].postFX.addGlow(0xffffff, 2, 0); }'
+        'this.piecesToClear.push(this.idleboard[i][j])\n                    if (this.idleboard[i][j].postFX) { this.idleboard[i][j].postFX.clear(); this.idleboard[i][j].postFX.addGlow(0xffffff, 2, 0); }'
     )
     content = content.replace(
         'console.log(this.colorsToRestore[i])',
         'if (this.piecesToClear[i].postFX) { this.piecesToClear[i].postFX.clear(); }\n            console.log(this.colorsToRestore[i])'
     )
-    # BreakLine FX + Zoom Reset Fix
+
+    # 3. BreakLine FX
     content = content.replace(
         'if (this.animationsIterator === 0) {',
         'if (this.animationsIterator === 0) {\n            let comboCount = this.linesToClear.length;\n            let shakeIntensity = comboCount * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE * 1.5;\n            this.cameras.main.zoomTo(1.05, 100, "Sine.easeInOut", true);'
     )
+
     content = content.replace(
         'this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, intensity);',
         'this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, shakeIntensity);'
     )
-    content = content.replace(
+
+    # Use regex for the complex flash line
+    content = re.sub(
+        r'this\.cameras\.main\.flash\(JUICE_CONFIG\.FLASH_DURATION, .*?, false\);',
         'this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, (JUICE_CONFIG.FLASH_COLOR >> 16) & 0xFF, (JUICE_CONFIG.FLASH_COLOR >> 8) & 0xFF, JUICE_CONFIG.FLASH_COLOR & 0xFF, false);',
-        'this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, 255, 255, 255, false);'
+        content
     )
+
+    # Zoom reset only in BreakLine (it's the first occurrence of RecountLineCounters)
     content = content.replace(
         'this.RecountLineCounters()',
-        'this.RecountLineCounters()\n            this.cameras.main.zoomTo(1.0, 200, "Sine.easeInOut", true);'
+        'this.RecountLineCounters()\n            this.cameras.main.zoomTo(1.0, 200, "Sine.easeInOut", true);',
+        1
     )
-    # Early returns zoom reset
+
+    # 4. Zoom consistency
+    content = re.sub(
+        r'if \(this\.linesToClear\.length < 1 \|\| this\.gamefinish\) \{\s+this\.FinishTurn\(\);\s+return;\s+\}',
+        'if (this.linesToClear.length < 1 || this.gamefinish) {\n            this.cameras.main.setZoom(1);\n            this.FinishTurn();\n            return;\n        }',
+        content
+    )
+
     content = content.replace(
-        'if (this.linesToClear.length < 1 || this.gamefinish) {\n            this.FinishTurn();\n            return;\n        }',
-        'if (this.linesToClear.length < 1 || this.gamefinish) {\n            this.cameras.main.setZoom(1);\n            this.FinishTurn();\n            return;\n        }'
+        "this.uiScene = this.scene.get('UIScene');",
+        "this.uiScene = this.scene.get('UIScene');\n        this.events.once('shutdown', () => { this.cameras.main.setZoom(1); });"
     )
-    # Shutdown reset
-    content = content.replace(
-        'this.uiScene = this.scene.get(\'UIScene\');',
-        'this.uiScene = this.scene.get(\'UIScene\');\n        this.events.once(\'shutdown\', () => { this.cameras.main.setZoom(1); });'
-    )
+
     with open(path, 'w') as f: f.write(content)
 
 def patch_panel():
@@ -119,6 +134,7 @@ def patch_panel():
             new_lines.append('    }\n')
             skip = 15
         else: new_lines.append(line)
+
     with open(path, 'w') as f: f.writelines(new_lines)
 
 patch_main_scene()

@@ -576,7 +576,7 @@ export class MainScene extends Phaser.Scene{
             this.cameras.main.zoomTo(1.05, 100, "Sine.easeInOut", true);
             this.PauseTimer();
             this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, shakeIntensity);
-            this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, 255, 255, 255, false);
+            this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, (JUICE_CONFIG.FLASH_COLOR >> 16) & 0xFF, (JUICE_CONFIG.FLASH_COLOR >> 8) & 0xFF, JUICE_CONFIG.FLASH_COLOR & 0xFF, false);
 
             if (this.linesToClear.length >= JUICE_CONFIG.COMBO_THRESHOLD) {
                 if (this.bloomTimer) {
@@ -827,7 +827,7 @@ export class MainScene extends Phaser.Scene{
                 for(let j = 0; j < this.boardSize; j++){
 
                     this.piecesToClear.push(this.idleboard[j][i])
-                    if (this.idleboard[j][i].postFX) { this.idleboard[j][i].postFX.addGlow(0xffffff, 2, 0); }
+                    if (this.idleboard[j][i].postFX) { this.idleboard[j][i].postFX.clear(); this.idleboard[j][i].postFX.addGlow(0xffffff, 2, 0); }
                     this.colorsToRestore.push(this.GetTexture(this.board[j][i]))
                     if(this.GetTexture(this.board[j][i]).startsWith("blockblast")) {
                         this.idleboard[j][i].anims.pause()
@@ -845,7 +845,7 @@ export class MainScene extends Phaser.Scene{
                 this.linesToClear.push(i+8)
                 for(let j = 0; j < this.boardSize; j++){
                     this.piecesToClear.push(this.idleboard[i][j])
-                    if (this.idleboard[i][j].postFX) { this.idleboard[i][j].postFX.addGlow(0xffffff, 2, 0); }
+                    if (this.idleboard[i][j].postFX) { this.idleboard[i][j].postFX.clear(); this.idleboard[i][j].postFX.addGlow(0xffffff, 2, 0); }
                     this.colorsToRestore.push(this.GetTexture(this.board[i][j]))
                     if(this.GetTexture(this.board[i][j]).startsWith("blockblast")){
                         this.idleboard[i][j].anims.pause()
@@ -897,7 +897,6 @@ export class MainScene extends Phaser.Scene{
         this.boardMatrix = this.RotateMatrixAntiClockwise(this.boardMatrix)
         this.board = this.RotateMatrixAntiClockwise(this.board)
         this.RecountLineCounters()
-            this.cameras.main.zoomTo(1.0, 200, "Sine.easeInOut", true);
         this.RenameBoard()
         this.boardAngle = newAngle
 
@@ -2325,10 +2324,7 @@ export class MainScene extends Phaser.Scene{
                 pointerContainer.x = this.pX-2*this.LAYOUT.SQUARE_SIZE
 
                 pointerContainer.y = (this.pY-2*this.LAYOUT.SQUARE_SIZE)-this.pointerAdd
-                if (pointerContainer.postFX) {
-                    pointerContainer.postFX.clear();
-                    pointerContainer.postFX.addShadow(0, 5, 0.1, 1, 0x000000, 6, 0.5);
-                }
+                if (pointerContainer.postFX) { pointerContainer.postFX.clear(); pointerContainer.postFX.addShadow(0, 5, 0.1, 1, 0x000000, 6, 0.5); }
                 pointerContainer.visible = true
                 this.canCheck = true
             }
@@ -2341,10 +2337,6 @@ export class MainScene extends Phaser.Scene{
                 pointerContainer.x = this.pX-2*this.LAYOUT.SQUARE_SIZE
 
                 pointerContainer.y = (this.pY-2*this.LAYOUT.SQUARE_SIZE)-this.pointerAdd
-                if (pointerContainer.postFX) {
-                    pointerContainer.postFX.clear();
-                    pointerContainer.postFX.addShadow(0, 5, 0.1, 1, 0x000000, 6, 0.5);
-                }
             }
 
         });
