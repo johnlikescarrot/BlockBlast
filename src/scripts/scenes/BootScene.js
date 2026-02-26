@@ -47,7 +47,7 @@ export class BootScene extends Phaser.Scene {
         this.bg = this.add.image(dim / 2, dim / 2, 'loadingBG').setDisplaySize(dim, dim).setDepth(5).setInteractive();
         this.playButton = this.add.image(dim / 2, dim / 2, 'menuUI', 'Play_Clicked.png').setDepth(5).setInteractive();
 
-        this.playButton.setVisible(false).on('pointerdown', () => { this.scene.stop(); this.scene.get("MenuScene").uiScene.splashScreenAnim(); });
+        this.playButton.on('pointerover', () => { this.tweens.add({ targets: this.playButton, scale: 1.1, duration: 80 }); }).on('pointerout', () => { this.tweens.add({ targets: this.playButton, scale: 1.0, duration: 80 }); }).setVisible(false).on('pointerdown', () => { this.scene.stop(); this.scene.get("MenuScene").uiScene.splashScreenAnim(); });
 
         this.loadingSlider = this.rexUI.add.slider({
             x: dim / 2,
@@ -68,6 +68,7 @@ export class BootScene extends Phaser.Scene {
                 bottom: 4
             },
         }).layout().setDepth(5);
+        this.tweens.add({ targets: this.loadingSlider.getElement('indicator'), alpha: 0.6, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
         let sliderTween = this.tweens.add({
             targets: this.loadingSlider,

@@ -436,6 +436,8 @@ export class MainScene extends Phaser.Scene{
                 if(piece.shape.charAt((5*i)+j) != 0){
                     if(this.ObtainInt(piece.shape.charAt((5*i)+j))<-10){//powerups
                         this.idleboard[j+x][i+y].setTexture(this.powerUpsList[piece.shape.charAt((5*i)+j)-1]).setTint(0xffffff).visible = true
+                        const targetSprite = this.idleboard[j+x][i+y];
+                        this.flashSprite(targetSprite);
                         
                         this.powerUpsInGame[(j+x).toString()+(i+y).toString()] = (j+x).toString()+(i+y).toString()
                         this.SetName(this.board[j+x][i+y],this.powerUpsList[piece.shape.charAt((5*i)+j)-1])
@@ -444,6 +446,8 @@ export class MainScene extends Phaser.Scene{
                         let colorForPiece = this.colorsList[this.ObtainInt(piece.shape.charAt((5*i)+j))]
                         this.board[j+x][i+y].setTexture("piece",colorForPiece).setTint(0xffffff).visible = true
                         this.idleboard[j+x][i+y].play("idle_"+colorForPiece[17],true).visible = true
+                        const targetSprite = this.idleboard[j+x][i+y];
+                        this.flashSprite(targetSprite);
                         this.SetName(this.board[j+x][i+y],this.colorsList[this.ObtainInt(piece.shape.charAt((5*i)+j))])
                     }
                     
@@ -533,7 +537,7 @@ export class MainScene extends Phaser.Scene{
             this.FinishTurn()
             return
         }
-        if(this.animationsIterator === 0)this.PauseTimer()
+        if(this.animationsIterator === 0) { this.PauseTimer(); if(this.linesToClear.length >= 1) this.cameras.main.shake(100 * this.linesToClear.length, 0.005); }
         
         this.piecesToClear = []
         this.colorsToRestore = []
@@ -706,6 +710,13 @@ export class MainScene extends Phaser.Scene{
             }
             else{
                 if(!bomb)this.MakeAnimation(filas,columnas,"destroyFx")
+
+                // Trigger Particles
+                const px = (filas * this.squareSize) + this.offsetX;
+                const py = (columnas * this.squareSize) + this.offsetY;
+                const currentTex = this.GetTexture(this.board[filas][columnas]);
+                this.clearEmitter.setFrame(currentTex);
+                this.clearEmitter.emitParticleAt(px, py, 8);
                 this.board[filas][columnas].anims.pause()
                 this.idleboard[filas][columnas].anims.pause()
                 this.board[filas][columnas].setTint(0xffffff)
@@ -939,7 +950,7 @@ export class MainScene extends Phaser.Scene{
         this.idleboard[fila][columna].setVisible(false)
         this.SetName(this.board[fila][columna],this.colorsList[0])
         this.boardMatrix[fila][columna] = 0
-        this.MakeAnimation(fila,columna,"bombFx")
+        this.MakeAnimation(fila,columna,"bombFx"); this.cameras.main.shake(250, 0.015);
         fila = parseInt(fila)
         columna = parseInt(columna)
         console.log("BREAKLINE  in function" + this.piecesToClear.length)
@@ -1375,7 +1386,7 @@ export class MainScene extends Phaser.Scene{
             tween.stop();
             tween.targets[0].setScale(1, 1); // Restablecer la escala del elemento a la normalidad
         });
-        this.vibrateTweens = [];
+        this.vibrateTweens = []
     }
 
 
@@ -1645,6 +1656,13 @@ export class MainScene extends Phaser.Scene{
     }
 
    
+
+    flashSprite(targetSprite) {
+        if(targetSprite) {
+            targetSprite.setTintFill(0xffffff);
+            this.time.delayedCall(100, () => { targetSprite.clearTint(); });
+        }
+    }
 
     create(){
 
@@ -1967,6 +1985,18 @@ export class MainScene extends Phaser.Scene{
 
         this.vibrateTweens = []
 
+        // Particle Emitter for Line Clearing
+        this.clearEmitter = this.add.particles(0, 0, 'originalPiece', {
+            frame: 'blockblast_piece_a.png',
+            speed: { min: 150, max: 300 },
+            angle: { min: 0, max: 360 },
+            scale: { start: 0.5, end: 0 },
+            alpha: { start: 1, end: 0 },
+            lifespan: 800,
+            gravityY: 400,
+            emitting: false
+        }).setDepth(10);
+
 
                 //SCORES
         this.scorePoints = 0
@@ -2125,10 +2155,10 @@ export class MainScene extends Phaser.Scene{
                 //this.uiScene.audioManager.playButtonClick.play();
             });
         this.pauseButton.on('pointerover', function (event) {
-            this.setTexture('inGameUI', 'Pausa_Clicked.png');
+            this.setTexture('inGameUI', 'Pausa_Clicked.png'); this.tweens.add({ targets: this, scale: 1.1, duration: 80 });
         });
         this.pauseButton.on('pointerout', function (event) {
-            this.setTexture('inGameUI', 'Pausa_NonClicked.png');
+            this.setTexture('inGameUI', 'Pausa_NonClicked.png'); this.tweens.add({ targets: this, scale: 1.0, duration: 80 });
         });
 
         this.settingsButton = this.add.image(910, 73, 'inGameUI', 'Reinicio_NonClicked.png').setInteractive().setDepth(6);
@@ -2140,10 +2170,10 @@ export class MainScene extends Phaser.Scene{
                 //this.uiScene.audioManager.playButtonClick.play();
             });
         this.settingsButton.on('pointerover', function (event) {
-            this.setTexture('inGameUI', 'Reinicio_Clicked.png');
+            this.setTexture('inGameUI', 'Reinicio_Clicked.png'); this.tweens.add({ targets: this, scale: 1.1, duration: 80 });
         });
         this.settingsButton.on('pointerout', function (event) {
-            this.setTexture('inGameUI', 'Reinicio_NonClicked.png');
+            this.setTexture('inGameUI', 'Reinicio_NonClicked.png'); this.tweens.add({ targets: this, scale: 1.0, duration: 80 });
         });
         
         this.pointerAdd = 0

@@ -80,10 +80,10 @@ export class MenuScene extends Phaser.Scene
                 //this.uiScene.audioManager.playButtonClick.play();
             });
         this.startButton.on('pointerover', function (event) {
-            this.setTexture('menuUI', 'Play_Clicked.png');
+            this.setTexture('menuUI', 'Play_Clicked.png'); this.tweens.add({ targets: this, scale: 1.1, duration: 80 });
         });
         this.startButton.on('pointerout', function (event) {
-            this.setTexture('menuUI', 'Play_NonClicked.png');
+            this.setTexture('menuUI', 'Play_NonClicked.png'); this.tweens.add({ targets: this, scale: 1.0, duration: 80 });
         });
         
         this.helpButton = this.add.image(dim/2+210, dim/2+350,'menuUI', 'Info_NonClicked.png').setInteractive();
@@ -93,10 +93,10 @@ export class MenuScene extends Phaser.Scene
             //this.uiScene.audioManager.buttonClick.play(); 
         });
         this.helpButton.on('pointerover', function (event) {
-            this.setTexture('menuUI', 'Info_Clicked.png');
+            this.setTexture('menuUI', 'Info_Clicked.png'); this.tweens.add({ targets: this, scale: 1.1, duration: 80 });
         });
         this.helpButton.on('pointerout', function (event) {
-            this.setTexture('menuUI', 'Info_NonClicked.png');
+            this.setTexture('menuUI', 'Info_NonClicked.png'); this.tweens.add({ targets: this, scale: 1.0, duration: 80 });
         });
 
         this.optionsButton = this.add.image(dim/2-210, dim/2+350, 'menuUI', 'Settings_NonClicked.png').setInteractive();
@@ -106,11 +106,11 @@ export class MenuScene extends Phaser.Scene
             //this.uiScene.audioManager.buttonClick.play(); 
         });
         this.optionsButton.on('pointerover', function (event) {
-            this.setTexture('menuUI', 'Settings_Clicked.png');
+            this.setTexture('menuUI', 'Settings_Clicked.png'); this.tweens.add({ targets: this, scale: 1.1, duration: 80 });
             
         });
         this.optionsButton.on('pointerout', function (event) {
-            this.setTexture('menuUI', 'Settings_NonClicked.png');
+            this.setTexture('menuUI', 'Settings_NonClicked.png'); this.tweens.add({ targets: this, scale: 1.0, duration: 80 });
         });
         this.creditsButton = this.add.image(dim-90, 80, 'menuUI', 'Credits_NonClicked.png').setInteractive();
         this.creditsButton.setScale(.7);
@@ -119,10 +119,10 @@ export class MenuScene extends Phaser.Scene
             //this.uiScene.audioManager.buttonClick.play(); 
         });
         this.creditsButton.on('pointerover', function (event) {
-            this.setTexture('menuUI', 'Credits_Clicked.png');
+            this.setTexture('menuUI', 'Credits_Clicked.png'); this.tweens.add({ targets: this, scale: 1.1, duration: 80 });
         });
         this.creditsButton.on('pointerout', function (event) {
-            this.setTexture('menuUI', 'Credits_NonClicked.png');
+            this.setTexture('menuUI', 'Credits_NonClicked.png'); this.tweens.add({ targets: this, scale: 1.0, duration: 80 });
         });
     }
 

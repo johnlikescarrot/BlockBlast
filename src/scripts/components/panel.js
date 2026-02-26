@@ -480,13 +480,16 @@ export class Panel {
         this.setInstructionsText();
         this._hideInstructionsCallback = callback || null;
         this.scene.audioManager.ui_page.play();
-        this.instructionsContainer.setVisible(true);
-        this.panelContainer.setVisible(true);
+        this.instructionsContainer.setScale(0.8).setAlpha(0).setVisible(true);
+        this.panelContainer.setAlpha(0).setVisible(true);
+        this.scene.tweens.add({ targets: this.instructionsContainer, scale: 1, alpha: 1, duration: 250, ease: "Back.easeOut" });
+        this.scene.tweens.add({ targets: this.panelContainer, alpha: 1, duration: 200 });
     }
 
     hideInstructions() {
-        this.instructionsContainer.setVisible(false);
-        this.panelContainer.setVisible(false);
+        this.scene.tweens.add({ targets: this.instructionsContainer, scale: 0.8, alpha: 0, duration: 200, ease: "Power2.easeIn" });
+        this.scene.tweens.add({ targets: this.panelContainer, alpha: 0, duration: 200, onComplete: () => { this.instructionsContainer.setVisible(false);
+        this.panelContainer.setVisible(false); } });
         if (this._hideInstructionsCallback) {
             const cb = this._hideInstructionsCallback;
             this._hideInstructionsCallback = null;
@@ -495,45 +498,57 @@ export class Panel {
     }
 
     showOptions() {
-        this.optionsContainer.setVisible(true);
-        this.panelContainer.setVisible(true);
+        this.optionsContainer.setScale(0.8).setAlpha(0).setVisible(true);
+        this.panelContainer.setAlpha(0).setVisible(true);
+        this.scene.tweens.add({ targets: this.optionsContainer, scale: 1, alpha: 1, duration: 250, ease: "Back.easeOut" });
+        this.scene.tweens.add({ targets: this.panelContainer, alpha: 1, duration: 200 });
         if (this.scene.currentScene.scene.key === 'MenuScene') this.scene.currentScene.optionsButton.setTexture('menuUI', 'Settings_NonClicked.png');
     }
 
     hideOptions() {
-        this.optionsContainer.setVisible(false);
-        this.panelContainer.setVisible(false);
+        this.scene.tweens.add({ targets: this.optionsContainer, scale: 0.8, alpha: 0, duration: 200, ease: "Power2.easeIn" });
+        this.scene.tweens.add({ targets: this.panelContainer, alpha: 0, duration: 200, onComplete: () => { this.optionsContainer.setVisible(false);
+        this.panelContainer.setVisible(false); } });
         if (this.scene.currentScene.scene.key === 'MainScene') this.showPause();
     }
 
     showCredits() {
-        this.creditsContainer.setVisible(true);
-        this.panelContainer.setVisible(true);
+        this.creditsContainer.setScale(0.8).setAlpha(0).setVisible(true);
+        this.panelContainer.setAlpha(0).setVisible(true);
+        this.scene.tweens.add({ targets: this.creditsContainer, scale: 1, alpha: 1, duration: 250, ease: "Back.easeOut" });
+        this.scene.tweens.add({ targets: this.panelContainer, alpha: 1, duration: 200 });
     }
 
     hideCredits() {
-        this.creditsContainer.setVisible(false);
-        this.panelContainer.setVisible(false);
+        this.scene.tweens.add({ targets: this.creditsContainer, scale: 0.8, alpha: 0, duration: 200, ease: "Power2.easeIn" });
+        this.scene.tweens.add({ targets: this.panelContainer, alpha: 0, duration: 200, onComplete: () => { this.creditsContainer.setVisible(false);
+        this.panelContainer.setVisible(false); } });
     }
 
     showPause() {
-        this.pauseContainer.setVisible(true);
-        this.panelContainer.setVisible(true);
+        this.pauseContainer.setScale(0.8).setAlpha(0).setVisible(true);
+        this.panelContainer.setAlpha(0).setVisible(true);
+        this.scene.tweens.add({ targets: this.pauseContainer, scale: 1, alpha: 1, duration: 250, ease: "Back.easeOut" });
+        this.scene.tweens.add({ targets: this.panelContainer, alpha: 1, duration: 200 });
     }
 
     hidePause() {
-        this.pauseContainer.setVisible(false);
-        this.panelContainer.setVisible(false);
+        this.scene.tweens.add({ targets: this.pauseContainer, scale: 0.8, alpha: 0, duration: 200, ease: "Power2.easeIn" });
+        this.scene.tweens.add({ targets: this.panelContainer, alpha: 0, duration: 200, onComplete: () => { this.pauseContainer.setVisible(false);
+        this.panelContainer.setVisible(false); } });
     }
 
     showReload() {
-        this.reloadContainer.setVisible(true);
-        this.reloadPanelContainer.setVisible(true);
+        this.reloadContainer.setScale(0.8).setAlpha(0).setVisible(true);
+        this.reloadPanelContainer.setAlpha(0).setVisible(true);
+        this.scene.tweens.add({ targets: this.reloadContainer, scale: 1, alpha: 1, duration: 250, ease: "Back.easeOut" });
+        this.scene.tweens.add({ targets: this.reloadPanelContainer, alpha: 1, duration: 200 });
     }
 
     hideReload() {
-        this.reloadContainer.setVisible(false);
-        this.reloadPanelContainer.setVisible(false);
+        this.scene.tweens.add({ targets: this.reloadContainer, scale: 0.8, alpha: 0, duration: 200, ease: "Power2.easeIn" });
+        this.scene.tweens.add({ targets: this.reloadPanelContainer, alpha: 0, duration: 200, onComplete: () => { this.reloadContainer.setVisible(false);
+        this.reloadPanelContainer.setVisible(false); } });
     }
 
     showScore(score, newHighScore) {
@@ -542,14 +557,17 @@ export class Panel {
         this.recordText.setText(newHighScore);
         let gameplayTime = this.scene.currentScene.finishTime - this.scene.currentScene.startTime;
         this.timeText.setText(this.secondsToString(gameplayTime));
-        this.scoreContainer.setVisible(true);
-        this.panelContainer.setVisible(true);
+        this.scoreContainer.setScale(0.8).setAlpha(0).setVisible(true);
+        this.panelContainer.setAlpha(0).setVisible(true);
+        this.scene.tweens.add({ targets: this.scoreContainer, scale: 1, alpha: 1, duration: 250, ease: "Back.easeOut" });
+        this.scene.tweens.add({ targets: this.panelContainer, alpha: 1, duration: 200 });
     }
 
     hideScore() {
         this.panel.setTexture("panel");
-        this.scoreContainer.setVisible(false);
-        this.panelContainer.setVisible(false);
+        this.scene.tweens.add({ targets: this.scoreContainer, scale: 0.8, alpha: 0, duration: 200, ease: "Power2.easeIn" });
+        this.scene.tweens.add({ targets: this.panelContainer, alpha: 0, duration: 200, onComplete: () => { this.scoreContainer.setVisible(false);
+        this.panelContainer.setVisible(false); } });
     }
 
     secondsToString(seconds) {
