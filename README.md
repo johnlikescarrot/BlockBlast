@@ -376,7 +376,7 @@ import { ResourceLoader } from './scripts/components/resourceLoader.js';
 const prodRoute = 'https://static.pchujoy.com/public/games-assets/parchados';
 
 class ResourceLoader {
-    static isProd = true;
+    static isProd = process.env.NODE_ENV === 'production';
 
     static ReturnPath() {
         return this.isProd ? prodRoute : './src';
@@ -384,9 +384,7 @@ class ResourceLoader {
 
     static ReturnLocalePath(lang) {
         const safeLang = this.supportedLocales.has(lang) ? lang : 'en';
-        return this.isProd
-            ? `${prodRoute}/scripts/locales/${safeLang}.json`
-            : `./src/scripts/locales/${safeLang}.json`;
+        return `./scripts/locales/${safeLang}.json`;
     }
 }
 
