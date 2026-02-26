@@ -68,8 +68,9 @@ export class Panel {
         let optionsButton = this.scene.add.image(dim / 2, dim / 2 - 80, 'pantalla_pausa_UI', 'Botón_opciones_NonClicked.png').setInteractive().setDisplaySize(400, 75);
         optionsButton.on('pointerdown', () => {
             this.scene.audioManager.ui_click.play();
-            this.hidePause();
-            this.showOptions();
+            this.hidePause(() => {
+                this.showOptions();
+            });
         });
 
         let continueButton = this.scene.add.image(dim / 2, dim / 2 + 25, 'pantalla_pausa_UI', 'Botón_Continuar_NonClicked.png').setInteractive().setDisplaySize(400, 75);
@@ -511,12 +512,12 @@ export class Panel {
     hideInstructions() {
         this.animateHide(this.instructionsContainer, () => {
             this.panelContainer.setVisible(false);
+            if (this._hideInstructionsCallback) {
+                const cb = this._hideInstructionsCallback;
+                this._hideInstructionsCallback = null;
+                cb();
+            }
         });
-        if (this._hideInstructionsCallback) {
-            const cb = this._hideInstructionsCallback;
-            this._hideInstructionsCallback = null;
-            cb();
-        }
     }
 
     showOptions() {
@@ -548,9 +549,10 @@ export class Panel {
         this.panelContainer.setVisible(true);
     }
 
-    hidePause() {
+    hidePause(callback) {
         this.animateHide(this.pauseContainer, () => {
             this.panelContainer.setVisible(false);
+            if (callback) callback();
         });
     }
 

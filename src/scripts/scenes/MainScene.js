@@ -534,8 +534,10 @@ export class MainScene extends Phaser.Scene{
             this.FinishTurn()
             return
         }
-        if(this.animationsIterator === 0)this.PauseTimer()
-        if(this.animationsIterator === 0) this.cameras.main.shake(150, 0.005);
+        if(this.animationsIterator === 0) {
+            this.PauseTimer();
+            this.cameras.main.shake(150, 0.005);
+        }
         
         this.piecesToClear = []
         this.colorsToRestore = []
@@ -1382,6 +1384,16 @@ export class MainScene extends Phaser.Scene{
     }
 
 
+    blinkTimerIndicator(indicator) {
+        this.tweens.add({
+            targets: indicator,
+            alpha: 0.5,
+            duration: 100,
+            yoyo: true,
+            onComplete: () => indicator.setAlpha(1)
+        });
+    }
+
     ShowTime(){
         console.log("TIMER IS WORKING")
         this.sliderTween?.remove();
@@ -1428,13 +1440,13 @@ export class MainScene extends Phaser.Scene{
                     let currentFrame = indicator.frame.name;
                     if(currentFrame === 'verde.png'){
                         indicator.setFrame('rojo.png')
-                        this.tweens.add({ targets: indicator, alpha: 0.5, duration: 100, yoyo: true, onComplete: () => indicator.setAlpha(1) });
+                        this.blinkTimerIndicator(indicator);
                         this.audioManager.alarma.play()
 
                     }
                     else{
                         indicator.setFrame('verde.png')
-                        this.tweens.add({ targets: indicator, alpha: 0.5, duration: 100, yoyo: true, onComplete: () => indicator.setAlpha(1) });
+                        this.blinkTimerIndicator(indicator);
                     }
                     
                 }

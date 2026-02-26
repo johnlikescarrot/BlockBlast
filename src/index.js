@@ -82,8 +82,8 @@ function run(opts) {
 
 
     // gama instance
-    const game = new Phaser.Game(gameOptions);
-    game.config.metadata = metadata;
+    window.Parchados.game = new Phaser.Game(gameOptions);
+    window.Parchados.game.config.metadata = metadata;
 }
 
 // Attach the game to the window object
