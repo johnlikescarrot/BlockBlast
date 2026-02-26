@@ -12,12 +12,16 @@ export class Panel {
         this.updateCredits();
         this._hideInstructionsCallback = null;
         this.blurFX = null;
-        this.scene.input.on("pointermove", (pointer) => {
+        this._onPointerMove = (pointer) => {
             if (this.panelContainer && this.panelContainer.visible) {
                 let centerX = this.scene.cameras.main.width / 2;
                 let dx = (pointer.x - centerX) / centerX;
                 this.panelContainer.setRotation(dx * 0.02);
             }
+        };
+        this.scene.input.on("pointermove", this._onPointerMove);
+        this.scene.events.once("shutdown", () => {
+            this.scene.input.off("pointermove", this._onPointerMove);
         });
     }
     animateShow(container) {
@@ -45,35 +49,25 @@ export class Panel {
             targets: container,
             scale: 0,
             duration: UI_CONFIG.HIDE_DURATION,
-            ease: 'Back.easeIn',
+            ease: "Back.easeIn",
             onComplete: () => {
                 container.setVisible(false);
-                if (this.blurFX) {
-            this.scene.tweens.add({
-                targets: this.blurFX,
-                strength: 0,
-                duration: UI_CONFIG.HIDE_DURATION
-            });
-                    this.scene.currentScene?.cameras?.main?.postFX?.remove?.(this.blurFX);
-                    this.blurFX = null;
-        this.scene.input.on("pointermove", (pointer) => {
-            if (this.panelContainer && this.panelContainer.visible) {
-                let centerX = this.scene.cameras.main.width / 2;
-                let dx = (pointer.x - centerX) / centerX;
-                this.panelContainer.setRotation(dx * 0.02);
-            }
-        });
-        this.scene.input.on("pointermove", (pointer) => {
-            if (this.panelContainer && this.panelContainer.visible) {
-                let centerX = this.scene.cameras.main.width / 2;
-                let dx = (pointer.x - centerX) / centerX;
-                this.panelContainer.setRotation(dx * 0.02);
-            }
-        });
-                }
                 if (onComplete) onComplete();
             }
         });
+        if (this.blurFX) {
+            this.scene.tweens.add({
+                targets: this.blurFX,
+                strength: 0,
+                duration: UI_CONFIG.HIDE_DURATION,
+                onComplete: () => {
+                    if (this.blurFX) {
+                        this.scene.currentScene?.cameras?.main?.postFX?.remove?.(this.blurFX);
+                        this.blurFX = null;
+                    }
+                }
+            });
+        }
     }
 
 

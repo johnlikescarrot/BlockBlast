@@ -566,14 +566,15 @@ export class MainScene extends Phaser.Scene{
 
     BreakLine(x, y) {
         if (this.linesToClear.length < 1 || this.gamefinish) {
+            this.cameras.main.setZoom(1);
             this.FinishTurn();
             return;
         }
         if (this.animationsIterator === 0) {
-            this.PauseTimer();
             let comboCount = this.linesToClear.length;
             let shakeIntensity = comboCount * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE * 1.5;
             this.cameras.main.zoomTo(1.05, 100, "Sine.easeInOut", true);
+            this.PauseTimer();
             this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, shakeIntensity);
             this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, 255, 255, 255, false);
 
@@ -826,6 +827,7 @@ export class MainScene extends Phaser.Scene{
                 for(let j = 0; j < this.boardSize; j++){
 
                     this.piecesToClear.push(this.idleboard[j][i])
+                    if (this.idleboard[j][i].postFX) { this.idleboard[j][i].postFX.addGlow(0xffffff, 2, 0); }
                     this.colorsToRestore.push(this.GetTexture(this.board[j][i]))
                     if(this.GetTexture(this.board[j][i]).startsWith("blockblast")) {
                         this.idleboard[j][i].anims.pause()
@@ -843,6 +845,7 @@ export class MainScene extends Phaser.Scene{
                 this.linesToClear.push(i+8)
                 for(let j = 0; j < this.boardSize; j++){
                     this.piecesToClear.push(this.idleboard[i][j])
+                    if (this.idleboard[i][j].postFX) { this.idleboard[i][j].postFX.addGlow(0xffffff, 2, 0); }
                     this.colorsToRestore.push(this.GetTexture(this.board[i][j]))
                     if(this.GetTexture(this.board[i][j]).startsWith("blockblast")){
                         this.idleboard[i][j].anims.pause()
@@ -863,6 +866,7 @@ export class MainScene extends Phaser.Scene{
 
         for(let i = 0; i < this.colorsToRestore.length; i++){
 
+            if (this.piecesToClear[i].postFX) { this.piecesToClear[i].postFX.clear(); }
             console.log(this.colorsToRestore[i])
             if(this.colorsToRestore[i].startsWith("blockblast")) this.piecesToClear[i].play("idle" + this.colorsToRestore[i][17],true)
 
@@ -1754,6 +1758,7 @@ export class MainScene extends Phaser.Scene{
         this.game.config.metadata.onGameStart({state:`game_start`, name:`blockblast`});
 
         this.uiScene = this.scene.get('UIScene');
+        this.events.once('shutdown', () => { this.cameras.main.setZoom(1); });
         this.uiScene.setCurrentScene(this);
 
         // Particle Manager for Juiciness (Modern Phaser 3.60+ API)
@@ -2320,6 +2325,10 @@ export class MainScene extends Phaser.Scene{
                 pointerContainer.x = this.pX-2*this.LAYOUT.SQUARE_SIZE
 
                 pointerContainer.y = (this.pY-2*this.LAYOUT.SQUARE_SIZE)-this.pointerAdd
+                if (pointerContainer.postFX) {
+                    pointerContainer.postFX.clear();
+                    pointerContainer.postFX.addShadow(0, 5, 0.1, 1, 0x000000, 6, 0.5);
+                }
                 pointerContainer.visible = true
                 this.canCheck = true
             }
@@ -2332,6 +2341,10 @@ export class MainScene extends Phaser.Scene{
                 pointerContainer.x = this.pX-2*this.LAYOUT.SQUARE_SIZE
 
                 pointerContainer.y = (this.pY-2*this.LAYOUT.SQUARE_SIZE)-this.pointerAdd
+                if (pointerContainer.postFX) {
+                    pointerContainer.postFX.clear();
+                    pointerContainer.postFX.addShadow(0, 5, 0.1, 1, 0x000000, 6, 0.5);
+                }
             }
 
         });
