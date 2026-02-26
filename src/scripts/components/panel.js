@@ -23,6 +23,7 @@ export class Panel {
         this.scene.events.once("shutdown", () => {
             this.scene.input.off("pointermove", this._onPointerMove);
         });
+    }
     animateShow(container) {
         container.setVisible(true);
         container.setScale(0.8);
