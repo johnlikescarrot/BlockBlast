@@ -715,7 +715,8 @@ export class MainScene extends Phaser.Scene{
                 const px = (filas * this.squareSize) + this.offsetX;
                 const py = (columnas * this.squareSize) + this.offsetY;
                 const currentTex = this.GetTexture(this.board[filas][columnas]);
-                this.clearEmitter.setFrame(currentTex);
+                const particleFrame = this.textures.get('originalPiece').has(currentTex) ? currentTex : 'blockblast_piece_a.png';
+                this.clearEmitter.setFrame(particleFrame);
                 this.clearEmitter.emitParticleAt(px, py, 8);
                 this.board[filas][columnas].anims.pause()
                 this.idleboard[filas][columnas].anims.pause()
