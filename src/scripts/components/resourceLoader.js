@@ -11,11 +11,8 @@ export class ResourceLoader {
     }
 
     static ReturnPath() {
-        if (this.isProd) {
-            return prodRoute;
-        } else {
-            return './src';
-        }
+        // Return CDN route by default as assets are not stored in repository
+        return prodRoute;
     }
 
     static ReturnLocalePath(lang) {

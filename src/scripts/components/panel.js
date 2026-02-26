@@ -1,3 +1,11 @@
+const UI_CONFIG = {
+    SHOW_DURATION: 600,
+    HIDE_DURATION: 300,
+    BLUR_QUALITY: 1,
+    BLUR_X: 1,
+    BLUR_Y: 1,
+    BLUR_STRENGTH: 2
+};
 export class Panel {
     constructor(scene) {
         this.scene = scene;
@@ -11,12 +19,12 @@ export class Panel {
         this.scene.tweens.add({
             targets: container,
             scale: 1,
-            duration: 600,
+            duration: UI_CONFIG.SHOW_DURATION,
             ease: 'Elastic.easeOut',
             easeParams: [1, 0.5]
         });
         if (this.scene.currentScene && !this.blurFX) {
-            this.blurFX = this.scene.currentScene.cameras.main.postFX.addBlur(1, 1, 1, 2);
+            this.blurFX = this.scene.currentScene.cameras.main.postFX.addBlur(UI_CONFIG.BLUR_QUALITY, UI_CONFIG.BLUR_X, UI_CONFIG.BLUR_Y, UI_CONFIG.BLUR_STRENGTH);
         }
     }
 
@@ -24,7 +32,7 @@ export class Panel {
         this.scene.tweens.add({
             targets: container,
             scale: 0,
-            duration: 300,
+            duration: UI_CONFIG.HIDE_DURATION,
             ease: 'Back.easeIn',
             onComplete: () => {
                 container.setVisible(false);

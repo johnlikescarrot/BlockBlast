@@ -1,6 +1,10 @@
 import { ResourceLoader } from '../components/resourceLoader.js';
 import { SUPPORTED_LOCALES } from '../components/i18n.js';
 
+const UI_CONFIG = {
+    LOADING_DURATION: 2000,
+    FINISH_DURATION: 500
+};
 export class BootScene extends Phaser.Scene {
     constructor() {
         super({ key: 'BootScene' });
@@ -72,7 +76,7 @@ export class BootScene extends Phaser.Scene {
         let sliderTween = this.tweens.add({
             targets: this.loadingSlider,
             ease: 'sine.inout',
-            duration: 2000,
+            duration: UI_CONFIG.LOADING_DURATION,
             repeat: 0,
             value: {
                 getStart: () => 0,
@@ -104,7 +108,7 @@ export class BootScene extends Phaser.Scene {
             let sliderTween = this.tweens.add({
                 targets: this.loadingSlider,
                 ease: 'sine.inout',
-                duration: 500,
+                duration: UI_CONFIG.FINISH_DURATION,
                 repeat: 0,
                 value: {
                     getStart: () => .9,

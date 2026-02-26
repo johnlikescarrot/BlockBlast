@@ -1,6 +1,12 @@
 import * as Phaser from 'phaser';
 import {ResourceLoader} from '../components/resourceLoader.js';
 // -------------------------------------------
+const UI_CONFIG = {
+    FADE_IN_DURATION: 500,
+    FADE_OUT_DURATION: 300,
+    LOADING_DURATION: 1500,
+    SLIDER_FINISH_DURATION: 500
+};
 // Menu Scene
 // -------------------------------------------
 export class MenuScene extends Phaser.Scene
@@ -25,7 +31,7 @@ export class MenuScene extends Phaser.Scene
     }
 
     create(){
-        this.cameras.main.fadeIn(500, 0, 0, 0);
+        this.cameras.main.fadeIn(UI_CONFIG.FADE_IN_DURATION, 0, 0, 0);
         let dim = this.game.config.width;
         this.uiScene = this.scene.get('UIScene');
         this.uiScene.setCurrentScene(this);
@@ -75,7 +81,9 @@ export class MenuScene extends Phaser.Scene
         this.startButton.setScale(1);
         this.startButton.on('pointerdown', () => 
             {
-                this.cameras.main.fadeOut(300, 0, 0, 0);
+                this.startButton.disableInteractive();
+                this.startButton.setTexture('menuUI', 'Play_Clicked.png');
+                this.cameras.main.fadeOut(UI_CONFIG.FADE_OUT_DURATION, 0, 0, 0);
                 this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
                 this.nextSceneReady = false;
                 this.showLoading();
@@ -144,7 +152,7 @@ export class MenuScene extends Phaser.Scene
             let sliderTween = this.tweens.add({
                 targets: this.loadingSlider,
                 ease: 'sine.inout',
-                duration: 500,
+                duration: UI_CONFIG.SLIDER_FINISH_DURATION,
                 repeat: 0,
                 value: {
                   getStart: () => .9,
@@ -171,7 +179,7 @@ export class MenuScene extends Phaser.Scene
         let sliderTween = this.tweens.add({
             targets: this.loadingSlider,
             ease: 'sine.inout',
-            duration: 1500,
+            duration: UI_CONFIG.LOADING_DURATION,
             repeat: 0,
             value: {
               getStart: () => 0,
