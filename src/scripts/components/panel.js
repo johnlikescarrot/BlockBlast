@@ -32,9 +32,10 @@ export class Panel {
     animateHide(container, onComplete) {
         this.scene.tweens.add({
             targets: container,
-            alpha: { value: 0, ease: "Expo.easeIn" },
-            scale: { value: 0.5, ease: "Expo.easeIn" },
-            angle: { value: 5, ease: "Expo.easeIn" },
+            alpha: 0,
+            scale: 0.5,
+            angle: 5,
+            ease: "Expo.easeIn",
             duration: UI_CONFIG.HIDE_DURATION,
             onComplete: () => {
                 container.setVisible(false);

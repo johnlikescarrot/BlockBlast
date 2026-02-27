@@ -151,10 +151,12 @@ export class MainScene extends Phaser.Scene{
     PauseTimer(){
         if(!this.isPaused){
             this.sliderTween?.pause()
+            this.ghostPulseTween?.pause()
             this.isPaused = true
         }
         else{
             this.sliderTween?.resume()
+            this.ghostPulseTween?.resume()
             this.isPaused = false
         }
     }
@@ -1829,7 +1831,7 @@ export class MainScene extends Phaser.Scene{
             this.board = []
             this.idleboard = []
             this.boardContainer = this.add.container(0,0)
-            this.boardContainer.postFX.addShine(JUICE_CONFIG.SHINE_SPEED, JUICE_CONFIG.SHINE_LINE_WIDTH, JUICE_CONFIG.SHINE_GRADIENT);
+            this.boardShine = this.boardContainer?.postFX?.addShine?.(JUICE_CONFIG.SHINE_SPEED, JUICE_CONFIG.SHINE_LINE_WIDTH, JUICE_CONFIG.SHINE_GRADIENT);
             this.idleBoardContainer = this.add.container(0,0)
             this.boardContainer.add(boardTable)
             for(let i = 0; i < this.boardSize; i++){
@@ -2196,8 +2198,8 @@ export class MainScene extends Phaser.Scene{
         this.pX = 0
         this.pY = 0
                 // GHOST PIECE INIT
-        this.ghostContainer = this.add.container(0, 0).setDepth(2).setAlpha(JUICE_CONFIG.GHOST_ALPHA);
-        this.tweens.add({
+        this.ghostContainer = this.add.container(0, 0).setDepth(2);
+        this.ghostPulseTween = this.tweens.add({
             targets: this.ghostContainer,
             alpha: { from: 0.1, to: 0.5 },
             duration: JUICE_CONFIG.GHOST_PULSE_DURATION,
@@ -2356,6 +2358,17 @@ export class MainScene extends Phaser.Scene{
 
         this.time.delayedCall(JUICE_CONFIG.TUTORIAL_INITIAL_DELAY, () => {
             this.ShowTutorial()
+        });
+
+        this.events.on('shutdown', () => {
+            if (this.boardShine) {
+                this.boardContainer?.postFX?.remove?.(this.boardShine);
+                this.boardShine = null;
+            }
+            if (this.ghostPulseTween) {
+                this.ghostPulseTween.remove();
+                this.ghostPulseTween = null;
+            }
         });
 
     }
