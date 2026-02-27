@@ -30,9 +30,9 @@ export class Panel {
     animateHide(container, onComplete) {
         this.scene.tweens.add({
             targets: container,
-            scale: 0,
+            alpha: { value: 0, ease: "Sine.easeIn" },
+            scale: { value: 0, ease: "Back.easeIn" },
             duration: UI_CONFIG.HIDE_DURATION,
-            ease: 'Back.easeIn',
             onComplete: () => {
                 container.setVisible(false);
                 if (this.blurFX) {
@@ -43,8 +43,6 @@ export class Panel {
             }
         });
     }
-
-
     updateCredits() {
         this.credits = [
             [this.scene.i18n.t('PROGRAMMING'), 'Diego Johnson', 'Braulio Baldeon'],

@@ -778,7 +778,7 @@ export class MainScene extends Phaser.Scene{
         this.tweens.add({
             targets: container,
             alpha: 1,
-            scale: JUICE_CONFIG.PIECE_BREAK_SCALE,
+            scale: JUICE_CONFIG.COMBO_TEXT_SCALE,
             duration: JUICE_CONFIG.COMBO_TEXT_APPEAR_DURATION,
             ease: 'Back.easeOut',
             onComplete: () => {
@@ -818,7 +818,7 @@ export class MainScene extends Phaser.Scene{
             else{
                 this.tweens.add({
                     targets: [this.board[filas][columnas], this.idleboard[filas][columnas]],
-                    scale: JUICE_CONFIG.COMBO_TEXT_SCALE,
+                    scale: JUICE_CONFIG.PIECE_BREAK_SCALE,
                     duration: JUICE_CONFIG.PIECE_BREAK_SCALE_DURATION,
                     yoyo: true,
                     onComplete: () => {

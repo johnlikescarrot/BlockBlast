@@ -34,12 +34,6 @@ export class UIScene extends Phaser.Scene
         //this.animationsManager.load();
 
         //Plugins
-        this.load.scenePlugin({
-            key: 'rexuiplugin',
-            url: 'https://cdn.jsdelivr.net/npm/phaser3-rex-plugins@1.80.18/dist/rexuiplugin.min.js',
-            sceneKey: 'rexUI',
-            // SRI: qgvnEsRocz1vqjxr72z2QIBk1dsiOdhFcKe3cTBy+WfB1OxTZMfNX5FYEIJR9Jfk
-        });
     }
 
     init(data){
