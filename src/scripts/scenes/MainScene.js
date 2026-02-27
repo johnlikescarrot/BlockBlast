@@ -46,6 +46,12 @@ const JUICE_CONFIG = {
     COMBO_TEXT_SCALE: 1.2,
     TIMER_BLINK_DURATION: 100,
     GHOST_PIECE_LERP_FACTOR: 0.3,
+    SHINE_SPEED: 0.5,
+    SHINE_LINE_WIDTH: 0.5,
+    SHINE_GRADIENT: 1,
+    GHOST_PULSE_DURATION: 800,
+    BREAK_ZOOM_LEVEL: 1.05,
+    BREAK_ZOOM_DURATION: 300,
     COMBO_TEXT_OFFSET_X: 40,
     COMBO_NUMBER_OFFSET_X: 140,
     COMBO_PTS_OFFSET_Y: 50,
@@ -609,6 +615,7 @@ export class MainScene extends Phaser.Scene{
             return;
         }
         if (this.animationsIterator === 0) {
+            this.cameras.main.zoomTo(JUICE_CONFIG.BREAK_ZOOM_LEVEL, JUICE_CONFIG.BREAK_ZOOM_DURATION, "Sine.easeInOut", true);
             this.PauseTimer();
             let intensity = this.linesToClear.length * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE;
             this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, intensity);
@@ -676,6 +683,7 @@ export class MainScene extends Phaser.Scene{
 
         if(this.animationsIterator>7){
             this.animationsIterator = 0
+            this.cameras.main.zoomTo(1, JUICE_CONFIG.BREAK_ZOOM_DURATION, "Sine.easeInOut", true);
 
             //FINAL ANIMATIONS
 
@@ -1821,6 +1829,7 @@ export class MainScene extends Phaser.Scene{
             this.board = []
             this.idleboard = []
             this.boardContainer = this.add.container(0,0)
+            this.boardContainer.postFX.addShine(JUICE_CONFIG.SHINE_SPEED, JUICE_CONFIG.SHINE_LINE_WIDTH, JUICE_CONFIG.SHINE_GRADIENT);
             this.idleBoardContainer = this.add.container(0,0)
             this.boardContainer.add(boardTable)
             for(let i = 0; i < this.boardSize; i++){
@@ -2188,6 +2197,13 @@ export class MainScene extends Phaser.Scene{
         this.pY = 0
                 // GHOST PIECE INIT
         this.ghostContainer = this.add.container(0, 0).setDepth(2).setAlpha(JUICE_CONFIG.GHOST_ALPHA);
+        this.tweens.add({
+            targets: this.ghostContainer,
+            alpha: { from: 0.1, to: 0.5 },
+            duration: JUICE_CONFIG.GHOST_PULSE_DURATION,
+            yoyo: true,
+            repeat: -1
+        });
         this.ghostSquares = [];
         for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++) {
             this.ghostSquares[i] = [];

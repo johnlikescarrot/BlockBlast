@@ -15,12 +15,14 @@ export class Panel {
     }
     animateShow(container) {
         container.setVisible(true);
-        container.setScale(0.8);
+        container.setScale(0.5);
         container.setAlpha(0);
+        container.setAngle(-5);
         this.scene.tweens.add({
             targets: container,
-            alpha: { value: 1, ease: "Sine.easeOut" },
-            scale: { value: 1, ease: "Elastic.easeOut", easeParams: [1, 0.5] },
+            alpha: { value: 1, ease: "Expo.easeOut" },
+            scale: { value: 1, ease: "Back.easeOut", easeParams: [1.2] },
+            angle: { value: 0, ease: "Back.easeOut" },
             duration: UI_CONFIG.SHOW_DURATION
         });
         if (this.scene.currentScene && !this.blurFX) {
@@ -30,8 +32,9 @@ export class Panel {
     animateHide(container, onComplete) {
         this.scene.tweens.add({
             targets: container,
-            alpha: { value: 0, ease: "Sine.easeIn" },
-            scale: { value: 0, ease: "Back.easeIn" },
+            alpha: { value: 0, ease: "Expo.easeIn" },
+            scale: { value: 0.5, ease: "Expo.easeIn" },
+            angle: { value: 5, ease: "Expo.easeIn" },
             duration: UI_CONFIG.HIDE_DURATION,
             onComplete: () => {
                 container.setVisible(false);
