@@ -117,6 +117,7 @@ export class MainScene extends Phaser.Scene{
     ShowTutorial(){
         if(!this.data.get('tutorial')){
             this.sliderTween?.pause()
+            this.ghostPulseTween?.pause()
             this.isPaused = true
             this.data.set(`tutorial`, true);
             this.panel.showInstructions()
@@ -126,6 +127,7 @@ export class MainScene extends Phaser.Scene{
 
     CloseInstructions(){
         this.sliderTween?.resume()
+        this.ghostPulseTween?.resume()
         this.isPaused = false
     }
 
@@ -135,12 +137,14 @@ export class MainScene extends Phaser.Scene{
         if(!this.pauseOpen){
             this.audioManager.pauseMusic()
             this.sliderTween?.pause()
+            this.ghostPulseTween?.pause()
             this.isPaused = true
             this.pauseOpen = true
             this.panel.showPause();
         }
         else{
             this.sliderTween?.resume()
+            this.ghostPulseTween?.resume()
             this.isPaused = false
             this.pauseOpen = false
             this.panel.hidePause()
@@ -176,12 +180,14 @@ export class MainScene extends Phaser.Scene{
     ReloadGame(){
         if(!this.pauseOpen){
             this.sliderTween?.pause()
+            this.ghostPulseTween?.pause()
             this.isPaused = true
             this.pauseOpen = true
             this.panel.showReload();
         }
         else{
             this.sliderTween?.resume()
+            this.ghostPulseTween?.resume()
             this.isPaused = false
             this.pauseOpen = false
             this.panel.hideReload()
@@ -1097,6 +1103,7 @@ export class MainScene extends Phaser.Scene{
     CreateOptions(){
         if(this.converterBool){
             this.sliderTween?.pause()
+            this.ghostPulseTween?.pause()
             this.isPaused = true
         }
         this.powerupcd +=1
@@ -1151,6 +1158,7 @@ export class MainScene extends Phaser.Scene{
                 if(this.converterBool){
                     this.ConverterPowerUp()
                     this.sliderTween?.resume()
+                    this.ghostPulseTween?.resume()
                     this.isPaused = false
                 }
                 this.converterBool = false
