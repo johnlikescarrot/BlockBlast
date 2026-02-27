@@ -23,8 +23,27 @@ const JUICE_CONFIG = {
     GLOW_KNOCKOUT: false,
     GLOW_QUALITY: 0.1,
     GLOW_SAMPLES: 10,
-    TUTORIAL_INITIAL_DELAY: 500
+    TUTORIAL_INITIAL_DELAY: 500,
+    LAND_ANIM_SCALE: 0.8,
+    LAND_ANIM_DURATION: 400,
+    LAND_ANIM_EASE: "Elastic.easeOut",
+    LAND_ANIM_EASE_PARAMS: [1, 0.5],
+    EFFECT_TEXT_FADE_IN: 200,
+    EFFECT_TEXT_DISPLAY: 400,
+    EFFECT_TEXT_FADE_OUT: 200,
+    COMBO_TEXT_APPEAR_DURATION: 400,
+    COMBO_TEXT_STAY_DURATION: 600,
+    COMBO_TEXT_FADEOUT_DURATION: 300,
+    PIECE_BREAK_PARTICLE_COUNT: 25,
+    GET_BEST_PIECES_SAMPLE_SIZE: 10,
+    GHOST_PIECE_LERP_FACTOR: 0.3,
+    COMBO_TEXT_OFFSET_X: 40,
+    COMBO_TEXT_OFFSET_Y: 140,
+    COMBO_PTS_OFFSET_Y: 50,
+    COMBO_PTS_VALUE_OFFSET_X: 32,
+    COMBO_PTS_FINAL_OFFSET_X: 65
 };
+
 
 const PIECE_SHAPES = ['0010000100001000010000100', '0010000100001000010000000', '0000000100001000010000000', '0000000100001000000000000', '0000000000111110000000000', '0000000000111100000000000', '0000000000011100000000000', '0000000000011000000000000', '0000001110011100111000000', '0000001100011000000000000', '0000001100011000110000000', '0000000000011100111000000', '0000000000001000000000000', '0000000100011100000000000', '0000000000011100010000000', '0000001000011000100000000', '0000000100011000010000000', '0000001000010000110000000', '0000000010011100000000000', '0000001100001000010000000', '0000000000011100100000000', '0000000100001000110000000', '0000001000011100000000000', '0000001100010000100000000', '0000000000011100001000000', '0000001000011000010000000', '0000000110011000000000000', '0000000100011000100000000', '0000001100001100000000000', '0000001000011000000000000', '0000000100011000000000000', '0000001100001000000000000', '0000001100010000000000000', '0000001000001000000000000', '0000000100010000000000000', '0000001000010000111000000', '0000000010000100111000000', '0000001110000100001000000', '0000001110010000100000000'];
 
@@ -467,7 +486,7 @@ export class MainScene extends Phaser.Scene{
                         this.idleboard[j+x][i+y].setTexture(this.powerUpsList[piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j)-1]).setTint(0xffffff).visible = true
 
                         this.powerUpsInGame[(j+x).toString()+(i+y).toString()] = (j+x).toString()+(i+y).toString()
-                        this.idleboard[j+x][i+y].postFX?.addBloom(0xffffff, 1, 1, 2, 3);
+                        this.idleboard[j+x][i+y].postFX?.addBloom(JUICE_CONFIG.BLOOM_COLOR, JUICE_CONFIG.BLOOM_BLUR_X, JUICE_CONFIG.BLOOM_BLUR_Y, JUICE_CONFIG.BLOOM_STRENGTH, JUICE_CONFIG.BLOOM_STEPS);
 
                         this.SetName(this.board[j+x][i+y],this.powerUpsList[piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j)-1])
                     }
@@ -482,13 +501,13 @@ export class MainScene extends Phaser.Scene{
                     this.lineCounterX[i+y] += 1
                     this.lineCounterY[j+x] += 1
                     // Elastic landing juice
-                    this.board[j+x][i+y].setScale(0.5);
+                    this.board[j+x][i+y].setScale(JUICE_CONFIG.LAND_ANIM_SCALE);
                     this.tweens.add({
                         targets: [this.board[j+x][i+y], this.idleboard[j+x][i+y]],
                         scale: 1,
-                        duration: 400,
-                        ease: 'Elastic.easeOut',
-                        easeParams: [1, 0.5]
+                        duration: JUICE_CONFIG.LAND_ANIM_DURATION,
+                        ease: JUICE_CONFIG.LAND_ANIM_EASE,
+                        easeParams: JUICE_CONFIG.LAND_ANIM_EASE_PARAMS
                     });
 
                     this.newScorePoints += 10
@@ -618,8 +637,8 @@ export class MainScene extends Phaser.Scene{
 
         this.piecesToClear = []
         this.colorsToRestore = []
-        this.lineCounterXadd = [0,0,0,0,0,0,0,0]
-        this.lineCounterYadd = [0,0,0,0,0,0,0,0]
+        this.lineCounterXadd = Array(this.boardSize).fill(0)
+        this.lineCounterYadd = Array(this.boardSize).fill(0)
 
         this.audioManager.destruccion.play()
         //RECORRER CADA LINEA Y ROMPER EL PRIMER ELEMENTO
@@ -713,7 +732,7 @@ export class MainScene extends Phaser.Scene{
         this.effectTextContainer = this.add.container(0,0).setDepth(6)
         this.effectTextContainer.add(this.effectText)
         this.effectTextContainer.setAlpha(0)
-        this.ShowContainerWithFade(this, filas, columnas, 200, 400, 200, this.effectTextContainer);
+        this.ShowContainerWithFade(this, filas, columnas, JUICE_CONFIG.EFFECT_TEXT_FADE_IN, JUICE_CONFIG.EFFECT_TEXT_DISPLAY, JUICE_CONFIG.EFFECT_TEXT_FADE_OUT, this.effectTextContainer);
     }
 
     CreateNumbersText(filas,columnas,number){
@@ -733,19 +752,19 @@ export class MainScene extends Phaser.Scene{
 
         }
         this.effectTextContainer.setAlpha(0)
-        this.ShowContainerWithFade(this, filas+2, columnas+2, 200, 400, 200, this.effectTextContainer);
+        this.ShowContainerWithFade(this, filas+2, columnas+2, JUICE_CONFIG.EFFECT_TEXT_FADE_IN, JUICE_CONFIG.EFFECT_TEXT_DISPLAY, JUICE_CONFIG.EFFECT_TEXT_FADE_OUT, this.effectTextContainer);
     }
     CreateComboText(filas, columnas, combo, number) {
         const container = this.add.container(0, 0).setDepth(6).setAlpha(0);
-        container.add(this.add.image(40, 0, 'textos', "combo.png"));
-        container.add(this.add.image(140, 0, 'textos', combo.toString() + ".png"));
-        container.add(this.add.image(0, 50, 'textos', "+.png"));
+        container.add(this.add.image(JUICE_CONFIG.COMBO_TEXT_OFFSET_X, 0, 'textos', "combo.png"));
+        container.add(this.add.image(JUICE_CONFIG.COMBO_TEXT_OFFSET_Y, 0, 'textos', combo.toString() + ".png"));
+        container.add(this.add.image(0, JUICE_CONFIG.COMBO_PTS_OFFSET_Y, 'textos', "+.png"));
         let strNumber = number.toString();
         for (let i = 0; i <= strNumber.length; i++) {
             if (i === strNumber.length) {
-                container.add(this.add.image((i * 32) + 65, 50, 'textos', "pts.png"));
+                container.add(this.add.image((i * JUICE_CONFIG.COMBO_PTS_VALUE_OFFSET_X) + JUICE_CONFIG.COMBO_PTS_FINAL_OFFSET_X, JUICE_CONFIG.COMBO_PTS_OFFSET_Y, 'textos', "pts.png"));
             } else {
-                container.add(this.add.image((i * 32) + 32, 50, 'textos', strNumber[i] + ".png"));
+                container.add(this.add.image((i * JUICE_CONFIG.COMBO_PTS_VALUE_OFFSET_X) + JUICE_CONFIG.COMBO_PTS_VALUE_OFFSET_X, JUICE_CONFIG.COMBO_PTS_OFFSET_Y, 'textos', strNumber[i] + ".png"));
             }
         }
         container.setPosition((filas + 2) * this.LAYOUT.SQUARE_SIZE + this.LAYOUT.OFFSET_X,
@@ -755,15 +774,15 @@ export class MainScene extends Phaser.Scene{
             targets: container,
             alpha: 1,
             scale: 1.2,
-            duration: 400,
+            duration: JUICE_CONFIG.COMBO_TEXT_APPEAR_DURATION,
             ease: 'Back.easeOut',
             onComplete: () => {
-                this.time.delayedCall(600, () => {
+                this.time.delayedCall(JUICE_CONFIG.COMBO_TEXT_STAY_DURATION, () => {
                     this.tweens.add({
                         targets: container,
                         alpha: 0,
                         y: container.y - 50,
-                        duration: 300,
+                        duration: JUICE_CONFIG.COMBO_TEXT_FADEOUT_DURATION,
                         onComplete: () => container.destroy()
                     });
                 });
@@ -793,7 +812,7 @@ export class MainScene extends Phaser.Scene{
             }
             else{
                 if(!bomb)this.MakeAnimation(filas,columnas,"destroyFx")
-                this.particles.explode(25, (filas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X, (columnas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y);
+                this.particles.explode(JUICE_CONFIG.PIECE_BREAK_PARTICLE_COUNT, (filas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X, (columnas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y);
                 this.board[filas][columnas].anims.pause()
                 this.idleboard[filas][columnas].anims.pause()
                 this.board[filas][columnas].setTint(0xffffff)
@@ -1313,15 +1332,15 @@ export class MainScene extends Phaser.Scene{
                     scratchBoard[i][j] = this.boardMatrix[i][j];
                 }
             }
-            const scratchLineX = [...this.lineCounterX];
-            const scratchLineY = [...this.lineCounterY];
+            const scratchLineX = [...this.lineCounterY];
+            const scratchLineY = [...this.lineCounterX];
             let scoreAcum = 0;
             for (let i = 0; i < 3; i++) {
                 let found = false;
                 const positions = this.ObtainPositions(scratchBoard);
                 this.ShuffleArray(positions);
                 this.ShuffleArray(this.piecesList);
-                for (let j = 0; j < Math.min(this.piecesList.length, 10); j++) {
+                for (let j = 0; j < Math.min(this.piecesList.length, JUICE_CONFIG.GET_BEST_PIECES_SAMPLE_SIZE); j++) {
                     const pIdx = positions[i % positions.length];
                     const x = pIdx % this.boardSize;
                     const y = ~~(pIdx / this.boardSize);
@@ -1346,8 +1365,8 @@ export class MainScene extends Phaser.Scene{
 
 
     CheckValue(piece, x,y){
-        this.lineCounterXadd = [0,0,0,0,0,0,0,0]
-        this.lineCounterYadd = [0,0,0,0,0,0,0,0]
+        this.lineCounterXadd = Array(this.boardSize).fill(0)
+        this.lineCounterYadd = Array(this.boardSize).fill(0)
 
         let counterPoints = 0
         for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
@@ -1544,8 +1563,8 @@ export class MainScene extends Phaser.Scene{
         this.ghostContainer.setVisible(true);
         const targetX = this.LAYOUT.OFFSET_X + (x * this.LAYOUT.SQUARE_SIZE);
         const targetY = this.LAYOUT.OFFSET_Y + (y * this.LAYOUT.SQUARE_SIZE);
-        this.ghostContainer.x = Phaser.Math.Linear(this.ghostContainer.x, targetX, 0.3);
-        this.ghostContainer.y = Phaser.Math.Linear(this.ghostContainer.y, targetY, 0.3);
+        this.ghostContainer.x = Phaser.Math.Linear(this.ghostContainer.x, targetX, JUICE_CONFIG.GHOST_PIECE_LERP_FACTOR);
+        this.ghostContainer.y = Phaser.Math.Linear(this.ghostContainer.y, targetY, JUICE_CONFIG.GHOST_PIECE_LERP_FACTOR);
         for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++) {
             for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++) {
                 let ghostSquare = this.ghostSquares[i][j];
@@ -1752,7 +1771,7 @@ export class MainScene extends Phaser.Scene{
             this.halfBoxX = (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_X-(this.LAYOUT.SQUARE_SIZE/2)
 
             this.halfBoxY = (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_Y-(this.LAYOUT.SQUARE_SIZE/2)
-            console.log("HALF"+this.halfBox)
+            // console.log("HALF" + this.halfBoxX + "," + this.halfBoxY)
             this.add.image(this.offsetPictures,this.offsetPictures,"b_box").setDepth(1)
             let boardTable = this.add.image(this.offsetPictures-120-this.halfBoxX,this.offsetPictures-this.halfBoxY,"table").setDepth(3)
 
@@ -1778,10 +1797,10 @@ export class MainScene extends Phaser.Scene{
 
             //CREATE LINECOUNTERS
 
-            this.lineCounterX = [0,0,0,0,0,0,0,0]
-            this.lineCounterY = [0,0,0,0,0,0,0,0]
-            this.lineCounterXadd = [0,0,0,0,0,0,0,0]
-            this.lineCounterYadd = [0,0,0,0,0,0,0,0]
+            this.lineCounterX = Array(this.boardSize).fill(0);
+        this.lineCounterY = Array(this.boardSize).fill(0);
+        this.lineCounterXadd = Array(this.boardSize).fill(0);
+        this.lineCounterYadd = Array(this.boardSize).fill(0);
             this.piecesToClear = []
             this.linesToClear = []
             this.colorsToRestore = []
@@ -2328,8 +2347,8 @@ export class MainScene extends Phaser.Scene{
             this.lastPointerX = this.pointerX
             this.lastPointerY = this.pointerY
 
-            this.lineCounterXadd = [0,0,0,0,0,0,0,0]
-            this.lineCounterYadd = [0,0,0,0,0,0,0,0]
+            this.lineCounterXadd = Array(this.boardSize).fill(0)
+            this.lineCounterYadd = Array(this.boardSize).fill(0)
             this.linesToClear = []
             this.StopVibration()
             this.RestoreColors();
