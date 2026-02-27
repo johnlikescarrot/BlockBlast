@@ -24,7 +24,8 @@ const JUICE_CONFIG = {
     GLOW_QUALITY: 0.1,
     GLOW_SAMPLES: 10,
     TUTORIAL_INITIAL_DELAY: 800,
-    LAND_BOUNCE_DURATION: 300, IMPACT_FRAME_DURATION: 50
+    LAND_BOUNCE_DURATION: 300,
+    IMPACT_FRAME_DURATION: 50
 };
 
 
@@ -1130,8 +1131,6 @@ export class MainScene extends Phaser.Scene{
         });
 
 
-        this.feverStreak = 0;
-        this.lineClearedThisTurn = false;
         this.currentTime = this.maxTimePerTurn
     }
 
@@ -2367,7 +2366,10 @@ export class MainScene extends Phaser.Scene{
 
 
     update(time, deltaTime){
-        if (this.atmosphere) this.atmosphere.setUniform("uFever", this.feverStreak);
+        if (this.atmosphere) {
+            this.atmosphere.setUniform("uFever", this.feverStreak);
+            this.atmosphere.setUniform("uTime", time * 0.001);
+        }
         this.pointerX = Phaser.Math.Clamp((Phaser.Math.FloorTo((this.pX-this.LAYOUT.OFFSET_X+50)/this.LAYOUT.SQUARE_SIZE)),0,10)-2
         this.pointerY = Phaser.Math.Clamp((Phaser.Math.FloorTo(((this.pY-this.pointerAdd)- this.LAYOUT.OFFSET_Y+50)/this.LAYOUT.SQUARE_SIZE)),0,10)-2
 
