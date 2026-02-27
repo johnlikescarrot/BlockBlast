@@ -1,5 +1,5 @@
 const UI_CONFIG = {
-    SHOW_DURATION: 600,
+    SHOW_DURATION: 450,
     HIDE_DURATION: 300,
     BLUR_QUALITY: 1,
     BLUR_X: 1,
@@ -16,24 +16,23 @@ export class Panel {
     animateShow(container) {
         container.setVisible(true);
         container.setScale(0.8);
+        container.setAlpha(0);
         this.scene.tweens.add({
             targets: container,
-            scale: 1,
-            duration: UI_CONFIG.SHOW_DURATION,
-            ease: 'Elastic.easeOut',
-            easeParams: [1, 0.5]
+            alpha: { value: 1, ease: "Sine.easeOut" },
+            scale: { value: 1, ease: "Elastic.easeOut", easeParams: [1, 0.5] },
+            duration: UI_CONFIG.SHOW_DURATION
         });
         if (this.scene.currentScene && !this.blurFX) {
             this.blurFX = this.scene.currentScene.cameras.main.postFX?.addBlur?.(UI_CONFIG.BLUR_QUALITY, UI_CONFIG.BLUR_X, UI_CONFIG.BLUR_Y, UI_CONFIG.BLUR_STRENGTH);
         }
     }
-
     animateHide(container, onComplete) {
         this.scene.tweens.add({
             targets: container,
-            scale: 0,
+            alpha: { value: 0, ease: "Sine.easeIn" },
+            scale: { value: 0, ease: "Back.easeIn" },
             duration: UI_CONFIG.HIDE_DURATION,
-            ease: 'Back.easeIn',
             onComplete: () => {
                 container.setVisible(false);
                 if (this.blurFX) {
@@ -44,8 +43,6 @@ export class Panel {
             }
         });
     }
-
-
     updateCredits() {
         this.credits = [
             [this.scene.i18n.t('PROGRAMMING'), 'Diego Johnson', 'Braulio Baldeon'],
