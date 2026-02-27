@@ -4,9 +4,9 @@ const { chromium } = require('playwright');
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
   try {
-    console.log('Navigating to http://localhost:8080...');
+    console.log('Navigating to http://127.0.0.1:8080...');
     // Use domcontentloaded for faster initial navigation
-    await page.goto('http://localhost:8080', { waitUntil: 'domcontentloaded' });
+    await page.goto('http://127.0.0.1:8080', { waitUntil: 'domcontentloaded' });
 
     // Deterministic wait for Phaser canvas
     console.log('Waiting for Phaser canvas to be visible...');
@@ -35,8 +35,7 @@ const { chromium } = require('playwright');
   } catch (err) {
     console.error('Error during verification:', err);
     process.exitCode = 1;
-    // Ensure we throw so the async wrapper/start-server-and-test catches the failure
-    if (!process.exitCode) process.exitCode = 1;
+    throw err;
   } finally {
     await browser.close();
   }

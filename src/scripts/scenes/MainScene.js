@@ -1891,7 +1891,8 @@ export class MainScene extends Phaser.Scene{
         // Particle Manager for Juiciness (Modern Phaser 3.60+ API)
         this.particles = this.add.particles(0, 0, 'originalPiece', {
             frame: 'square.png',
-            scale: { start: 0.6, end: 0 }, rotate: { start: 0, end: 360 },
+            scale: { start: 0.6, end: 0 },
+            rotate: { start: 0, end: 360 },
             alpha: { start: 1, end: 0 },
             lifespan: 1000,
             speed: { min: 300, max: 600 },
