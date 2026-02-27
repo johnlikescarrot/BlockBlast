@@ -91,7 +91,8 @@ export class UIScene extends Phaser.Scene
         this.graphics.setVisible(true);
         this.splashScreen.setAlpha(1);
         if (this.splashScreen.postFX) {
-            let wipe = this.splashScreen.postFX.addWipe(0.1, 0, 1); // wipeWidth, direction, axis
+            // Transcendent UI Fixed
+            let wipe = this.splashScreen.postFX.addWipe(0.1, 1, 0); // wipeWidth, direction, axis
             this.tweens.add({
                 targets: wipe,
                 progress: 1,
@@ -105,7 +106,7 @@ export class UIScene extends Phaser.Scene
                             duration: 800,
                             ease: "Quint.easeIn",
                             onComplete: () => {
-                                if (this.splashScreen.postFX) this.splashScreen.postFX.remove(wipe);
+                                if (this.splashScreen.postFX) this.splashScreen.postFX.clear();
                                 this.graphics.setVisible(false);
                                 this.splashScreen.setVisible(false);
                             }

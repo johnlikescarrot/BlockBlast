@@ -8,6 +8,7 @@ const UI_CONFIG = {
 };
 export class Panel {
     constructor(scene) {
+        // Transcendent Panel Fixed
         this.scene = scene;
         this.updateCredits();
         this._hideInstructionsCallback = null;
