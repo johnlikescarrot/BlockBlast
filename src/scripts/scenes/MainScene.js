@@ -1,33 +1,33 @@
 import * as Phaser from 'phaser'
 import {ResourceLoader} from '../components/resourceLoader.js';
 const JUICE_CONFIG = {
-    SHAKE_DURATION: 200,
-    SHAKE_INTENSITY_PER_LINE: 0.007,
-    FLASH_DURATION: 100,
+    SHAKE_DURATION: 300,
+    SHAKE_INTENSITY_PER_LINE: 0.015,
+    FLASH_DURATION: 150,
     FLASH_COLOR: 0xffffff,
-    GHOST_ALPHA: 0.3,
-    LAND_SHAKE_DURATION: 100,
-    LAND_SHAKE_INTENSITY: 0.002,
-    SCORE_ANIM_DURATION: 500,
+    GHOST_ALPHA: 0.4,
+    LAND_SHAKE_DURATION: 150,
+    LAND_SHAKE_INTENSITY: 0.004,
+    SCORE_ANIM_DURATION: 800,
     PIECE_DIMENSION: 5,
-    COMBO_THRESHOLD: 3,
-    COMBO_BLOOM_DURATION: 500,
+    COMBO_THRESHOLD: 2,
+    COMBO_BLOOM_DURATION: 600,
     BLOOM_COLOR: 0xffffff,
     BLOOM_BLUR_X: 1,
     BLOOM_BLUR_Y: 1,
-    BLOOM_STRENGTH: 3,
-    BLOOM_STEPS: 3,
+    BLOOM_STRENGTH: 5,
+    BLOOM_STEPS: 4,
     GLOW_COLOR: 0xffffff,
-    GLOW_OUTER_STRENGTH: 2,
-    GLOW_INNER_STRENGTH: 0,
+    GLOW_OUTER_STRENGTH: 3,
+    GLOW_INNER_STRENGTH: 1,
     GLOW_KNOCKOUT: false,
-    GLOW_QUALITY: 0.1,
-    GLOW_SAMPLES: 10,
+    GLOW_QUALITY: 0.2,
+    GLOW_SAMPLES: 15,
     TUTORIAL_INITIAL_DELAY: 500,
-    LAND_ANIM_SCALE: 0.8,
-    LAND_ANIM_DURATION: 400,
+    LAND_ANIM_SCALE: 0.7,
+    LAND_ANIM_DURATION: 600,
     LAND_ANIM_EASE: "Elastic.easeOut",
-    LAND_ANIM_EASE_PARAMS: [1, 0.5],
+    LAND_ANIM_EASE_PARAMS: [1.2, 0.4],
     EFFECT_TEXT_FADE_IN: 200,
     EFFECT_TEXT_DISPLAY: 400,
     EFFECT_TEXT_FADE_OUT: 200,
@@ -527,7 +527,7 @@ export class MainScene extends Phaser.Scene{
 
 
         if(!this.isStarting){
-            this.particles.explode(20, (x * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X + (this.LAYOUT.SQUARE_SIZE * 2), (y * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y + (this.LAYOUT.SQUARE_SIZE * 2));
+            this.particles.explode(40, (x * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X + (this.LAYOUT.SQUARE_SIZE * 2), (y * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y + (this.LAYOUT.SQUARE_SIZE * 2));
             this.refillCounter +=1
             this.CreateNumbersText(x,y,this.newScorePoints)
             this.audioManager.puntos.play()
@@ -536,13 +536,11 @@ export class MainScene extends Phaser.Scene{
         for(let i = 0; i < 8; i++){
             let line = "CHECK"
             for(let j = 0; j < 8; j++){
-                //console.log(this.board[j][i].name.length)
                 if(this.board[j][i].name.length < 3 || this.board[j][i].name.length > 27)line+="0|"
                 else line+= this.board[j][i].name.charAt(19) +"|"
 
             }
         }
-        //console.log("POWER" + this.powerUpsInGame)
         //this.currentTime += (this.secondsToAdd*2)
 
     }
@@ -1200,7 +1198,6 @@ export class MainScene extends Phaser.Scene{
                 if(j!= 0){
                     if((board[j-1][i] != 0||j-1<0) && board[j][i]==0){
                         positionArray.push((i*board.length)+j)
-                        //console.log((i*board.length)+j)
                     }
                 }
 
@@ -1220,23 +1217,18 @@ export class MainScene extends Phaser.Scene{
     CheckPiece(board, piece, x, y){
         let auxX = 0
         let startChecking = false
-        //console.log("checking piece " + piece)
         for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
             for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
 
                 if(piece.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) != 0){
                     if(x >= 0 && x<=7 && y >= 0 && y<=7 ){
-                        //console.log("starts at " + i.toString() + " " + j.toString())
                         if(!startChecking)auxX = x-j
                         startChecking = true
-                        //console.log("board " + x.toString() + " " + y.toString())
                         if(board[x][y] !=0 ){
-                            //console.log("not fit")
                             return false
                         }
                     }
                     else{
-                        //console.log("more than limits")
                         return false
 
                     } 
@@ -1277,7 +1269,6 @@ export class MainScene extends Phaser.Scene{
         let deleteX = false
         let deleteY = false
         let score = 0
-        //console.log("checking piece " + piece)
         for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
             for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
 
@@ -1322,23 +1313,29 @@ export class MainScene extends Phaser.Scene{
         let trueList = [];
         let actualScore = -1;
         const numDif = JUICE_CONFIG.GET_BEST_PIECES_ITERATIONS;
-        const scratchBoard = Array.from({ length: this.boardSize }, () => new Array(this.boardSize));
+
+        // Optimization: Reuse scratch board and line counters to avoid GC pressure
+        if (!this._scratchBoard) {
+            this._scratchBoard = Array.from({ length: this.boardSize }, () => new Array(this.boardSize));
+            this._scratchLineX = new Array(this.boardSize);
+            this._scratchLineY = new Array(this.boardSize);
+        }
 
         for (let it = 0; it < numDif; it++) {
             const listPieces = [];
             for (let i = 0; i < this.boardSize; i++) {
                 for (let j = 0; j < this.boardSize; j++) {
-                    scratchBoard[i][j] = this.boardMatrix[i][j];
+                    this._scratchBoard[i][j] = this.boardMatrix[i][j];
                 }
+                this._scratchLineX[i] = this.lineCounterY[i];
+                this._scratchLineY[i] = this.lineCounterX[i];
             }
-            const scratchLineX = [...this.lineCounterY];
-            const scratchLineY = [...this.lineCounterX];
             let scoreAcum = 0;
             let iterationBreak = false;
 
             for (let i = 0; i < 3; i++) {
                 let found = false;
-                const positions = this.ObtainPositions(scratchBoard);
+                const positions = this.ObtainPositions(this._scratchBoard);
                 this.ShuffleArray(positions);
                 this.ShuffleArray(this.piecesList);
 
@@ -1346,8 +1343,8 @@ export class MainScene extends Phaser.Scene{
                     const pIdx = positions[i % positions.length];
                     const x = pIdx % this.boardSize;
                     const y = ~~(pIdx / this.boardSize);
-                    if (this.CheckPiece(scratchBoard, this.piecesList[j], x, y)) {
-                        scoreAcum += this.InsertPieceBoard(scratchBoard, scratchLineX, scratchLineY, this.piecesList[j], x, y);
+                    if (this.CheckPiece(this._scratchBoard, this.piecesList[j], x, y)) {
+                        scoreAcum += this.InsertPieceBoard(this._scratchBoard, this._scratchLineX, this._scratchLineY, this.piecesList[j], x, y);
                         listPieces.push(this.piecesList[j]);
                         found = true;
                         break;
@@ -1784,7 +1781,6 @@ export class MainScene extends Phaser.Scene{
             this.halfBoxX = (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_X-(this.LAYOUT.SQUARE_SIZE/2)
 
             this.halfBoxY = (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_Y-(this.LAYOUT.SQUARE_SIZE/2)
-            // console.log("HALF" + this.halfBoxX + "," + this.halfBoxY)
             this.add.image(this.offsetPictures,this.offsetPictures,"b_box").setDepth(1)
             let boardTable = this.add.image(this.offsetPictures-120-this.halfBoxX,this.offsetPictures-this.halfBoxY,"table").setDepth(3)
 
@@ -1895,15 +1891,17 @@ export class MainScene extends Phaser.Scene{
         // Particle Manager for Juiciness (Modern Phaser 3.60+ API)
         this.particles = this.add.particles(0, 0, 'originalPiece', {
             frame: 'square.png',
-            scale: { start: 0.4, end: 0 },
+            scale: { start: 0.6, end: 0 },
+            rotate: { start: 0, end: 360 },
             alpha: { start: 1, end: 0 },
-            lifespan: 800,
-            speed: { min: 200, max: 400 },
+            lifespan: 1000,
+            speed: { min: 300, max: 600 },
             angle: { min: 0, max: 360 },
-            gravityY: 600,
+            gravityY: 800,
             emitting: false,
             blendMode: 'ADD'
         });
+        // Set render depth for particles
         this.particles.setDepth(15);
         this.particles.postFX?.addBloom?.(JUICE_CONFIG.BLOOM_COLOR, JUICE_CONFIG.BLOOM_BLUR_X, JUICE_CONFIG.BLOOM_BLUR_Y, JUICE_CONFIG.BLOOM_STRENGTH, JUICE_CONFIG.BLOOM_STEPS);
 
@@ -2342,12 +2340,20 @@ export class MainScene extends Phaser.Scene{
             this.ShowTutorial()
         });
 
+        // Cleanup FX on scene shutdown to prevent memory leaks
+        this.events.once('shutdown', () => {
+            this.boardContainer?.postFX?.clear();
+            if (this.ghostSquares) {
+                this.ghostSquares.forEach(row => row.forEach(sq => sq.postFX?.clear()));
+            }
+            this.particles?.postFX?.clear();
+        });
+
     }
 
 
 
     update(time, deltaTime){
-        //console.log("CONV REFILL COUNTER "+ this.refillCounter)
         this.pointerX = Phaser.Math.Clamp((Phaser.Math.FloorTo((this.pX-this.LAYOUT.OFFSET_X+50)/this.LAYOUT.SQUARE_SIZE)),0,10)-2
         this.pointerY = Phaser.Math.Clamp((Phaser.Math.FloorTo(((this.pY-this.pointerAdd)- this.LAYOUT.OFFSET_Y+50)/this.LAYOUT.SQUARE_SIZE)),0,10)-2
 

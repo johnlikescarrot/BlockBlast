@@ -45,7 +45,6 @@ module.exports = {
     new webpack.DefinePlugin({
       CANVAS_RENDERER: JSON.stringify(true),
       WEBGL_RENDERER: JSON.stringify(true),
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
       'process.env.ASSET_PATH': JSON.stringify(process.env.ASSET_PATH || ''),
     }),
     new HtmlWebpackPlugin({
