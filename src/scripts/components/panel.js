@@ -1,5 +1,5 @@
 const UI_CONFIG = {
-    SHOW_DURATION: 600,
+    SHOW_DURATION: 450,
     HIDE_DURATION: 300,
     BLUR_QUALITY: 1,
     BLUR_X: 1,
@@ -14,10 +14,12 @@ export class Panel {
         this.blurFX = null;
     }
     animateShow(container) {
+        container.setAlpha(0);
         container.setVisible(true);
         container.setScale(0.8);
         this.scene.tweens.add({
             targets: container,
+            alpha: 1,
             scale: 1,
             duration: UI_CONFIG.SHOW_DURATION,
             ease: 'Elastic.easeOut',

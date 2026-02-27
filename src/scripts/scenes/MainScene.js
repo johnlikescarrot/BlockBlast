@@ -2,7 +2,7 @@ import * as Phaser from 'phaser'
 import {ResourceLoader} from '../components/resourceLoader.js';
 const JUICE_CONFIG = {
     SHAKE_DURATION: 200,
-    SHAKE_INTENSITY_PER_LINE: 0.005,
+    SHAKE_INTENSITY_PER_LINE: 0.007,
     FLASH_DURATION: 100,
     FLASH_COLOR: 0xffffff,
     GHOST_ALPHA: 0.3,
@@ -15,7 +15,7 @@ const JUICE_CONFIG = {
     BLOOM_COLOR: 0xffffff,
     BLOOM_BLUR_X: 1,
     BLOOM_BLUR_Y: 1,
-    BLOOM_STRENGTH: 2,
+    BLOOM_STRENGTH: 3,
     BLOOM_STEPS: 3,
     GLOW_COLOR: 0xffffff,
     GLOW_OUTER_STRENGTH: 2,
@@ -707,7 +707,8 @@ export class MainScene extends Phaser.Scene{
         }
         else{
             //MANDAR LA SIGUIENTE ANIMACION
-            this.time.delayedCall(50, () => {
+            const delay = Math.max(20, 50 - (this.animationsIterator * 4));
+            this.time.delayedCall(delay, () => {
                 this.BreakLine(x,y)
             });
         }
@@ -807,6 +808,12 @@ export class MainScene extends Phaser.Scene{
                 this.audioManager.bomba.play()
             }
             else{
+                this.tweens.add({
+                    targets: [this.board[filas][columnas], this.idleboard[filas][columnas]],
+                    scale: 1.2,
+                    duration: 100,
+                    yoyo: true
+                });
                 if(!bomb)this.MakeAnimation(filas,columnas,"destroyFx")
                 this.particles.explode(JUICE_CONFIG.PIECE_BREAK_PARTICLE_COUNT, (filas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X, (columnas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y);
                 this.board[filas][columnas].anims.pause()
@@ -1329,6 +1336,7 @@ export class MainScene extends Phaser.Scene{
                     const y = ~~(pIdx / this.boardSize);
                     if (this.CheckPiece(scratchBoard, this.piecesList[j], x, y)) {
                         scoreAcum += this.InsertPieceBoard(scratchBoard, scratchLineX, scratchLineY, this.piecesList[j], x, y);
+                        if (scoreAcum > 50) break;
                         listPieces.push(this.piecesList[j]);
                         found = true;
                         break;
