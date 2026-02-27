@@ -1764,9 +1764,9 @@ export class MainScene extends Phaser.Scene{
         this.barrel?.setActive(false);
         this.events.once('shutdown', () => {
             this.vignette?.setActive(false);
-            this.vignette?.remove();
+            if (this.vignette) this.cameras.main.postFX.remove(this.vignette);
             this.barrel?.setActive(false);
-            this.barrel?.remove();
+            if (this.barrel) this.cameras.main.postFX.remove(this.barrel);
             this.vignette = null;
             this.barrel = null;
             this.cameras.main.setZoom(1);

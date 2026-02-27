@@ -32,12 +32,13 @@ def verify_js(path):
 def patch_main_scene():
     path = 'src/scripts/scenes/MainScene.js'
     if not os.path.exists(path):
-        return
+        return False
     with open(path, 'r') as f:
         content = f.read()
 
     changed = False
 
+    # Authoritative Scoping fix
     if "// Transcendent Fixed Scoping" not in content:
         content, n = robust_sub(
             r'BreakLine\(x, y\) \{([\s\S]*?)let comboCount = this\.linesToClear\.length;',
@@ -59,27 +60,47 @@ def patch_main_scene():
             if n > 0:
                 changed = True
 
-    # Shutdown cleanup for vignette/barrel
-    if "this.vignette?.remove()" not in content:
-        content, n = robust_sub(
-            r'this\.events\.once\(\'shutdown\', \(\) => \{ this\.cameras\.main\.setZoom\(1\); \}\);',
-            "this.events.once('shutdown', () => {\n            this.vignette?.setActive(false);\n            this.vignette?.remove();\n            this.barrel?.setActive(false);\n            this.barrel?.remove();\n            this.vignette = null;\n            this.barrel = null;\n            this.cameras.main.setZoom(1);\n        });",
-            content, count=1
-        )
-        if n > 0:
-            changed = True
+    # Shutdown cleanup for vignette/barrel - Authoritative Remove API fix
+    # We replace the previous incorrect .remove() with the correct Phaser API
+    if "this.cameras.main.postFX.remove(this.vignette)" not in content:
+        # First, try to match the unpatched shutdown block if it exists
+        unpatched_shutdown = r'this\.events\.once\(\'shutdown\', \(\) => \{ this\.cameras\.main\.setZoom\(1\); \}\);'
+        incorrectly_patched_shutdown = r'this\.events\.once\(\'shutdown\', \(\) => \{\s+this\.vignette\?\.setActive\(false\);\s+this\.vignette\?\.remove\(\);'
+
+        if re.search(incorrectly_patched_shutdown, content):
+             content, n = robust_sub(
+                incorrectly_patched_shutdown,
+                "this.events.once('shutdown', () => {\n            this.vignette?.setActive(false);\n            if (this.vignette) this.cameras.main.postFX.remove(this.vignette);",
+                content, count=1
+            )
+             if n > 0:
+                 changed = True
+                 # Also fix the barrel remove in the same block
+                 content, n = robust_sub(
+                     r'this\.barrel\?\.remove\(\);',
+                     'if (this.barrel) this.cameras.main.postFX.remove(this.barrel);',
+                     content, count=1
+                 )
+        elif re.search(unpatched_shutdown, content):
+            content, n = robust_sub(
+                unpatched_shutdown,
+                "this.events.once('shutdown', () => {\n            this.vignette?.setActive(false);\n            if (this.vignette) this.cameras.main.postFX.remove(this.vignette);\n            this.barrel?.setActive(false);\n            if (this.barrel) this.cameras.main.postFX.remove(this.barrel);\n            this.vignette = null;\n            this.barrel = null;\n            this.cameras.main.setZoom(1);\n        });",
+                content, count=1
+            )
+            if n > 0:
+                changed = True
 
     if changed:
         with open(path, 'w') as f:
             f.write(content)
         verify_js(path)
-    else:
-        print("MainScene: No changes needed.")
+        return True
+    return "// Transcendent Fixed Scoping" in content
 
 def patch_panel():
     path = 'src/scripts/components/panel.js'
     if not os.path.exists(path):
-        return
+        return False
     with open(path, 'r') as f:
         content = f.read()
 
@@ -107,24 +128,114 @@ def patch_panel():
         with open(path, 'w') as f:
             f.write(content)
         verify_js(path)
-    else:
-        print("Panel: No changes needed.")
+        return True
+    return "// Transcendent Panel Fixed" in content
 
 def patch_uiscene():
     path = 'src/scripts/scenes/UIScene.js'
     if not os.path.exists(path):
-        return
+        return False
     with open(path, 'r') as f:
         content = f.read()
 
+    changed = False
+
     if "// Transcendent UI Fixed" not in content:
-         print("UIScene needs patching (handled via fix_uiscene.py strategy)")
-         # Logic already applied manually via shell to ensure complex nested guards are correct.
-    else:
-        print("UIScene: No changes needed.")
+        # Full authoritative rewrite of splashScreenAnim to fix all bugs at once
+        # including the alpha flash and redundant setVisible.
+        pattern = r'    splashScreenAnim\(\)\{[\s\S]*?    setCurrentScene\(scene\)\{'
+        replacement = """    splashScreenAnim(){
+        this.graphics.setVisible(true);
+        this.splashScreen.setAlpha(1);
+        if (this.splashScreen.postFX) {
+            // Transcendent UI Fixed
+            let wipe = this.splashScreen.postFX?.addWipe?.(0.1, 1, 0);
+            if (wipe) {
+                this.tweens.add({
+                    targets: wipe,
+                    progress: 1,
+                    duration: 1000,
+                    ease: "Quint.easeOut",
+                    onComplete: () => {
+                        this.time.delayedCall(UI_CONFIG.SPLASH_DELAY, () => {
+                            this.tweens.add({
+                                targets: wipe,
+                                progress: 0,
+                                duration: 800,
+                                ease: "Quint.easeIn",
+                                onComplete: () => {
+                                    if (this.splashScreen.postFX) this.splashScreen.postFX.clear();
+                                    this.graphics.setVisible(false);
+                                    this.splashScreen.setVisible(false);
+                                }
+                            });
+                        });
+                    }
+                });
+            } else {
+                // Fallback if wipe creation failed
+                this.time.delayedCall(UI_CONFIG.SPLASH_DELAY + 1000, () => {
+                    this.graphics.setVisible(false);
+                    this.splashScreen.setVisible(false);
+                });
+            }
+        } else {
+            this.splashScreen.setAlpha(0); // Fix visual flash
+            let splashTween = this.tweens.add({
+                targets: this.splashScreen,
+                ease: 'sine.inout',
+                duration: UI_CONFIG.SPLASH_FADE_DURATION,
+                repeat: 0,
+                alpha: {
+                  getStart: () => 0,
+                  getEnd: () => 1
+                },
+                onComplete: () => {
+                    let splashTween2 = this.tweens.add({
+                        targets: this.splashScreen,
+                        ease: 'sine.inout',
+                        duration: UI_CONFIG.SPLASH_FADE_DURATION,
+                        repeat: 0,
+                        delay: UI_CONFIG.SPLASH_DELAY,
+                        alpha: {
+                          getStart: () => 1,
+                          getEnd: () => 0
+                        },
+                        onComplete: () => {
+                            this.graphics.setVisible(false);
+                            this.splashScreen.setVisible(false);
+                            splashTween2?.remove();
+                            splashTween2 = null;
+                        }
+                    });
+                    splashTween?.remove();
+                    splashTween = null;
+                }
+            });
+        }
+    }\n\n    setCurrentScene(scene){"""
+
+        new_content, n = re.subn(pattern, replacement.replace('\\', '\\\\'), content, count=1)
+        if n > 0:
+            content = new_content
+            changed = True
+        else:
+            print("WARNING: Authoritative UIScene patch failed to match.")
+
+    if changed:
+        with open(path, 'w') as f:
+            f.write(content)
+        verify_js(path)
+        return True
+    return "// Transcendent UI Fixed" in content
 
 if __name__ == "__main__":
-    patch_main_scene()
-    patch_panel()
-    patch_uiscene()
-    print("Transcendent patching orchestration complete.")
+    s1 = patch_main_scene()
+    s2 = patch_panel()
+    s3 = patch_uiscene()
+
+    if all([s1, s2, s3]):
+        print("Transcendent patching orchestration complete.")
+    else:
+        print("CRITICAL: One or more patches failed or returned authoritative False.")
+        sys.exit(1)

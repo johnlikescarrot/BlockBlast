@@ -123,7 +123,7 @@ export class UIScene extends Phaser.Scene
                 });
             }
         } else {
-            this.graphics.setVisible(true);
+            this.splashScreen.setAlpha(0); // Fix visual flash
             let splashTween = this.tweens.add({
                 targets: this.splashScreen,
                 ease: 'sine.inout',
