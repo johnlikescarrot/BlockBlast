@@ -2368,7 +2368,7 @@ export class MainScene extends Phaser.Scene{
             this.ShowTutorial()
         });
 
-        this.events.on('shutdown', () => {
+        this.events.once('shutdown', () => {
             if (this.boardShine) {
                 this.boardContainer?.postFX?.remove?.(this.boardShine);
                 this.boardShine = null;
