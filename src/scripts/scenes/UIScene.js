@@ -92,32 +92,68 @@ export class UIScene extends Phaser.Scene
         this.splashScreen.setAlpha(1);
         if (this.splashScreen.postFX) {
             // Transcendent UI Fixed
-            let wipe = this.splashScreen.postFX.addWipe(0.1, 1, 0); // wipeWidth, direction, axis
-            this.tweens.add({
-                targets: wipe,
-                progress: 1,
-                duration: 1000,
-                ease: "Quint.easeOut",
-                onComplete: () => {
-                    this.time.delayedCall(UI_CONFIG.SPLASH_DELAY, () => {
-                        this.tweens.add({
-                            targets: wipe,
-                            progress: 0,
-                            duration: 800,
-                            ease: "Quint.easeIn",
-                            onComplete: () => {
-                                if (this.splashScreen.postFX) this.splashScreen.postFX.clear();
-                                this.graphics.setVisible(false);
-                                this.splashScreen.setVisible(false);
-                            }
+            let wipe = this.splashScreen.postFX?.addWipe?.(0.1, 1, 0);
+            if (wipe) {
+                this.tweens.add({
+                    targets: wipe,
+                    progress: 1,
+                    duration: 1000,
+                    ease: "Quint.easeOut",
+                    onComplete: () => {
+                        this.time.delayedCall(UI_CONFIG.SPLASH_DELAY, () => {
+                            this.tweens.add({
+                                targets: wipe,
+                                progress: 0,
+                                duration: 800,
+                                ease: "Quint.easeIn",
+                                onComplete: () => {
+                                    if (this.splashScreen.postFX) this.splashScreen.postFX.clear();
+                                    this.graphics.setVisible(false);
+                                    this.splashScreen.setVisible(false);
+                                }
+                            });
                         });
-                    });
-                }
-            });
+                    }
+                });
+            } else {
+                // Fallback if wipe creation failed
+                this.time.delayedCall(UI_CONFIG.SPLASH_DELAY + 1000, () => {
+                    this.graphics.setVisible(false);
+                    this.splashScreen.setVisible(false);
+                });
+            }
         } else {
-            this.time.delayedCall(UI_CONFIG.SPLASH_DELAY + 1000, () => {
-                this.graphics.setVisible(false);
-                this.splashScreen.setVisible(false);
+            this.graphics.setVisible(true);
+            let splashTween = this.tweens.add({
+                targets: this.splashScreen,
+                ease: 'sine.inout',
+                duration: UI_CONFIG.SPLASH_FADE_DURATION,
+                repeat: 0,
+                alpha: {
+                  getStart: () => 0,
+                  getEnd: () => 1
+                },
+                onComplete: () => {
+                    let splashTween2 = this.tweens.add({
+                        targets: this.splashScreen,
+                        ease: 'sine.inout',
+                        duration: UI_CONFIG.SPLASH_FADE_DURATION,
+                        repeat: 0,
+                        delay: UI_CONFIG.SPLASH_DELAY,
+                        alpha: {
+                          getStart: () => 1,
+                          getEnd: () => 0
+                        },
+                        onComplete: () => {
+                            this.graphics.setVisible(false);
+                            this.splashScreen.setVisible(false);
+                            splashTween2?.remove();
+                            splashTween2 = null;
+                        }
+                    });
+                    splashTween?.remove();
+                    splashTween = null;
+                }
             });
         }
     }

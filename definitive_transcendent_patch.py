@@ -2,20 +2,31 @@ import os
 import re
 import sys
 import subprocess
+import shutil
 
-def robust_sub(pattern, replacement, content, count=0, literal=False):
+def robust_sub(pattern, replacement, content, count=0, *, literal=False):
     if literal:
         pattern = re.escape(pattern)
     new_content, n = re.subn(pattern, replacement, content, count=count)
+    if n == 0:
+        print(f"WARNING: Pattern not matched: {pattern!r:.80}")
     return new_content, n
 
 def verify_js(path):
+    node_bin = shutil.which("node")
+    if not node_bin:
+        print("ERROR: node binary not found in PATH")
+        sys.exit(1)
+
     try:
-        subprocess.run(['node', '--check', path], check=True, capture_output=True)
+        subprocess.run([node_bin, '--check', path], check=True, capture_output=True, text=True)
         print(f"Verified syntax for {path}")
     except subprocess.CalledProcessError as e:
         print(f"SYNTAX ERROR in {path}:")
-        print(e.stderr.decode())
+        print(e.stderr)
+        sys.exit(1)
+    except FileNotFoundError:
+        print(f"ERROR: Could not execute {node_bin}")
         sys.exit(1)
 
 def patch_main_scene():
@@ -33,11 +44,11 @@ def patch_main_scene():
             'BreakLine(x, y) {\n        // Transcendent Fixed Scoping\n        if (this.linesToClear.length < 1 || this.gamefinish) {\n            this.cameras.main.setZoom(1);\n            this.FinishTurn();\n            return;\n        }\n        let comboCount = this.linesToClear.length;',
             content, count=1
         )
-        if n > 0: changed = True
+        if n > 0:
+            changed = True
 
     # Scoped shakeIntensity check
     if 'let shakeIntensity = comboCount * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE * 1.5;' in content:
-        # Check if it's inside the if block
         match = re.search(r'if \(this\.animationsIterator === 0\) \{\s+let shakeIntensity', content)
         if not match:
             content, n = robust_sub(
@@ -45,7 +56,18 @@ def patch_main_scene():
                 'if (this.animationsIterator === 0) {\n            let shakeIntensity = comboCount * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE * 1.5;',
                 content, count=1
             )
-            if n > 0: changed = True
+            if n > 0:
+                changed = True
+
+    # Shutdown cleanup for vignette/barrel
+    if "this.vignette?.remove()" not in content:
+        content, n = robust_sub(
+            r'this\.events\.once\(\'shutdown\', \(\) => \{ this\.cameras\.main\.setZoom\(1\); \}\);',
+            "this.events.once('shutdown', () => {\n            this.vignette?.setActive(false);\n            this.vignette?.remove();\n            this.barrel?.setActive(false);\n            this.barrel?.remove();\n            this.vignette = null;\n            this.barrel = null;\n            this.cameras.main.setZoom(1);\n        });",
+            content, count=1
+        )
+        if n > 0:
+            changed = True
 
     if changed:
         with open(path, 'w') as f:
@@ -67,17 +89,19 @@ def patch_panel():
         content, n = robust_sub(
             'constructor(scene) {',
             'constructor(scene) {\n        // Transcendent Panel Fixed',
-            content, count=1, literal=True
+            content, literal=True, count=1
         )
-        if n > 0: changed = True
+        if n > 0:
+            changed = True
 
     if "BOKEH_RADIUS" not in content:
         content, n = robust_sub(
             'SHOW_DURATION: 600,',
             'SHOW_DURATION: 600,\n    BOKEH_RADIUS: 0.5,\n    BOKEH_AMOUNT: 1.0,\n    BOKEH_CONTRAST: 0,\n    BOKEH_TARGET_RADIUS: 10,',
-            content, count=1, literal=True
+            content, literal=True, count=1
         )
-        if n > 0: changed = True
+        if n > 0:
+            changed = True
 
     if changed:
         with open(path, 'w') as f:
@@ -93,28 +117,9 @@ def patch_uiscene():
     with open(path, 'r') as f:
         content = f.read()
 
-    changed = False
-
     if "// Transcendent UI Fixed" not in content:
-        if 'let wipe = this.splashScreen.postFX.addWipe(0.1, 0, 1);' in content:
-            content, n = robust_sub(
-                r'let wipe = this\.splashScreen\.postFX\.addWipe\(0\.1, 0, 1\); // wipeWidth, direction, axis',
-                '// Transcendent UI Fixed\n            let wipe = this.splashScreen.postFX.addWipe(0.1, 1, 0); // wipeWidth, direction, axis',
-                content, count=1
-            )
-            if n > 0: changed = True
-
-            content, n = robust_sub(
-                r'if \(this\.splashScreen\.postFX\) this\.splashScreen\.postFX\.remove\(wipe\);',
-                'if (this.splashScreen.postFX) this.splashScreen.postFX.clear();',
-                content, count=1
-            )
-            if n > 0: changed = True
-
-    if changed:
-        with open(path, 'w') as f:
-            f.write(content)
-        verify_js(path)
+         print("UIScene needs patching (handled via fix_uiscene.py strategy)")
+         # Logic already applied manually via shell to ensure complex nested guards are correct.
     else:
         print("UIScene: No changes needed.")
 
@@ -122,4 +127,4 @@ if __name__ == "__main__":
     patch_main_scene()
     patch_panel()
     patch_uiscene()
-    print("Robust patching orchestration complete.")
+    print("Transcendent patching orchestration complete.")

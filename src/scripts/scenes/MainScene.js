@@ -1762,7 +1762,15 @@ export class MainScene extends Phaser.Scene{
         this.vignette = this.cameras?.main?.postFX ? this.cameras.main.postFX.addVignette(0.5, 0.5, 0.8, 0) : null;
         this.barrel = this.cameras?.main?.postFX ? this.cameras.main.postFX.addBarrel(1.0) : null;
         this.barrel?.setActive(false);
-        this.events.once('shutdown', () => { this.cameras.main.setZoom(1); });
+        this.events.once('shutdown', () => {
+            this.vignette?.setActive(false);
+            this.vignette?.remove();
+            this.barrel?.setActive(false);
+            this.barrel?.remove();
+            this.vignette = null;
+            this.barrel = null;
+            this.cameras.main.setZoom(1);
+        });
         this.uiScene.setCurrentScene(this);
 
         // Particle Manager for Juiciness (Modern Phaser 3.60+ API)
