@@ -36,12 +36,16 @@ const JUICE_CONFIG = {
     COMBO_TEXT_FADEOUT_DURATION: 300,
     PIECE_BREAK_PARTICLE_COUNT: 25,
     GET_BEST_PIECES_SAMPLE_SIZE: 10,
+    GET_BEST_PIECES_ITERATIONS: 100,
     GHOST_PIECE_LERP_FACTOR: 0.3,
     COMBO_TEXT_OFFSET_X: 40,
-    COMBO_TEXT_OFFSET_Y: 140,
+    COMBO_NUMBER_OFFSET_X: 140,
     COMBO_PTS_OFFSET_Y: 50,
     COMBO_PTS_VALUE_OFFSET_X: 32,
-    COMBO_PTS_FINAL_OFFSET_X: 65
+    COMBO_PTS_FINAL_OFFSET_X: 65,
+    NUMBERS_TEXT_OFFSET_X: 32,
+    NUMBERS_TEXT_FINAL_OFFSET_X: 65,
+    COMBO_Y_ANIM_OFFSET: 50
 };
 
 
@@ -254,7 +258,6 @@ export class MainScene extends Phaser.Scene{
 
     SetPiecePosition(piece){
         //X
-        console.log(this.CountPieceX(piece))
         switch (this.CountPieceX(piece)) {
             case 1:
                 this.posOptionX = 23
@@ -388,10 +391,6 @@ export class MainScene extends Phaser.Scene{
             }
         }
         if(canPowerUp)newPShape = this.convertirPowerUp(newPShape)
-        console.log("the texture number is " + pTexture)
-        console.log("the texture is " + this.colorsList[pTexture])
-        console.log("the previous shape is " + pShape)
-        console.log("the shape is " + newPShape)
         return new Piece(this.colorsList[pTexture],newPShape)
     }
 
@@ -418,7 +417,6 @@ export class MainScene extends Phaser.Scene{
         // Reemplazamos  en la posición aleatoria el powerUp
 
         let pp = this.GetRandomInt(2)+1
-        console.log("TRY"+pp)
         array[posicion_aleatoria] = pp;
 
         // Unimos el array de nuevo en un string y lo retornamos
@@ -519,7 +517,6 @@ export class MainScene extends Phaser.Scene{
 
 
 
-        console.log("CHECK=========================================")
 
         if(!this.isStarting){
             this.particles.explode(20, (x * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X + (this.LAYOUT.SQUARE_SIZE * 2), (y * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y + (this.LAYOUT.SQUARE_SIZE * 2));
@@ -536,7 +533,6 @@ export class MainScene extends Phaser.Scene{
                 else line+= this.board[j][i].name.charAt(19) +"|"
 
             }
-            console.log(line)
         }
         //console.log("POWER" + this.powerUpsInGame)
         //this.currentTime += (this.secondsToAdd*2)
@@ -742,11 +738,11 @@ export class MainScene extends Phaser.Scene{
         this.effectTextContainer.add(this.add.image(0, 0, 'textos', "+.png").setDepth(6))
         for(let i = 0; i<=strNumber.length; i++){
             if(i===strNumber.length){
-                let number = this.add.image((i*32)+65, 0, 'textos',  "pts.png").setDepth(6)
+                let number = this.add.image((i * JUICE_CONFIG.NUMBERS_TEXT_OFFSET_X) + JUICE_CONFIG.NUMBERS_TEXT_FINAL_OFFSET_X, 0, 'textos',  "pts.png").setDepth(6)
                 this.effectTextContainer.add(number)
             }
             else{
-                let number = this.add.image((i*32)+32, 0, 'textos', strNumber[i] + ".png").setDepth(6)
+                let number = this.add.image((i * JUICE_CONFIG.NUMBERS_TEXT_OFFSET_X) + JUICE_CONFIG.NUMBERS_TEXT_OFFSET_X, 0, 'textos', strNumber[i] + ".png").setDepth(6)
                 this.effectTextContainer.add(number)
             }
 
@@ -757,7 +753,7 @@ export class MainScene extends Phaser.Scene{
     CreateComboText(filas, columnas, combo, number) {
         const container = this.add.container(0, 0).setDepth(6).setAlpha(0);
         container.add(this.add.image(JUICE_CONFIG.COMBO_TEXT_OFFSET_X, 0, 'textos', "combo.png"));
-        container.add(this.add.image(JUICE_CONFIG.COMBO_TEXT_OFFSET_Y, 0, 'textos', combo.toString() + ".png"));
+        container.add(this.add.image(JUICE_CONFIG.COMBO_NUMBER_OFFSET_X, 0, 'textos', combo.toString() + ".png"));
         container.add(this.add.image(0, JUICE_CONFIG.COMBO_PTS_OFFSET_Y, 'textos', "+.png"));
         let strNumber = number.toString();
         for (let i = 0; i <= strNumber.length; i++) {
@@ -781,7 +777,7 @@ export class MainScene extends Phaser.Scene{
                     this.tweens.add({
                         targets: container,
                         alpha: 0,
-                        y: container.y - 50,
+                        y: container.y - JUICE_CONFIG.COMBO_Y_ANIM_OFFSET,
                         duration: JUICE_CONFIG.COMBO_TEXT_FADEOUT_DURATION,
                         onComplete: () => container.destroy()
                     });
@@ -828,7 +824,6 @@ export class MainScene extends Phaser.Scene{
             let dictKey = filas.toString()+columnas.toString()
             if((dictKey) in this.powerUpsInGame){
                 delete this.powerUpsInGame[dictKey]
-                console.log("POWER " + dictKey)
             }
         }
     }
@@ -901,7 +896,6 @@ export class MainScene extends Phaser.Scene{
 
         for(let i = 0; i < this.colorsToRestore.length; i++){
 
-            console.log(this.colorsToRestore[i])
             if(this.colorsToRestore[i].startsWith("blockblast")) this.piecesToClear[i].play("idle" + this.colorsToRestore[i][17],true)
 
 
@@ -915,7 +909,6 @@ export class MainScene extends Phaser.Scene{
     //POWERUPS
     RotatePowerup(){
 
-        console.log("ROTATE")
         let container = this.boardContainer
         let newAngle = this.boardAngle + 90
         if(newAngle>180) newAngle = -90
@@ -1049,19 +1042,16 @@ export class MainScene extends Phaser.Scene{
         this.MakeAnimation(fila,columna,"bombFx")
         fila = parseInt(fila)
         columna = parseInt(columna)
-        console.log("BREAKLINE  in function" + this.piecesToClear.length)
         for (let i = -1; i <= 1; i++) {
             for (let j = -1; j <= 1; j++) {
                 // Calculamos las nuevas coordenadas
                 const nuevaFila = fila + i;
                 const nuevaColumna = columna + j;
-                console.log("BREAKLINE  in function" + this.piecesToClear.length)
                 // Verificamos si las nuevas coordenadas están dentro de los límites de la matriz
                 if (nuevaFila >= 0 && nuevaFila < 8 && nuevaColumna >= 0 && nuevaColumna < 8) {
                     if(i == j && i==0){
                         continue
                     }
-                    console.log("BREAKLINE  in function" + this.piecesToClear.length)
                         // Agregamos las coordenadas válidas a la lista de variables circundantes
                         //variablesCircundantes.push([nuevaFila, nuevaColumna]);
                         this.BreakPiece(nuevaFila, nuevaColumna,true)
@@ -1084,22 +1074,18 @@ export class MainScene extends Phaser.Scene{
             this.isPaused = true
         }
         this.powerupcd +=1
-        console.log("COOLDOWN "+this.powerupcd)
         this.optionsBools[0] = true
         this.optionsBools[1] = true
         this.optionsBools[2] = true
 
         this.posOptionX = 500
         this.posOptionY = 400
-        console.log(this.posOptionX )
 
         if(this.queuePieces.isEmpty)this.queuePieces = this.GetBestPieces()
-        console.log(this.queuePieces.length)
 
         this.ShowTime()
 
         this.probArray = [false,false,false]
-        console.log(this.probArray)
         let probPowerUp = this.GetRandomInt(10)
         if(probPowerUp <4 && this.powerupcd > 4){
             this.probArray = [true,false,false]
@@ -1108,7 +1094,6 @@ export class MainScene extends Phaser.Scene{
         this.ShuffleArray(this.probArray)
 
 
-        console.log(this.probArray)
         let pieceOption = this.RegeneratePiece(this.queuePieces.dequeue(), this.probArray[0])
         this.SetPiecePosition(pieceOption.shape)
         this.option1 = this.CreatePiece(pieceOption, 965-this.posOptionX,337-this.posOptionY,100,0.45,"originalPiece")
@@ -1253,7 +1238,6 @@ export class MainScene extends Phaser.Scene{
     ShineBlock(){
         for (let clave in this.powerUpsInGame) {
             if (this.powerUpsInGame.hasOwnProperty(clave)) {
-                console.log('POWER' + this.board[clave[0]][clave[1]].name)
                 this.idleboard[clave[0]][clave[1]].play(this.GetTexture(this.board[clave[0]][clave[1]]),true)
             }
         }
@@ -1263,7 +1247,6 @@ export class MainScene extends Phaser.Scene{
         let x = this.GetRandomInt(7)
         let y = this.GetRandomInt(7)
         let blockname = this.GetTexture(this.board[x][y]).slice(0, -4) + "_special.png"
-        console.log("SPECIAL" + blockname)
         if(this.textures.get('piece').getFrameNames().includes(blockname)){
             this.idleboard[x][y].setTexture('piece', blockname )
         }
@@ -1322,7 +1305,7 @@ export class MainScene extends Phaser.Scene{
     GetBestPieces() {
         let trueList = [];
         let actualScore = -1;
-        const numDif = 100;
+        const numDif = JUICE_CONFIG.GET_BEST_PIECES_ITERATIONS;
         const scratchBoard = Array.from({ length: this.boardSize }, () => new Array(this.boardSize));
 
         for (let it = 0; it < numDif; it++) {
@@ -1465,13 +1448,10 @@ export class MainScene extends Phaser.Scene{
     }
 
     ShowTime(){
-        console.log("TIMER IS WORKING")
         this.sliderTween?.remove();
         this.sliderTween = null;
         this.maxTimePerTurn-=.2
         this.timeSlider.childrenMap.indicator.setTexture('timerBar','verde.png')
-        console.log("TIMER " + this.maxTimePerTurn +" VS " + this.level2Time)
-        console.log("TIMER " + this.maxTimePerTurn +" VS " + this.level1Time)
         if(this.maxTimePerTurn<this.minTimePerTurn)this.maxTimePerTurn=this.minTimePerTurn
         //else if(this.maxTimePerTurn<this.level2Time){
            // this.timeSlider.childrenMap.indicator.setTexture('timerBar','rojo.png')
@@ -1526,7 +1506,6 @@ export class MainScene extends Phaser.Scene{
             },
             onComplete: () => {
 
-                console.log("¡Tiempo agotado!")
                 this.StartGameOver()
                 this.sliderTween?.remove();
                 this.sliderTween = null;
@@ -1798,9 +1777,9 @@ export class MainScene extends Phaser.Scene{
             //CREATE LINECOUNTERS
 
             this.lineCounterX = Array(this.boardSize).fill(0);
-        this.lineCounterY = Array(this.boardSize).fill(0);
-        this.lineCounterXadd = Array(this.boardSize).fill(0);
-        this.lineCounterYadd = Array(this.boardSize).fill(0);
+            this.lineCounterY = Array(this.boardSize).fill(0);
+            this.lineCounterXadd = Array(this.boardSize).fill(0);
+            this.lineCounterYadd = Array(this.boardSize).fill(0);
             this.piecesToClear = []
             this.linesToClear = []
             this.colorsToRestore = []
@@ -1937,7 +1916,6 @@ export class MainScene extends Phaser.Scene{
         this.minTimePerTurn = 5
         this.maxTimePerTurn = 25
         this.level1Time =(((this.maxTimePerTurn-this.minTimePerTurn)/3)*2)+this.minTimePerTurn
-        console.log("TIMERS " + this.level1Time)
         this.level2Time =((this.maxTimePerTurn-this.minTimePerTurn)/3)+this.minTimePerTurn
 
         //THE FIRST ELEMENT MUST BE THE EMPTY SPACE
@@ -2248,12 +2226,10 @@ export class MainScene extends Phaser.Scene{
 
         if (this.sys.game.device.os.android || this.sys.game.device.os.iOS) {
             // Código específico para dispositivos móviles
-            console.log("Ejecutando en un dispositivo móvil");
             this.pointerAdd = this.LAYOUT.SQUARE_SIZE*2
             // Puedes agregar aquí el código específico que deseas ejecutar solo en dispositivos móviles
         } else {
             // Código para dispositivos no móviles
-            console.log("Ejecutando en un dispositivo no móvil");
         }
 
 
@@ -2270,7 +2246,6 @@ export class MainScene extends Phaser.Scene{
         this.input.on('dragstart', function (pointer, gameObject) {
             if(!this.isPaused){
                 this.audioManager.preview.play()
-                console.log(gameObject.parentContainer.name)
                 gameObject.parentContainer.visible = false
                 this.piece = this.optionsPieces[parseInt(gameObject.parentContainer.name)]
                 this.optionsBools[parseInt(gameObject.parentContainer.name)]= false
@@ -2305,7 +2280,6 @@ export class MainScene extends Phaser.Scene{
 
         this.input.on('dragend', function (pointer, gameObject) {
             if(!this.isPaused){
-                console.log(gameObject.parentContainer.name)
                 this.canCheck = false
                 pointerContainer.visible = false
                 pointerContainer.x = -800
