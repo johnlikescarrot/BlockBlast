@@ -41,7 +41,7 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new CopyWebpackPlugin({ patterns: [{ from: "src/scripts/locales", to: "scripts/locales" }] }),
+    new CopyWebpackPlugin({ patterns: [{ from: "src/scripts/locales", to: "scripts/locales" }, { from: "src/shaders", to: "shaders" }] }),
     new webpack.DefinePlugin({
       CANVAS_RENDERER: JSON.stringify(true),
       WEBGL_RENDERER: JSON.stringify(true),

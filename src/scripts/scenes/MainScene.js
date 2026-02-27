@@ -24,7 +24,7 @@ const JUICE_CONFIG = {
     GLOW_QUALITY: 0.1,
     GLOW_SAMPLES: 10,
     TUTORIAL_INITIAL_DELAY: 800,
-    LAND_BOUNCE_DURATION: 300
+    LAND_BOUNCE_DURATION: 300, IMPACT_FRAME_DURATION: 50, DIRECTIONAL_SHAKE_INTENSITY: 0.01
 };
 
 
@@ -232,7 +232,6 @@ export class MainScene extends Phaser.Scene{
 
     SetPiecePosition(piece){
         //X
-        console.log(this.CountPieceX(piece))
         switch (this.CountPieceX(piece)) {
             case 1:
                 this.posOptionX = 23
@@ -366,10 +365,6 @@ export class MainScene extends Phaser.Scene{
             }
         }
         if(canPowerUp)newPShape = this.convertirPowerUp(newPShape)
-        console.log("the texture number is " + pTexture)
-        console.log("the texture is " + this.colorsList[pTexture])
-        console.log("the previous shape is " + pShape)
-        console.log("the shape is " + newPShape)
         return new Piece(this.colorsList[pTexture],newPShape)
     }
 
@@ -396,7 +391,6 @@ export class MainScene extends Phaser.Scene{
         // Reemplazamos  en la posición aleatoria el powerUp
 
         let pp = this.GetRandomInt(2)+1
-        console.log("TRY"+pp)
         array[posicion_aleatoria] = pp;
 
         // Unimos el array de nuevo en un string y lo retornamos
@@ -497,7 +491,6 @@ export class MainScene extends Phaser.Scene{
                 ease: "Bounce.easeOut"
             });
         }
-        console.log("CHECK=========================================")
 
         if(!this.isStarting){
             this.particles.explode(20, (x * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X + (this.LAYOUT.SQUARE_SIZE * 2), (y * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y + (this.LAYOUT.SQUARE_SIZE * 2));
@@ -509,18 +502,16 @@ export class MainScene extends Phaser.Scene{
         for(let i = 0; i < 8; i++){
             let line = "CHECK"
             for(let j = 0; j < 8; j++){
-                //console.log(this.board[j][i].name.length)
                 if(this.board[j][i].name.length < 3 || this.board[j][i].name.length > 27)line+="0|"
                 else line+= this.board[j][i].name.charAt(19) +"|"
 
             }
-            console.log(line)
         }
-        //console.log("POWER" + this.powerUpsInGame)
         //this.currentTime += (this.secondsToAdd*2)
 
     }
     FinishTurn() {
+        if (this.lineClearedThisTurn) this.feverStreak++; else this.feverStreak = 0; this.lineClearedThisTurn = false; if (this.feverStreak >= 3) this.cameras.main.setTint(0xffaa66); else this.cameras.main.clearTint();
         if (this.scoreTween) this.scoreTween.stop();
         let startScore = this.scorePoints;
         this.scorePoints += this.newScorePoints;
@@ -578,14 +569,16 @@ export class MainScene extends Phaser.Scene{
 
 
     BreakLine(x, y) {
+        this.lineClearedThisTurn = true;
         if (this.linesToClear.length < 1 || this.gamefinish) {
             this.FinishTurn();
             return;
         }
         if (this.animationsIterator === 0) {
+            this.cameras.main.flash(JUICE_CONFIG.IMPACT_FRAME_DURATION, 255, 255, 255, true);
             this.PauseTimer();
             let intensity = this.linesToClear.length * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE;
-            this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, intensity);
+            const isVertical = this.linesToClear.some(l => l > 7); const isHorizontal = this.linesToClear.some(l => l <= 7); if (isVertical && !isHorizontal) this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, new Phaser.Math.Vector2(0, intensity)); else if (isHorizontal && !isVertical) this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, new Phaser.Math.Vector2(intensity, 0)); else this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, intensity);
             this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, (JUICE_CONFIG.FLASH_COLOR >> 16) & 0xFF, (JUICE_CONFIG.FLASH_COLOR >> 8) & 0xFF, JUICE_CONFIG.FLASH_COLOR & 0xFF, false);
 
             if (this.linesToClear.length >= JUICE_CONFIG.COMBO_THRESHOLD) {
@@ -789,7 +782,7 @@ export class MainScene extends Phaser.Scene{
             }
             else{
                 if(!bomb)this.MakeAnimation(filas,columnas,"destroyFx")
-                this.particles.explode(10, (filas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X, (columnas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y);
+                this.particles.explode(10 + (this.feverStreak * 10), (filas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X, (columnas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y);
                 this.board[filas][columnas].anims.pause()
                 this.idleboard[filas][columnas].anims.pause()
                 this.board[filas][columnas].setTint(0xffffff)
@@ -805,7 +798,6 @@ export class MainScene extends Phaser.Scene{
             let dictKey = filas.toString()+columnas.toString()
             if((dictKey) in this.powerUpsInGame){
                 delete this.powerUpsInGame[dictKey]
-                console.log("POWER " + dictKey)
             }
         }
     }
@@ -878,7 +870,6 @@ export class MainScene extends Phaser.Scene{
 
         for(let i = 0; i < this.colorsToRestore.length; i++){
 
-            console.log(this.colorsToRestore[i])
             if(this.colorsToRestore[i].startsWith("blockblast")) this.piecesToClear[i].play("idle" + this.colorsToRestore[i][17],true)
 
 
@@ -892,7 +883,6 @@ export class MainScene extends Phaser.Scene{
     //POWERUPS
     RotatePowerup(){
 
-        console.log("ROTATE")
         let container = this.boardContainer
         let newAngle = this.boardAngle + 90
         if(newAngle>180) newAngle = -90
@@ -1026,19 +1016,16 @@ export class MainScene extends Phaser.Scene{
         this.MakeAnimation(fila,columna,"bombFx")
         fila = parseInt(fila)
         columna = parseInt(columna)
-        console.log("BREAKLINE  in function" + this.piecesToClear.length)
         for (let i = -1; i <= 1; i++) {
             for (let j = -1; j <= 1; j++) {
                 // Calculamos las nuevas coordenadas
                 const nuevaFila = fila + i;
                 const nuevaColumna = columna + j;
-                console.log("BREAKLINE  in function" + this.piecesToClear.length)
                 // Verificamos si las nuevas coordenadas están dentro de los límites de la matriz
                 if (nuevaFila >= 0 && nuevaFila < 8 && nuevaColumna >= 0 && nuevaColumna < 8) {
                     if(i == j && i==0){
                         continue
                     }
-                    console.log("BREAKLINE  in function" + this.piecesToClear.length)
                         // Agregamos las coordenadas válidas a la lista de variables circundantes
                         //variablesCircundantes.push([nuevaFila, nuevaColumna]);
                         this.BreakPiece(nuevaFila, nuevaColumna,true)
@@ -1061,22 +1048,18 @@ export class MainScene extends Phaser.Scene{
             this.isPaused = true
         }
         this.powerupcd +=1
-        console.log("COOLDOWN "+this.powerupcd)
         this.optionsBools[0] = true
         this.optionsBools[1] = true
         this.optionsBools[2] = true
 
         this.posOptionX = 500
         this.posOptionY = 400
-        console.log(this.posOptionX )
 
         if(this.queuePieces.isEmpty)this.queuePieces = this.GetBestPieces()
-        console.log(this.queuePieces.length)
 
         this.ShowTime()
 
         this.probArray = [false,false,false]
-        console.log(this.probArray)
         let probPowerUp = this.GetRandomInt(10)
         if(probPowerUp <4 && this.powerupcd > 4){
             this.probArray = [true,false,false]
@@ -1085,7 +1068,6 @@ export class MainScene extends Phaser.Scene{
         this.ShuffleArray(this.probArray)
 
 
-        console.log(this.probArray)
         let pieceOption = this.RegeneratePiece(this.queuePieces.dequeue(), this.probArray[0])
         this.SetPiecePosition(pieceOption.shape)
         this.option1 = this.CreatePiece(pieceOption, 965-this.posOptionX,337-this.posOptionY,100,0.45,"originalPiece")
@@ -1120,6 +1102,8 @@ export class MainScene extends Phaser.Scene{
                     this.isPaused = false
                 }
                 this.converterBool = false
+        this.feverStreak = 0;
+        this.lineClearedThisTurn = false;
                 tween.remove();
             }
         });
@@ -1138,7 +1122,6 @@ export class MainScene extends Phaser.Scene{
 
 
     CheckGameOver(){
-        console.log(this.optionsBools)
         for(let i = -4; i < this.boardSize+2; i++){
             for(let j = -4; j < this.boardSize+2; j++){
                 for(let k = 0; k < 3; k++){
@@ -1176,7 +1159,6 @@ export class MainScene extends Phaser.Scene{
                 if(j!= 0){
                     if((board[j-1][i] != 0||j-1<0) && board[j][i]==0){
                         positionArray.push((i*board.length)+j)
-                        //console.log((i*board.length)+j)
                     }
                 }
 
@@ -1196,23 +1178,18 @@ export class MainScene extends Phaser.Scene{
     CheckPiece(board, piece, x, y){
         let auxX = 0
         let startChecking = false
-        //console.log("checking piece " + piece)
         for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
             for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
 
                 if(piece.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j) != 0){
                     if(x >= 0 && x<=7 && y >= 0 && y<=7 ){
-                        //console.log("starts at " + i.toString() + " " + j.toString())
                         if(!startChecking)auxX = x-j
                         startChecking = true
-                        //console.log("board " + x.toString() + " " + y.toString())
                         if(board[x][y] !=0 ){
-                            //console.log("not fit")
                             return false
                         }
                     }
                     else{
-                        //console.log("more than limits")
                         return false
 
                     } 
@@ -1230,7 +1207,6 @@ export class MainScene extends Phaser.Scene{
     ShineBlock(){
         for (let clave in this.powerUpsInGame) {
             if (this.powerUpsInGame.hasOwnProperty(clave)) {
-                console.log('POWER' + this.board[clave[0]][clave[1]].name)
                 this.idleboard[clave[0]][clave[1]].play(this.GetTexture(this.board[clave[0]][clave[1]]),true)
             }
         }
@@ -1240,7 +1216,6 @@ export class MainScene extends Phaser.Scene{
         let x = this.GetRandomInt(7)
         let y = this.GetRandomInt(7)
         let blockname = this.GetTexture(this.board[x][y]).slice(0, -4) + "_special.png"
-        console.log("SPECIAL" + blockname)
         if(this.textures.get('piece').getFrameNames().includes(blockname)){
             this.idleboard[x][y].setTexture('piece', blockname )
         }
@@ -1255,7 +1230,6 @@ export class MainScene extends Phaser.Scene{
         let deleteX = false
         let deleteY = false
         let score = 0
-        //console.log("checking piece " + piece)
         for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
             for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++){
 
@@ -1308,16 +1282,12 @@ export class MainScene extends Phaser.Scene{
         for(let it = 0; it < numDif; it++){
             listPieces = []
             //ciclo para buscar las 3 piezas
-            //console.log("Test =========================================")
             //copiar el tablero
             let newBoard = []
             for (let i = 0; i < this.boardSize; i++)newBoard[i] = this.boardMatrix[i].slice()
             //Copiar counters
             let newLineCounterY = this.lineCounterX.slice()
             let newLineCounterX = this.lineCounterY.slice()
-            //console.log(newLineCounterX)
-            //console.log(newLineCounterY)
-            //console.log(newBoard)
 
             let scoreAcum = 0
 
@@ -1330,20 +1300,14 @@ export class MainScene extends Phaser.Scene{
                 let y = ~~(this.positions[i]/this.boardSize)
 
                 let x = this.positions[i]%this.boardSize
-                //console.log("coordenadas " + x.toString() + " y " + y.toString() )
                 this.ShuffleArray(this.piecesList)
                 //Revisar si las pieza entran
                 for(let j = 0; j<this.piecesList.length; j++){
                     if(this.CheckPiece(newBoard,this.piecesList[j],x,y)){
                         let score = this.InsertPieceBoard(newBoard,newLineCounterX,newLineCounterY,this.piecesList[j],x,y)
-                        //console.log(newLineCounterX)
-                        //console.log(newLineCounterY)
-                        //console.log(newBoard)
                         listPieces.push(this.piecesList[j])
                         scoreAcum+= score
                         forBreak = true
-                        //console.log("selected piece is " + this.piecesList[j])
-                        //console.log("sum " + scoreAcum.toString() + " mas " + score.toString())
                         break
                     }
 
@@ -1474,13 +1438,10 @@ export class MainScene extends Phaser.Scene{
     }
 
     ShowTime(){
-        console.log("TIMER IS WORKING")
         this.sliderTween?.remove();
         this.sliderTween = null;
         this.maxTimePerTurn-=.2
         this.timeSlider.childrenMap.indicator.setTexture('timerBar','verde.png')
-        console.log("TIMER " + this.maxTimePerTurn +" VS " + this.level2Time)
-        console.log("TIMER " + this.maxTimePerTurn +" VS " + this.level1Time)
         if(this.maxTimePerTurn<this.minTimePerTurn)this.maxTimePerTurn=this.minTimePerTurn
         //else if(this.maxTimePerTurn<this.level2Time){
            // this.timeSlider.childrenMap.indicator.setTexture('timerBar','rojo.png')
@@ -1535,7 +1496,6 @@ export class MainScene extends Phaser.Scene{
             },
             onComplete: () => {
 
-                console.log("¡Tiempo agotado!")
                 this.StartGameOver()
                 this.sliderTween?.remove();
                 this.sliderTween = null;
@@ -1624,6 +1584,7 @@ export class MainScene extends Phaser.Scene{
     }
 
     preload(){
+        this.load.glsl("atmosphere", "shaders/atmosphere.frag");
         //this.load.image("table_shadow", "src/images/blockblast_backgroud_table_shadow.png")
         this.load.image("table", ResourceLoader.ReturnPath()+"/images/parchados_chess.png")
         this.load.image("b_box", ResourceLoader.ReturnPath()+"/images/parchados_table.png")
@@ -1763,6 +1724,7 @@ export class MainScene extends Phaser.Scene{
 
 
     create(){
+        this.atmosphere = this.add.shader("atmosphere", this.dim / 2, this.dim / 2, this.dim, this.dim).setDepth(0);
 
         //CAMBIAR NOMBRE CUANDO SEA NECESARIO
         this.game.config.metadata.onGameStart({state:`game_start`, name:`blockblast`});
@@ -1823,12 +1785,13 @@ export class MainScene extends Phaser.Scene{
         this.powerupcd=4
         this.gameoverTiming = false
         this.converterBool = false
+        this.feverStreak = 0;
+        this.lineClearedThisTurn = false;
 
         //TIMERS
         this.minTimePerTurn = 5
         this.maxTimePerTurn = 25
         this.level1Time =(((this.maxTimePerTurn-this.minTimePerTurn)/3)*2)+this.minTimePerTurn
-        console.log("TIMERS " + this.level1Time)
         this.level2Time =((this.maxTimePerTurn-this.minTimePerTurn)/3)+this.minTimePerTurn
 
         //THE FIRST ELEMENT MUST BE THE EMPTY SPACE
@@ -1979,7 +1942,6 @@ export class MainScene extends Phaser.Scene{
         this.halfBoxX = (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_X-(this.LAYOUT.SQUARE_SIZE/2)
 
         this.halfBoxY = (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_Y-(this.LAYOUT.SQUARE_SIZE/2)
-        console.log("HALF"+this.halfBox)
         this.add.image(this.offsetPictures,this.offsetPictures,"b_box").setDepth(1)
         let boardTable = this.add.image(this.offsetPictures-120-this.halfBoxX,this.offsetPictures-this.halfBoxY,"table").setDepth(3)
 
@@ -2293,12 +2255,10 @@ export class MainScene extends Phaser.Scene{
 
         if (this.sys.game.device.os.android || this.sys.game.device.os.iOS) {
             // Código específico para dispositivos móviles
-            console.log("Ejecutando en un dispositivo móvil");
             this.pointerAdd = this.LAYOUT.SQUARE_SIZE*2
             // Puedes agregar aquí el código específico que deseas ejecutar solo en dispositivos móviles
         } else {
             // Código para dispositivos no móviles
-            console.log("Ejecutando en un dispositivo no móvil");
         }
 
 
@@ -2315,7 +2275,6 @@ export class MainScene extends Phaser.Scene{
         this.input.on('dragstart', function (pointer, gameObject) {
             if(!this.isPaused){
                 this.audioManager.preview.play()
-                console.log(gameObject.parentContainer.name)
                 gameObject.parentContainer.visible = false
                 this.piece = this.optionsPieces[parseInt(gameObject.parentContainer.name)]
                 this.optionsBools[parseInt(gameObject.parentContainer.name)]= false
@@ -2350,7 +2309,6 @@ export class MainScene extends Phaser.Scene{
 
         this.input.on('dragend', function (pointer, gameObject) {
             if(!this.isPaused){
-                console.log(gameObject.parentContainer.name)
                 this.canCheck = false
                 pointerContainer.visible = false
                 pointerContainer.x = -800
@@ -2384,7 +2342,7 @@ export class MainScene extends Phaser.Scene{
 
 
     update(time, deltaTime){
-        //console.log("CONV REFILL COUNTER "+ this.refillCounter)
+        if (this.atmosphere) this.atmosphere.setUniform("uFever", this.feverStreak);
         this.pointerX = Phaser.Math.Clamp((Phaser.Math.FloorTo((this.pX-this.LAYOUT.OFFSET_X+50)/this.LAYOUT.SQUARE_SIZE)),0,10)-2
         this.pointerY = Phaser.Math.Clamp((Phaser.Math.FloorTo(((this.pY-this.pointerAdd)- this.LAYOUT.OFFSET_Y+50)/this.LAYOUT.SQUARE_SIZE)),0,10)-2
 
