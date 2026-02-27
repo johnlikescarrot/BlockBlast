@@ -14,22 +14,19 @@ export class Panel {
         this.blurFX = null;
     }
     animateShow(container) {
-        container.setAlpha(0);
         container.setVisible(true);
         container.setScale(0.8);
+        container.setAlpha(0);
         this.scene.tweens.add({
             targets: container,
-            alpha: 1,
-            scale: 1,
-            duration: UI_CONFIG.SHOW_DURATION,
-            ease: 'Elastic.easeOut',
-            easeParams: [1, 0.5]
+            alpha: { value: 1, ease: "Sine.easeOut" },
+            scale: { value: 1, ease: "Elastic.easeOut", easeParams: [1, 0.5] },
+            duration: UI_CONFIG.SHOW_DURATION
         });
         if (this.scene.currentScene && !this.blurFX) {
             this.blurFX = this.scene.currentScene.cameras.main.postFX?.addBlur?.(UI_CONFIG.BLUR_QUALITY, UI_CONFIG.BLUR_X, UI_CONFIG.BLUR_Y, UI_CONFIG.BLUR_STRENGTH);
         }
     }
-
     animateHide(container, onComplete) {
         this.scene.tweens.add({
             targets: container,

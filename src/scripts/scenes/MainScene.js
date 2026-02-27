@@ -37,6 +37,12 @@ const JUICE_CONFIG = {
     PIECE_BREAK_PARTICLE_COUNT: 25,
     GET_BEST_PIECES_SAMPLE_SIZE: 10,
     GET_BEST_PIECES_ITERATIONS: 100,
+    GET_BEST_PIECES_GOOD_ENOUGH_SCORE: 50,
+    BREAK_LINE_MIN_DELAY: 20,
+    BREAK_LINE_BASE_DELAY: 50,
+    BREAK_LINE_DELAY_STEP: 4,
+    PIECE_BREAK_SCALE: 1.2,
+    PIECE_BREAK_SCALE_DURATION: 100,
     GHOST_PIECE_LERP_FACTOR: 0.3,
     COMBO_TEXT_OFFSET_X: 40,
     COMBO_NUMBER_OFFSET_X: 140,
@@ -707,7 +713,7 @@ export class MainScene extends Phaser.Scene{
         }
         else{
             //MANDAR LA SIGUIENTE ANIMACION
-            const delay = Math.max(20, 50 - (this.animationsIterator * 4));
+            const delay = Math.max(JUICE_CONFIG.BREAK_LINE_MIN_DELAY, JUICE_CONFIG.BREAK_LINE_BASE_DELAY - (this.animationsIterator * JUICE_CONFIG.BREAK_LINE_DELAY_STEP));
             this.time.delayedCall(delay, () => {
                 this.BreakLine(x,y)
             });
@@ -770,7 +776,7 @@ export class MainScene extends Phaser.Scene{
         this.tweens.add({
             targets: container,
             alpha: 1,
-            scale: 1.2,
+            scale: JUICE_CONFIG.PIECE_BREAK_SCALE,
             duration: JUICE_CONFIG.COMBO_TEXT_APPEAR_DURATION,
             ease: 'Back.easeOut',
             onComplete: () => {
@@ -810,18 +816,19 @@ export class MainScene extends Phaser.Scene{
             else{
                 this.tweens.add({
                     targets: [this.board[filas][columnas], this.idleboard[filas][columnas]],
-                    scale: 1.2,
-                    duration: 100,
-                    yoyo: true
+                    scale: JUICE_CONFIG.PIECE_BREAK_SCALE,
+                    duration: JUICE_CONFIG.PIECE_BREAK_SCALE_DURATION,
+                    yoyo: true,
+                    onComplete: () => {
+                        if(!bomb)this.MakeAnimation(filas,columnas,"destroyFx")
+                        this.particles.explode(JUICE_CONFIG.PIECE_BREAK_PARTICLE_COUNT, (filas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X, (columnas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y);
+                        this.board[filas][columnas].anims.pause()
+                        this.idleboard[filas][columnas].anims.pause()
+                        this.board[filas][columnas].setTint(0xffffff)
+                        this.board[filas][columnas].setTexture("piece",this.colorsList[0])
+                        this.idleboard[filas][columnas].visible = false
+                    }
                 });
-                if(!bomb)this.MakeAnimation(filas,columnas,"destroyFx")
-                this.particles.explode(JUICE_CONFIG.PIECE_BREAK_PARTICLE_COUNT, (filas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X, (columnas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y);
-                this.board[filas][columnas].anims.pause()
-                this.idleboard[filas][columnas].anims.pause()
-                this.board[filas][columnas].setTint(0xffffff)
-                this.board[filas][columnas].setTexture("piece",this.colorsList[0])
-                this.idleboard[filas][columnas].anims.pause()
-                this.idleboard[filas][columnas].visible = false
                 this.SetName(this.board[filas][columnas],this.colorsList[0])
                 this.boardMatrix[filas][columnas] = 0
             } 
@@ -1336,13 +1343,16 @@ export class MainScene extends Phaser.Scene{
                     const y = ~~(pIdx / this.boardSize);
                     if (this.CheckPiece(scratchBoard, this.piecesList[j], x, y)) {
                         scoreAcum += this.InsertPieceBoard(scratchBoard, scratchLineX, scratchLineY, this.piecesList[j], x, y);
-                        if (scoreAcum > 50) break;
                         listPieces.push(this.piecesList[j]);
                         found = true;
                         break;
                     }
                 }
                 if (!found) listPieces.push(this.piecesList[0]);
+                if (scoreAcum > JUICE_CONFIG.GET_BEST_PIECES_GOOD_ENOUGH_SCORE) {
+                    while (listPieces.length < 3) listPieces.push(this.piecesList[0]);
+                    break;
+                }
             }
             if (scoreAcum > actualScore) {
                 trueList = listPieces;
@@ -1353,8 +1363,6 @@ export class MainScene extends Phaser.Scene{
         trueList.forEach(p => q.enqueue(p));
         return q;
     }
-
-
     CheckValue(piece, x,y){
         this.lineCounterXadd = Array(this.boardSize).fill(0)
         this.lineCounterYadd = Array(this.boardSize).fill(0)
@@ -1449,7 +1457,7 @@ export class MainScene extends Phaser.Scene{
         this.tweens.add({
             targets: indicator,
             alpha: 0.5,
-            duration: 100,
+            duration: JUICE_CONFIG.PIECE_BREAK_SCALE_DURATION,
             yoyo: true,
             onComplete: () => indicator.setAlpha(1)
         });
