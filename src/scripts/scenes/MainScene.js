@@ -1900,7 +1900,7 @@ export class MainScene extends Phaser.Scene{
             emitting: false,
             blendMode: 'ADD'
         });
-        // Performance: Cull particle rendering when off-screen
+        // Set render depth for particles
         this.particles.setDepth(15);
         this.particles.postFX?.addBloom?.(JUICE_CONFIG.BLOOM_COLOR, JUICE_CONFIG.BLOOM_BLUR_X, JUICE_CONFIG.BLOOM_BLUR_Y, JUICE_CONFIG.BLOOM_STRENGTH, JUICE_CONFIG.BLOOM_STEPS);
 
