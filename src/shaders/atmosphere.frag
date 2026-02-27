@@ -4,7 +4,6 @@ uniform float uTime;
 uniform vec2 uResolution;
 uniform float uFever;
 
-varying vec2 vPrecision;
 
 void main() {
     vec2 uv = gl_FragCoord.xy / uResolution.xy;

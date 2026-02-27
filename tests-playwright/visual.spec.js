@@ -1,18 +1,19 @@
 const { test, expect } = require('@playwright/test');
-test('capture snapshots', async ({ page }) => {
+test('visual presence', async ({ page }) => {
   await page.goto('/');
-  await page.waitForTimeout(5000);
-  await page.screenshot({ path: 'verification/beast_loading.png' });
+  await page.waitForFunction(() => window.Parchados && window.Parchados.game);
 
-  // Click play if visible
-  const playButton = page.locator('canvas');
-  if (await playButton.isVisible()) {
-    await page.mouse.click(540, 540); // Center click
-    await page.waitForTimeout(3000);
-    await page.screenshot({ path: 'verification/beast_menu.png' });
+  // Verify game canvas is visible
+  const canvas = page.locator('canvas');
+  await expect(canvas).toBeVisible();
 
-    await page.mouse.click(540, 900); // Start button area
-    await page.waitForTimeout(3000);
-    await page.screenshot({ path: 'verification/beast_gameplay.png' });
-  }
+  // Dim background or splash can be clicked
+  const { width, height } = page.viewportSize();
+  await page.mouse.click(width / 2, height / 2);
+
+  // Wait for menu
+  await page.waitForTimeout(2000);
+
+  // Take a single screenshot for record (non-comparing)
+  await page.screenshot({ path: 'verification/final_smoke_test.png' });
 });

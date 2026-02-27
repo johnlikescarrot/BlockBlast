@@ -24,7 +24,7 @@ const JUICE_CONFIG = {
     GLOW_QUALITY: 0.1,
     GLOW_SAMPLES: 10,
     TUTORIAL_INITIAL_DELAY: 800,
-    LAND_BOUNCE_DURATION: 300, IMPACT_FRAME_DURATION: 50, DIRECTIONAL_SHAKE_INTENSITY: 0.01
+    LAND_BOUNCE_DURATION: 300, IMPACT_FRAME_DURATION: 50
 };
 
 
@@ -511,7 +511,18 @@ export class MainScene extends Phaser.Scene{
 
     }
     FinishTurn() {
-        if (this.lineClearedThisTurn) this.feverStreak++; else this.feverStreak = 0; this.lineClearedThisTurn = false; if (this.feverStreak >= 3) this.cameras.main.setTint(0xffaa66); else this.cameras.main.clearTint();
+        if (this.lineClearedThisTurn) {
+            this.feverStreak++;
+        } else {
+            this.feverStreak = 0;
+        }
+        this.lineClearedThisTurn = false;
+
+        if (this.feverStreak >= 3) {
+            this.cameras.main.setTint(0xffaa66);
+        } else {
+            this.cameras.main.clearTint();
+        }
         if (this.scoreTween) this.scoreTween.stop();
         let startScore = this.scorePoints;
         this.scorePoints += this.newScorePoints;
@@ -569,17 +580,27 @@ export class MainScene extends Phaser.Scene{
 
 
     BreakLine(x, y) {
-        this.lineClearedThisTurn = true;
         if (this.linesToClear.length < 1 || this.gamefinish) {
             this.FinishTurn();
             return;
         }
+        this.lineClearedThisTurn = true;
         if (this.animationsIterator === 0) {
-            this.cameras.main.flash(JUICE_CONFIG.IMPACT_FRAME_DURATION, 255, 255, 255, true);
             this.PauseTimer();
             let intensity = this.linesToClear.length * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE;
-            const isVertical = this.linesToClear.some(l => l > 7); const isHorizontal = this.linesToClear.some(l => l <= 7); if (isVertical && !isHorizontal) this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, new Phaser.Math.Vector2(0, intensity)); else if (isHorizontal && !isVertical) this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, new Phaser.Math.Vector2(intensity, 0)); else this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, intensity);
-            this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, (JUICE_CONFIG.FLASH_COLOR >> 16) & 0xFF, (JUICE_CONFIG.FLASH_COLOR >> 8) & 0xFF, JUICE_CONFIG.FLASH_COLOR & 0xFF, false);
+            const isVertical = this.linesToClear.some(l => l > 7);
+            const isHorizontal = this.linesToClear.some(l => l <= 7);
+
+            if (isVertical && !isHorizontal) {
+                this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, new Phaser.Math.Vector2(0, intensity));
+            } else if (isHorizontal && !isVertical) {
+                this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, new Phaser.Math.Vector2(intensity, 0));
+            } else {
+                this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, intensity);
+            }
+
+            // Single consolidated impact flash
+            this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, 255, 255, 255, true);
 
             if (this.linesToClear.length >= JUICE_CONFIG.COMBO_THRESHOLD) {
                 if (this.bloomTimer) {
@@ -1109,6 +1130,8 @@ export class MainScene extends Phaser.Scene{
         });
 
 
+        this.feverStreak = 0;
+        this.lineClearedThisTurn = false;
         this.currentTime = this.maxTimePerTurn
     }
 
@@ -1724,6 +1747,7 @@ export class MainScene extends Phaser.Scene{
 
 
     create(){
+        this.dim = this.game.config.width;
         this.atmosphere = this.add.shader("atmosphere", this.dim / 2, this.dim / 2, this.dim, this.dim).setDepth(0);
 
         //CAMBIAR NOMBRE CUANDO SEA NECESARIO
@@ -1747,7 +1771,6 @@ export class MainScene extends Phaser.Scene{
         this.particles.setDepth(15);
         this.particles.postFX?.addBloom?.(JUICE_CONFIG.BLOOM_COLOR, JUICE_CONFIG.BLOOM_BLUR_X, JUICE_CONFIG.BLOOM_BLUR_Y, JUICE_CONFIG.BLOOM_STRENGTH, JUICE_CONFIG.BLOOM_STEPS);
 
-        this.dim = this.game.config.width;
         this.startTime = this.time.now * 0.001
 
         //INSTANCES
@@ -2071,7 +2094,9 @@ export class MainScene extends Phaser.Scene{
 
         //TIMER
 
-        //this.currentTime = this.maxTimePerTurn
+        //this.feverStreak = 0;
+        this.lineClearedThisTurn = false;
+        this.currentTime = this.maxTimePerTurn
         //let timerContainer = this.add.image(980, 210, 'menuUI', 'Cronometro_fondo.png')
 
         //this.timerText = this.add.text(980,210,this.FormatTime(this.currentTime), { 
