@@ -26,7 +26,9 @@ const JUICE_CONFIG = {
     TUTORIAL_INITIAL_DELAY: 500,
     TRANS_ZOOM: 1.05,
     BARREL_STRENGTH: 0.5,
-    PITCH_SHIFT_MAX: 1200
+    PITCH_SHIFT_MAX: 1200,
+    SHAKE_MULTIPLIER: 1.5,
+    LINE_CLEAR_GLOW_COLOR: 0xffffff
 };
 
 
@@ -568,21 +570,21 @@ export class MainScene extends Phaser.Scene{
 
 
     BreakLine(x, y) {
+        let comboCount = this.linesToClear.length;
         // Transcendent Fixed Scoping
-        if (this.linesToClear.length < 1 || this.gamefinish) {
+        if (comboCount < 1 || this.gamefinish) {
             this.cameras.main.setZoom(1);
             this.FinishTurn();
             return;
         }
-        let comboCount = this.linesToClear.length;
         if (this.animationsIterator === 0) {
-            let shakeIntensity = comboCount * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE * 1.5;
-            this.cameras.main.zoomTo(1.05, 100, "Sine.easeInOut", true);
+            let shakeIntensity = comboCount * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE * JUICE_CONFIG.SHAKE_MULTIPLIER;
+            this.cameras.main.zoomTo(JUICE_CONFIG.TRANS_ZOOM, 100, "Sine.easeInOut", true);
             this.PauseTimer();
             this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, shakeIntensity);
             this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, (JUICE_CONFIG.FLASH_COLOR >> 16) & 0xFF, (JUICE_CONFIG.FLASH_COLOR >> 8) & 0xFF, JUICE_CONFIG.FLASH_COLOR & 0xFF, false);
 
-            if (this.linesToClear.length >= JUICE_CONFIG.COMBO_THRESHOLD) {
+            if (comboCount >= JUICE_CONFIG.COMBO_THRESHOLD) {
                 if (this.bloomTimer) {
                     this.bloomTimer.remove();
                     this.bloomTimer = null;
@@ -612,8 +614,17 @@ export class MainScene extends Phaser.Scene{
         this.lineCounterXadd = [0,0,0,0,0,0,0,0]
         this.lineCounterYadd = [0,0,0,0,0,0,0,0]
 
-        this.audioManager.destruccion.play({ detune: comboCount * 100 });
-        if (this.barrel) { this.barrel.setActive(true); this.barrel.amount = 1.02; this.time.delayedCall(200, () => { if (this.barrel) { this.barrel.amount = 1.0; this.barrel.setActive(false); } }); }
+                this.audioManager.destruccion.play({ detune: comboCount * 100 });
+        if (this.audioManager.gameplayMusic) {
+            this.audioManager.gameplayMusic.setDetune(Math.min(comboCount * 200, JUICE_CONFIG.PITCH_SHIFT_MAX));
+            this.time.delayedCall(1000, () => {
+                if (this.audioManager.gameplayMusic) this.audioManager.gameplayMusic.setDetune(0);
+            });
+        }
+        if (this.barrel) {
+            this.barrel.amount = 1.0 + (JUICE_CONFIG.BARREL_STRENGTH * 0.1);
+            this.time.delayedCall(200, () => { if (this.barrel) this.barrel.amount = 1.0; });
+        }
         //RECORRER CADA LINEA Y ROMPER EL PRIMER ELEMENTO
         for(let i = 0; i < this.linesToClear.length; i++){
             let aux = this.linesToClear[i]
@@ -832,7 +843,7 @@ export class MainScene extends Phaser.Scene{
                 for(let j = 0; j < this.boardSize; j++){
 
                     this.piecesToClear.push(this.idleboard[j][i])
-                    if (this.idleboard[j][i].postFX) { this.idleboard[j][i].postFX.clear(); this.idleboard[j][i].postFX.addGlow(0xffffff, 2, 0); }
+                    if (this.idleboard[j][i].postFX) { this.idleboard[j][i].postFX.clear(); this.idleboard[j][i].postFX.addGlow(JUICE_CONFIG.LINE_CLEAR_GLOW_COLOR, 2, 0); }
                     this.colorsToRestore.push(this.GetTexture(this.board[j][i]))
                     if(this.GetTexture(this.board[j][i]).startsWith("blockblast")) {
                         this.idleboard[j][i].anims.pause()
@@ -850,7 +861,7 @@ export class MainScene extends Phaser.Scene{
                 this.linesToClear.push(i+8)
                 for(let j = 0; j < this.boardSize; j++){
                     this.piecesToClear.push(this.idleboard[i][j])
-                    if (this.idleboard[i][j].postFX) { this.idleboard[i][j].postFX.clear(); this.idleboard[i][j].postFX.addGlow(0xffffff, 2, 0); }
+                    if (this.idleboard[i][j].postFX) { this.idleboard[i][j].postFX.clear(); this.idleboard[i][j].postFX.addGlow(JUICE_CONFIG.LINE_CLEAR_GLOW_COLOR, 2, 0); }
                     this.colorsToRestore.push(this.GetTexture(this.board[i][j]))
                     if(this.GetTexture(this.board[i][j]).startsWith("blockblast")){
                         this.idleboard[i][j].anims.pause()
