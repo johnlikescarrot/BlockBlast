@@ -1,0 +1,30 @@
+        if (this.animationsIterator === 0) {
+            this.PauseTimer();
+            let intensity = this.linesToClear.length * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE;
+            this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, intensity);
+            this.cameras.main.flash(JUICE_CONFIG.FLASH_DURATION, (JUICE_CONFIG.FLASH_COLOR >> 16) & 0xFF, (JUICE_CONFIG.FLASH_COLOR >> 8) & 0xFF, JUICE_CONFIG.FLASH_COLOR & 0xFF, false);
+
+            if (this.linesToClear.length >= JUICE_CONFIG.COMBO_THRESHOLD) {
+                if (this.bloomTimer) {
+                    this.bloomTimer.remove();
+                    this.bloomTimer = null;
+                }
+                if (this.comboBloom) {
+                    this.boardContainer?.postFX?.remove?.(this.comboBloom);
+                }
+                this.comboBloom = this.boardContainer?.postFX?.addBloom?.(
+                    JUICE_CONFIG.BLOOM_COLOR,
+                    JUICE_CONFIG.BLOOM_BLUR_X,
+                    JUICE_CONFIG.BLOOM_BLUR_Y,
+                    JUICE_CONFIG.BLOOM_STRENGTH,
+                    JUICE_CONFIG.BLOOM_STEPS
+                );
+                if (this.comboBloom) {
+                    this.bloomTimer = this.time.delayedCall(JUICE_CONFIG.COMBO_BLOOM_DURATION, () => {
+                        this.boardContainer?.postFX?.remove?.(this.comboBloom);
+                        this.comboBloom = null;
+                        this.bloomTimer = null;
+                    });
+                }
+            }
+        }
