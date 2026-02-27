@@ -43,6 +43,8 @@ const JUICE_CONFIG = {
     BREAK_LINE_DELAY_STEP: 4,
     PIECE_BREAK_SCALE: 1.2,
     PIECE_BREAK_SCALE_DURATION: 100,
+    COMBO_TEXT_SCALE: 1.2,
+    TIMER_BLINK_DURATION: 100,
     GHOST_PIECE_LERP_FACTOR: 0.3,
     COMBO_TEXT_OFFSET_X: 40,
     COMBO_NUMBER_OFFSET_X: 140,
@@ -816,7 +818,7 @@ export class MainScene extends Phaser.Scene{
             else{
                 this.tweens.add({
                     targets: [this.board[filas][columnas], this.idleboard[filas][columnas]],
-                    scale: JUICE_CONFIG.PIECE_BREAK_SCALE,
+                    scale: JUICE_CONFIG.COMBO_TEXT_SCALE,
                     duration: JUICE_CONFIG.PIECE_BREAK_SCALE_DURATION,
                     yoyo: true,
                     onComplete: () => {
@@ -1332,11 +1334,14 @@ export class MainScene extends Phaser.Scene{
             const scratchLineX = [...this.lineCounterY];
             const scratchLineY = [...this.lineCounterX];
             let scoreAcum = 0;
+            let iterationBreak = false;
+
             for (let i = 0; i < 3; i++) {
                 let found = false;
                 const positions = this.ObtainPositions(scratchBoard);
                 this.ShuffleArray(positions);
                 this.ShuffleArray(this.piecesList);
+
                 for (let j = 0; j < Math.min(this.piecesList.length, JUICE_CONFIG.GET_BEST_PIECES_SAMPLE_SIZE); j++) {
                     const pIdx = positions[i % positions.length];
                     const x = pIdx % this.boardSize;
@@ -1348,17 +1353,30 @@ export class MainScene extends Phaser.Scene{
                         break;
                     }
                 }
-                if (!found) listPieces.push(this.piecesList[0]);
+
+                if (!found) {
+                    listPieces.push(this.piecesList[0]);
+                }
+
                 if (scoreAcum > JUICE_CONFIG.GET_BEST_PIECES_GOOD_ENOUGH_SCORE) {
-                    while (listPieces.length < 3) listPieces.push(this.piecesList[0]);
+                    while (listPieces.length < 3) {
+                        listPieces.push(this.piecesList[0]);
+                    }
+                    iterationBreak = true;
                     break;
                 }
             }
+
             if (scoreAcum > actualScore) {
                 trueList = listPieces;
                 actualScore = scoreAcum;
             }
+
+            if (iterationBreak || actualScore > JUICE_CONFIG.GET_BEST_PIECES_GOOD_ENOUGH_SCORE) {
+                break;
+            }
         }
+
         const q = new Queue();
         trueList.forEach(p => q.enqueue(p));
         return q;
@@ -1457,7 +1475,7 @@ export class MainScene extends Phaser.Scene{
         this.tweens.add({
             targets: indicator,
             alpha: 0.5,
-            duration: JUICE_CONFIG.PIECE_BREAK_SCALE_DURATION,
+            duration: JUICE_CONFIG.TIMER_BLINK_DURATION,
             yoyo: true,
             onComplete: () => indicator.setAlpha(1)
         });

@@ -31,8 +31,9 @@ export class BootScene extends Phaser.Scene {
 
         this.load.scenePlugin({
             key: 'rexuiplugin',
-            url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js',
-            sceneKey: 'rexUI'
+            url: 'https://cdn.jsdelivr.net/npm/phaser3-rex-plugins@1.80.18/dist/rexuiplugin.min.js',
+            sceneKey: 'rexUI',
+            // SRI: qgvnEsRocz1vqjxr72z2QIBk1dsiOdhFcKe3cTBy+WfB1OxTZMfNX5FYEIJR9Jfk
         });
     }
 
