@@ -42,7 +42,6 @@ window.Parchados.run({
 The game uses Phaser's scene system with four main scenes that handle different game states. BootScene loads initial assets, UIScene manages overlays and audio, MenuScene provides the main menu, and MainScene handles core gameplay.
 
 ```javascript
-// Scene hierarchy and initialization order
 import { BootScene } from "./scripts/scenes/BootScene.js";
 import { UIScene } from "./scripts/scenes/UIScene.js";
 import { MenuScene } from "./scripts/scenes/MenuScene.js";
@@ -93,7 +92,7 @@ The game generates random tetromino-style pieces from a predefined list of 39 sh
 
 ```javascript
 // Piece shape definitions (5x5 grid as 25-character string)
-const piecesList = [
+const PIECE_SHAPES = [
     "0010000100001000010000100",  // Vertical line (5 blocks)
     "0000000100001000010000000",  // Vertical line (3 blocks)
     "0000000000111110000000000",  // Horizontal line (5 blocks)
@@ -103,32 +102,30 @@ const piecesList = [
     "0000001000010000110000000",  // L-shape
     "0000001000011000010000000",  // S-shape
     "0000001000010000111000000",  // Large L-shape
+    // ... 39 total shapes
+];
+
+// Color variants for pieces
+const colorsList = [
+    "blockblast_piece_shadow.png",  // Empty space indicator
+    "blockblast_piece_a.png",
+    "blockblast_piece_b.png",
+    "blockblast_piece_c.png",
+    // ... up to 14 color variants
 ];
 
 // Generate a random piece with random color
 function GeneratePiece() {
-    const colorsList = [
-        "blockblast_piece_shadow.png",
-        "blockblast_piece_a.png",
-        "blockblast_piece_b.png",
-        "blockblast_piece_c.png",
-        // ... up to 14 colors
-    ];
+    let pShape = PIECE_SHAPES[Math.floor(Math.random() * PIECE_SHAPES.length)];
+    let pTexture = Math.floor(Math.random() * (colorsList.length - 1)) + 1;
+    let chr = String.fromCharCode(97 + pTexture);
+    let newPShape = "";
 
-    const randomShape = piecesList[Math.floor(Math.random() * piecesList.length)];
-    const randomColorIndex = Math.floor(Math.random() * (colorsList.length - 1)) + 1;
-    const colorChar = String.fromCharCode(97 + randomColorIndex);
-
-    // Replace '1' with color character
-    let coloredShape = "";
     for (let i = 0; i < 25; i++) {
-        coloredShape += randomShape[i] === "1" ? colorChar : "0";
+        newPShape += pShape.charAt(i) === "1" ? chr : "0";
     }
 
-    return {
-        color: colorsList[randomColorIndex],
-        shape: coloredShape
-    };
+    return { color: colorsList[pTexture], shape: newPShape };
 }
 ```
 
@@ -137,9 +134,10 @@ function GeneratePiece() {
 Core gameplay logic that validates whether a piece can be placed at a given position on the 8x8 board. Checks for boundary conditions and collision with existing pieces.
 
 ```javascript
+const PIECE_DIMENSION = 5;
+
 // Check if piece can be placed at position (x, y)
 function CanPutPiece(pieceShape, x, y, boardMatrix) {
-    const PIECE_DIMENSION = 5;
     for (let i = 0; i < PIECE_DIMENSION; i++) {
         for (let j = 0; j < PIECE_DIMENSION; j++) {
             if (pieceShape.charAt((PIECE_DIMENSION * i) + j) !== '0') {
@@ -160,11 +158,11 @@ function CanPutPiece(pieceShape, x, y, boardMatrix) {
 }
 
 // Place piece on board and update state
-function InsertPiece(piece, x, y) {
+function InsertPiece(piece, x, y, boardMatrix, lineCounterX, lineCounterY) {
     let scorePoints = 0;
-    for (let i = 0; i < 5; i++) {
-        for (let j = 0; j < 5; j++) {
-            if (piece.shape.charAt((5 * i) + j) !== '0') {
+    for (let i = 0; i < PIECE_DIMENSION; i++) {
+        for (let j = 0; j < PIECE_DIMENSION; j++) {
+            if (piece.shape.charAt((PIECE_DIMENSION * i) + j) !== '0') {
                 boardMatrix[j + x][i + y] = 1;
                 lineCounterX[i + y] += 1;
                 lineCounterY[j + x] += 1;
@@ -186,11 +184,11 @@ function ShowBreakingLines(boardSize, lineCounterX, lineCounterY, lineCounterXad
     const linesToClear = [];
 
     for (let i = 0; i < boardSize; i++) {
-        // Check horizontal lines
+        // Check horizontal lines (rows)
         if (lineCounterXadd[i] + lineCounterX[i] === boardSize) {
             linesToClear.push(i);
         }
-        // Check vertical lines (offset by 8 to distinguish)
+        // Check vertical lines (columns, offset by 8)
         if (lineCounterYadd[i] + lineCounterY[i] === boardSize) {
             linesToClear.push(i + 8);
         }
@@ -198,16 +196,16 @@ function ShowBreakingLines(boardSize, lineCounterX, lineCounterY, lineCounterXad
     return linesToClear;
 }
 
-// Calculate combo bonus
+// Calculate combo bonus (triangular number formula)
 function CalculateComboBonus(linesCleared) {
     let bonus = 0;
     for (let i = 1; i <= linesCleared; i++) {
         bonus += i;
     }
-    return bonus * 1000;  // 1 line = 1000, 2 lines = 3000, 3 lines = 6000, etc.
+    return bonus * 1000;  // 1 line = 1000, 2 lines = 3000, 3 lines = 6000
 }
 
-// Example: clearing 3 lines simultaneously
+// Example usage
 const lines = [0, 3, 10];  // Row 0, Row 3, Column 2 (10-8=2)
 const comboBonus = CalculateComboBonus(3);  // Returns 6000
 ```
@@ -250,6 +248,20 @@ function ConverterPowerUp(optionsBools, optionsPieces) {
         }
     }
 }
+
+// Convert piece to include random power-up
+function convertirPowerUp(shape) {
+    let array = shape.split('');
+    let posiciones_1 = array.map((c, i) => c !== '0' ? i : -1).filter(i => i >= 0);
+
+    if (posiciones_1.length === 0) return shape;
+
+    let posicion_aleatoria = posiciones_1[Math.floor(Math.random() * posiciones_1.length)];
+    let powerUpType = Math.floor(Math.random() * 2) + 1;  // 1=bomb, 2=reduct
+    array[posicion_aleatoria] = powerUpType;
+
+    return array.join('');
+}
 ```
 
 ## Audio Manager
@@ -286,9 +298,10 @@ audioManager.setAudioVolume(0.5);  // 0 to 1 range
 audioManager.pauseMusic();
 audioManager.resumeMusic();
 
-// Play sound effect
+// Play sound effects
 audioManager.bomba.play();
 audioManager.destruccion.play();
+audioManager.ui_click.play();
 ```
 
 ## Panel UI System
@@ -306,8 +319,9 @@ panel.createOptionsPanel(1080);
 panel.createCreditsPanel(1080);
 panel.createScorePanel(1080);
 panel.createInstructionsPanel(1080);
+panel.createReloadPanel(1080);
 
-// Show/hide panels
+// Show/hide panels with animations
 panel.showPause();
 panel.hidePause();
 
@@ -327,11 +341,14 @@ const finalScore = 150000;
 const highScore = 200000;
 panel.showScore(finalScore, highScore);
 panel.hideScore();
+
+panel.showReload();
+panel.hideReload();
 ```
 
 ## Internationalization (i18n) System
 
-Multi-language support system that manages translations and persists language preferences.
+Multi-language support system that manages translations and persists language preferences to localStorage.
 
 ```javascript
 import { I18nManager, SUPPORTED_LOCALES } from './scripts/components/i18n.js';
@@ -350,10 +367,10 @@ console.log(i18n.language);  // "en" or "es"
 i18n.setLanguage('es');
 
 // Translate keys
-const pauseText = i18n.t('PAUSE');           // "Pausa" in Spanish
-const scoreText = i18n.t('SCORE');           // "Puntuacion" in Spanish
-const tutorialText = i18n.t('TUTORIAL');     // "Tutorial" in Spanish
-const gameOverText = i18n.t('GAME_OVER');    // "Fin de Partida" in Spanish
+const pauseText = i18n.t('PAUSE');           // "PAUSA" in Spanish
+const scoreText = i18n.t('SCORE');           // "PUNTUACION" in Spanish
+const tutorialText = i18n.t('TUTORIAL');     // "TUTORIAL"
+const gameOverText = i18n.t('GAME_OVER');    // "FIN DE PARTIDA" in Spanish
 
 // Available translation keys
 const translationKeys = [
@@ -361,7 +378,10 @@ const translationKeys = [
     'GAME_OVER', 'TIME', 'RECORD', 'MUSIC', 'SOUND',
     'FULLSCREEN', 'LANGUAGE', 'RESTART', 'ARE_YOU_SURE_RESTART',
     'PROGRAMMING', 'ART_ANIMATION', 'MARKETING_UI',
-    'MUSIC_SOUND', 'DIRECTION', 'EXECUTIVE_PRODUCER'
+    'MUSIC_SOUND', 'DIRECTION', 'EXECUTIVE_PRODUCER',
+    'TUTORIAL_PAGE_1_TEXT_1', 'TUTORIAL_PAGE_1_TEXT_2',
+    'TUTORIAL_PAGE_2_TEXT_1', 'TUTORIAL_PAGE_2_TEXT_2',
+    'TUTORIAL_PAGE_3_TEXT_1'
 ];
 ```
 
@@ -372,14 +392,14 @@ Static utility class for managing asset paths between development and production
 ```javascript
 import { ResourceLoader } from './scripts/components/resourceLoader.js';
 
-// Configure resource loading
-const prodRoute = 'https://static.pchujoy.com/public/games-assets/parchados';
-
+// ResourceLoader automatically detects environment
 class ResourceLoader {
     static isProd = process.env.NODE_ENV === 'production';
+    static supportedLocales = new Set(['en', 'es']);
 
     static ReturnPath() {
-        return this.isProd ? prodRoute : './src';
+        // Returns CDN route for production assets
+        return 'https://static.pchujoy.com/public/games-assets/parchados';
     }
 
     static ReturnLocalePath(lang) {
@@ -388,16 +408,23 @@ class ResourceLoader {
     }
 }
 
-// Usage in asset loading
+// Usage in asset loading (BootScene/MainScene)
 this.load.image('table', ResourceLoader.ReturnPath() + '/images/parchados_chess.png');
+
 this.load.atlas('piece',
     ResourceLoader.ReturnPath() + '/images/blockblast_piece/sprites.png',
     ResourceLoader.ReturnPath() + '/images/blockblast_piece/sprites.json'
 );
+
 this.load.audio('mainTheme', [
     ResourceLoader.ReturnPath() + '/audios/title.ogg',
     ResourceLoader.ReturnPath() + '/audios/title.m4a'
 ]);
+
+// Load locale files
+SUPPORTED_LOCALES.forEach(locale => {
+    this.load.json(`locale_${locale}`, ResourceLoader.ReturnLocalePath(locale));
+});
 ```
 
 ## Timer System
@@ -430,9 +457,15 @@ const sliderTween = scene.tweens.add({
     value: { getStart: () => 1, getEnd: () => 0 },
     onUpdate: (tween, target) => {
         let value = target.value;
+        let indicator = target.getElement('indicator');
+
+        // Update indicator width
+        let indicatorWidth = value * 600;
+        indicator.resize(indicatorWidth, 40);
+
         if (value <= 0.3) {
             // Flash warning colors
-            target.getElement('indicator').setFrame('rojo.png');
+            indicator.setFrame('rojo.png');
             audioManager.alarma.play();
         }
     },
@@ -455,6 +488,7 @@ scene.input.on('dragstart', function(pointer, gameObject) {
         gameObject.parentContainer.visible = false;
         currentPiece = optionsPieces[parseInt(gameObject.parentContainer.name)];
         pointerContainer.visible = true;
+        canCheck = true;
     }
 });
 
@@ -467,12 +501,17 @@ scene.input.on('drag', (pointer, gameObject, dragX, dragY) => {
 
 scene.input.on('dragend', function(pointer, gameObject) {
     if (!isPaused) {
+        canCheck = false;
         pointerContainer.visible = false;
+
         if (CanPutPiece(currentPiece.shape, pointerX, pointerY, boardMatrix)) {
             InsertPiece(currentPiece, pointerX, pointerY);
+            // Screen shake for feedback
+            cameras.main.shake(100, 0.002);
         } else {
             // Return piece to original position
             gameObject.parentContainer.visible = true;
+            optionsBools[parseInt(gameObject.parentContainer.name)] = true;
         }
     }
 });
@@ -497,4 +536,4 @@ npm run build
 
 BlockBlast is designed as a modular, embeddable puzzle game that integrates seamlessly with external gaming platforms. The main use cases include embedding the game in web portals with custom event tracking, implementing leaderboard systems through the encrypted score submission API, and white-labeling with sponsor branding. The game tracks session data including scores, gameplay duration, and high scores, which are securely transmitted using RSA encryption.
 
-Integration patterns follow a callback-based architecture where the host application provides handlers for game lifecycle events. The `onGameStart` callback receives game state information for analytics initialization, while `onGameEnd` receives encrypted score payloads for secure server-side validation. The game's responsive scaling (1080x1080 with FIT mode) ensures consistent display across devices, and the audio system includes automatic pause-on-blur handling for a polished user experience.
+Integration patterns follow a callback-based architecture where the host application provides handlers for game lifecycle events. The `onGameStart` callback receives game state information for analytics initialization, while `onGameEnd` receives encrypted score payloads for secure server-side validation. The game's responsive scaling (1080x1080 with FIT mode) ensures consistent display across devices, and the audio system includes automatic pause-on-blur handling for a polished user experience. The internationalization system supports English and Spanish with localStorage persistence, making the game accessible to a wider audience.
