@@ -23,8 +23,35 @@ const JUICE_CONFIG = {
     GLOW_KNOCKOUT: false,
     GLOW_QUALITY: 0.1,
     GLOW_SAMPLES: 10,
-    TUTORIAL_INITIAL_DELAY: 500
+    TUTORIAL_INITIAL_DELAY: 500,
+    LAND_ANIM_SCALE: 0.8,
+    LAND_ANIM_DURATION: 400,
+    LAND_ANIM_EASE: "Elastic.easeOut",
+    LAND_ANIM_EASE_PARAMS: [1, 0.5],
+    EFFECT_TEXT_FADE_IN: 200,
+    EFFECT_TEXT_DISPLAY: 400,
+    EFFECT_TEXT_FADE_OUT: 200,
+    COMBO_TEXT_APPEAR_DURATION: 400,
+    COMBO_TEXT_STAY_DURATION: 600,
+    COMBO_TEXT_FADEOUT_DURATION: 300,
+    PIECE_BREAK_PARTICLE_COUNT: 25,
+    GET_BEST_PIECES_SAMPLE_SIZE: 10,
+    GET_BEST_PIECES_ITERATIONS: 100,
+    GHOST_PIECE_LERP_FACTOR: 0.3,
+    COMBO_TEXT_OFFSET_X: 40,
+    COMBO_NUMBER_OFFSET_X: 140,
+    COMBO_PTS_OFFSET_Y: 50,
+    COMBO_PTS_VALUE_OFFSET_X: 32,
+    COMBO_PTS_FINAL_OFFSET_X: 65,
+    NUMBERS_TEXT_OFFSET_X: 32,
+    NUMBERS_TEXT_FINAL_OFFSET_X: 65,
+    COMBO_Y_ANIM_OFFSET: 50
 };
+
+
+const PIECE_SHAPES = ['0010000100001000010000100', '0010000100001000010000000', '0000000100001000010000000', '0000000100001000000000000', '0000000000111110000000000', '0000000000111100000000000', '0000000000011100000000000', '0000000000011000000000000', '0000001110011100111000000', '0000001100011000000000000', '0000001100011000110000000', '0000000000011100111000000', '0000000000001000000000000', '0000000100011100000000000', '0000000000011100010000000', '0000001000011000100000000', '0000000100011000010000000', '0000001000010000110000000', '0000000010011100000000000', '0000001100001000010000000', '0000000000011100100000000', '0000000100001000110000000', '0000001000011100000000000', '0000001100010000100000000', '0000000000011100001000000', '0000001000011000010000000', '0000000110011000000000000', '0000000100011000100000000', '0000001100001100000000000', '0000001000011000000000000', '0000000100011000000000000', '0000001100001000000000000', '0000001100010000000000000', '0000001000001000000000000', '0000000100010000000000000', '0000001000010000111000000', '0000000010000100111000000', '0000001110000100001000000', '0000001110010000100000000'];
+
+
 
 
 class Piece {
@@ -231,7 +258,6 @@ export class MainScene extends Phaser.Scene{
 
     SetPiecePosition(piece){
         //X
-        console.log(this.CountPieceX(piece))
         switch (this.CountPieceX(piece)) {
             case 1:
                 this.posOptionX = 23
@@ -365,10 +391,6 @@ export class MainScene extends Phaser.Scene{
             }
         }
         if(canPowerUp)newPShape = this.convertirPowerUp(newPShape)
-        console.log("the texture number is " + pTexture)
-        console.log("the texture is " + this.colorsList[pTexture])
-        console.log("the previous shape is " + pShape)
-        console.log("the shape is " + newPShape)
         return new Piece(this.colorsList[pTexture],newPShape)
     }
 
@@ -395,7 +417,6 @@ export class MainScene extends Phaser.Scene{
         // Reemplazamos  en la posición aleatoria el powerUp
 
         let pp = this.GetRandomInt(2)+1
-        console.log("TRY"+pp)
         array[posicion_aleatoria] = pp;
 
         // Unimos el array de nuevo en un string y lo retornamos
@@ -463,6 +484,8 @@ export class MainScene extends Phaser.Scene{
                         this.idleboard[j+x][i+y].setTexture(this.powerUpsList[piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j)-1]).setTint(0xffffff).visible = true
 
                         this.powerUpsInGame[(j+x).toString()+(i+y).toString()] = (j+x).toString()+(i+y).toString()
+                        this.idleboard[j+x][i+y].postFX?.addBloom(JUICE_CONFIG.BLOOM_COLOR, JUICE_CONFIG.BLOOM_BLUR_X, JUICE_CONFIG.BLOOM_BLUR_Y, JUICE_CONFIG.BLOOM_STRENGTH, JUICE_CONFIG.BLOOM_STEPS);
+
                         this.SetName(this.board[j+x][i+y],this.powerUpsList[piece.shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i)+j)-1])
                     }
                     else{//piezas normales
@@ -475,6 +498,16 @@ export class MainScene extends Phaser.Scene{
                     this.boardMatrix[j+x][i+y] = 1
                     this.lineCounterX[i+y] += 1
                     this.lineCounterY[j+x] += 1
+                    // Elastic landing juice
+                    this.board[j+x][i+y].setScale(JUICE_CONFIG.LAND_ANIM_SCALE);
+                    this.tweens.add({
+                        targets: [this.board[j+x][i+y], this.idleboard[j+x][i+y]],
+                        scale: 1,
+                        duration: JUICE_CONFIG.LAND_ANIM_DURATION,
+                        ease: JUICE_CONFIG.LAND_ANIM_EASE,
+                        easeParams: JUICE_CONFIG.LAND_ANIM_EASE_PARAMS
+                    });
+
                     this.newScorePoints += 10
                 }
 
@@ -484,7 +517,6 @@ export class MainScene extends Phaser.Scene{
 
 
 
-        console.log("CHECK=========================================")
 
         if(!this.isStarting){
             this.particles.explode(20, (x * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X + (this.LAYOUT.SQUARE_SIZE * 2), (y * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y + (this.LAYOUT.SQUARE_SIZE * 2));
@@ -501,7 +533,6 @@ export class MainScene extends Phaser.Scene{
                 else line+= this.board[j][i].name.charAt(19) +"|"
 
             }
-            console.log(line)
         }
         //console.log("POWER" + this.powerUpsInGame)
         //this.currentTime += (this.secondsToAdd*2)
@@ -602,8 +633,8 @@ export class MainScene extends Phaser.Scene{
 
         this.piecesToClear = []
         this.colorsToRestore = []
-        this.lineCounterXadd = [0,0,0,0,0,0,0,0]
-        this.lineCounterYadd = [0,0,0,0,0,0,0,0]
+        this.lineCounterXadd = Array(this.boardSize).fill(0)
+        this.lineCounterYadd = Array(this.boardSize).fill(0)
 
         this.audioManager.destruccion.play()
         //RECORRER CADA LINEA Y ROMPER EL PRIMER ELEMENTO
@@ -697,7 +728,7 @@ export class MainScene extends Phaser.Scene{
         this.effectTextContainer = this.add.container(0,0).setDepth(6)
         this.effectTextContainer.add(this.effectText)
         this.effectTextContainer.setAlpha(0)
-        this.ShowContainerWithFade(this, filas, columnas, 200, 400, 200, this.effectTextContainer);
+        this.ShowContainerWithFade(this, filas, columnas, JUICE_CONFIG.EFFECT_TEXT_FADE_IN, JUICE_CONFIG.EFFECT_TEXT_DISPLAY, JUICE_CONFIG.EFFECT_TEXT_FADE_OUT, this.effectTextContainer);
     }
 
     CreateNumbersText(filas,columnas,number){
@@ -707,46 +738,52 @@ export class MainScene extends Phaser.Scene{
         this.effectTextContainer.add(this.add.image(0, 0, 'textos', "+.png").setDepth(6))
         for(let i = 0; i<=strNumber.length; i++){
             if(i===strNumber.length){
-                let number = this.add.image((i*32)+65, 0, 'textos',  "pts.png").setDepth(6)
+                let number = this.add.image((i * JUICE_CONFIG.NUMBERS_TEXT_OFFSET_X) + JUICE_CONFIG.NUMBERS_TEXT_FINAL_OFFSET_X, 0, 'textos',  "pts.png").setDepth(6)
                 this.effectTextContainer.add(number)
             }
             else{
-                let number = this.add.image((i*32)+32, 0, 'textos', strNumber[i] + ".png").setDepth(6)
+                let number = this.add.image((i * JUICE_CONFIG.NUMBERS_TEXT_OFFSET_X) + JUICE_CONFIG.NUMBERS_TEXT_OFFSET_X, 0, 'textos', strNumber[i] + ".png").setDepth(6)
                 this.effectTextContainer.add(number)
             }
 
         }
         this.effectTextContainer.setAlpha(0)
-        this.ShowContainerWithFade(this, filas+2, columnas+2, 200, 400, 200, this.effectTextContainer);
+        this.ShowContainerWithFade(this, filas+2, columnas+2, JUICE_CONFIG.EFFECT_TEXT_FADE_IN, JUICE_CONFIG.EFFECT_TEXT_DISPLAY, JUICE_CONFIG.EFFECT_TEXT_FADE_OUT, this.effectTextContainer);
     }
-    CreateComboText(filas,columnas,combo, number){
-        //columnas-=2
-        //filas+=3
-        this.effectTextContainer = this.add.container(0,0).setDepth(6)
-
-        //COMBO
-
-
-
-        this.effectTextContainer.add(this.add.image(40, 0, 'textos', "combo.png").setDepth(6))
-        this.effectTextContainer.add(this.add.image(140, 0, 'textos', combo.toString()+".png").setDepth(6))
-
-        //PTS
-        this.effectTextContainer.add(this.add.image(0, 50, 'textos', "+.png").setDepth(6))
-        let strNumber = number.toString()
-        for(let i = 0; i<=strNumber.length; i++){
-            if(i===strNumber.length){
-                let number = this.add.image((i*32)+65, 50, 'textos',  "pts.png").setDepth(6)
-                this.effectTextContainer.add(number)
+    CreateComboText(filas, columnas, combo, number) {
+        const container = this.add.container(0, 0).setDepth(6).setAlpha(0);
+        container.add(this.add.image(JUICE_CONFIG.COMBO_TEXT_OFFSET_X, 0, 'textos', "combo.png"));
+        container.add(this.add.image(JUICE_CONFIG.COMBO_NUMBER_OFFSET_X, 0, 'textos', combo.toString() + ".png"));
+        container.add(this.add.image(0, JUICE_CONFIG.COMBO_PTS_OFFSET_Y, 'textos', "+.png"));
+        let strNumber = number.toString();
+        for (let i = 0; i <= strNumber.length; i++) {
+            if (i === strNumber.length) {
+                container.add(this.add.image((i * JUICE_CONFIG.COMBO_PTS_VALUE_OFFSET_X) + JUICE_CONFIG.COMBO_PTS_FINAL_OFFSET_X, JUICE_CONFIG.COMBO_PTS_OFFSET_Y, 'textos', "pts.png"));
+            } else {
+                container.add(this.add.image((i * JUICE_CONFIG.COMBO_PTS_VALUE_OFFSET_X) + JUICE_CONFIG.COMBO_PTS_VALUE_OFFSET_X, JUICE_CONFIG.COMBO_PTS_OFFSET_Y, 'textos', strNumber[i] + ".png"));
             }
-            else{
-                let number = this.add.image((i*32)+32, 50, 'textos', strNumber[i] + ".png").setDepth(6)
-                this.effectTextContainer.add(number)
-            }
-
         }
-        this.effectTextContainer.setAlpha(0)
-        this.ShowContainerWithFade(this, filas+2, columnas+2, 200, 400, 200, this.effectTextContainer);
+        container.setPosition((filas + 2) * this.LAYOUT.SQUARE_SIZE + this.LAYOUT.OFFSET_X,
+                               (columnas + 2) * this.LAYOUT.SQUARE_SIZE + this.LAYOUT.OFFSET_Y);
+        container.setScale(0.5);
+        this.tweens.add({
+            targets: container,
+            alpha: 1,
+            scale: 1.2,
+            duration: JUICE_CONFIG.COMBO_TEXT_APPEAR_DURATION,
+            ease: 'Back.easeOut',
+            onComplete: () => {
+                this.time.delayedCall(JUICE_CONFIG.COMBO_TEXT_STAY_DURATION, () => {
+                    this.tweens.add({
+                        targets: container,
+                        alpha: 0,
+                        y: container.y - JUICE_CONFIG.COMBO_Y_ANIM_OFFSET,
+                        duration: JUICE_CONFIG.COMBO_TEXT_FADEOUT_DURATION,
+                        onComplete: () => container.destroy()
+                    });
+                });
+            }
+        });
     }
 
     BreakPiece(filas, columnas, bomb){
@@ -771,7 +808,7 @@ export class MainScene extends Phaser.Scene{
             }
             else{
                 if(!bomb)this.MakeAnimation(filas,columnas,"destroyFx")
-                this.particles.explode(10, (filas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X, (columnas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y);
+                this.particles.explode(JUICE_CONFIG.PIECE_BREAK_PARTICLE_COUNT, (filas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_X, (columnas * this.LAYOUT.SQUARE_SIZE) + this.LAYOUT.OFFSET_Y);
                 this.board[filas][columnas].anims.pause()
                 this.idleboard[filas][columnas].anims.pause()
                 this.board[filas][columnas].setTint(0xffffff)
@@ -787,7 +824,6 @@ export class MainScene extends Phaser.Scene{
             let dictKey = filas.toString()+columnas.toString()
             if((dictKey) in this.powerUpsInGame){
                 delete this.powerUpsInGame[dictKey]
-                console.log("POWER " + dictKey)
             }
         }
     }
@@ -860,7 +896,6 @@ export class MainScene extends Phaser.Scene{
 
         for(let i = 0; i < this.colorsToRestore.length; i++){
 
-            console.log(this.colorsToRestore[i])
             if(this.colorsToRestore[i].startsWith("blockblast")) this.piecesToClear[i].play("idle" + this.colorsToRestore[i][17],true)
 
 
@@ -874,7 +909,6 @@ export class MainScene extends Phaser.Scene{
     //POWERUPS
     RotatePowerup(){
 
-        console.log("ROTATE")
         let container = this.boardContainer
         let newAngle = this.boardAngle + 90
         if(newAngle>180) newAngle = -90
@@ -1008,19 +1042,16 @@ export class MainScene extends Phaser.Scene{
         this.MakeAnimation(fila,columna,"bombFx")
         fila = parseInt(fila)
         columna = parseInt(columna)
-        console.log("BREAKLINE  in function" + this.piecesToClear.length)
         for (let i = -1; i <= 1; i++) {
             for (let j = -1; j <= 1; j++) {
                 // Calculamos las nuevas coordenadas
                 const nuevaFila = fila + i;
                 const nuevaColumna = columna + j;
-                console.log("BREAKLINE  in function" + this.piecesToClear.length)
                 // Verificamos si las nuevas coordenadas están dentro de los límites de la matriz
                 if (nuevaFila >= 0 && nuevaFila < 8 && nuevaColumna >= 0 && nuevaColumna < 8) {
                     if(i == j && i==0){
                         continue
                     }
-                    console.log("BREAKLINE  in function" + this.piecesToClear.length)
                         // Agregamos las coordenadas válidas a la lista de variables circundantes
                         //variablesCircundantes.push([nuevaFila, nuevaColumna]);
                         this.BreakPiece(nuevaFila, nuevaColumna,true)
@@ -1043,22 +1074,18 @@ export class MainScene extends Phaser.Scene{
             this.isPaused = true
         }
         this.powerupcd +=1
-        console.log("COOLDOWN "+this.powerupcd)
         this.optionsBools[0] = true
         this.optionsBools[1] = true
         this.optionsBools[2] = true
 
         this.posOptionX = 500
         this.posOptionY = 400
-        console.log(this.posOptionX )
 
         if(this.queuePieces.isEmpty)this.queuePieces = this.GetBestPieces()
-        console.log(this.queuePieces.length)
 
         this.ShowTime()
 
         this.probArray = [false,false,false]
-        console.log(this.probArray)
         let probPowerUp = this.GetRandomInt(10)
         if(probPowerUp <4 && this.powerupcd > 4){
             this.probArray = [true,false,false]
@@ -1067,7 +1094,6 @@ export class MainScene extends Phaser.Scene{
         this.ShuffleArray(this.probArray)
 
 
-        console.log(this.probArray)
         let pieceOption = this.RegeneratePiece(this.queuePieces.dequeue(), this.probArray[0])
         this.SetPiecePosition(pieceOption.shape)
         this.option1 = this.CreatePiece(pieceOption, 965-this.posOptionX,337-this.posOptionY,100,0.45,"originalPiece")
@@ -1119,36 +1145,36 @@ export class MainScene extends Phaser.Scene{
 
 
 
-    CheckGameOver(){
-        console.log(this.optionsBools)
-        for(let i = -4; i < this.boardSize+2; i++){
-            for(let j = -4; j < this.boardSize+2; j++){
-                for(let k = 0; k < 3; k++){
-                    if(this.optionsBools[k]){
-                        if(this.CanPutPiece(this.optionsPieces[k].shape,i,j)){
+    CheckGameOver() {
+        const availableOptions = [];
+        for (let k = 0; k < 3; k++) {
+            if (this.optionsBools[k]) {
+                availableOptions.push({ piece: this.optionsPieces[k], index: k });
+            }
+        }
 
-                            return false
-                        }
-                    }                   
+        if (availableOptions.length === 0) return false;
+
+        // Try to find ANY valid placement
+        for (let i = -4; i < this.boardSize + 2; i++) {
+            for (let j = -4; j < this.boardSize + 2; j++) {
+                for (const opt of availableOptions) {
+                    if (this.CanPutPiece(opt.piece.shape, i, j)) {
+                        return false;
+                    }
                 }
             }
         }
-        for(let k = 0; k < 3; k++){
-            if(this.optionsBools[k]){
-                switch(k){
-                    case 0:
-                        this.StartVibration(this.option1)
-                        break
-                    case 1:
-                        this.StartVibration(this.option2)
-                        break
-                    case 2:
-                        this.StartVibration(this.option3)
-                        break    
-                }
+
+        // No moves possible - trigger feedback
+        for (const opt of availableOptions) {
+            switch(opt.index) {
+                case 0: this.StartVibration(this.option1); break;
+                case 1: this.StartVibration(this.option2); break;
+                case 2: this.StartVibration(this.option3); break;
             }
         }
-        return true
+        return true;
     }
 
     ObtainPositions(board){
@@ -1212,7 +1238,6 @@ export class MainScene extends Phaser.Scene{
     ShineBlock(){
         for (let clave in this.powerUpsInGame) {
             if (this.powerUpsInGame.hasOwnProperty(clave)) {
-                console.log('POWER' + this.board[clave[0]][clave[1]].name)
                 this.idleboard[clave[0]][clave[1]].play(this.GetTexture(this.board[clave[0]][clave[1]]),true)
             }
         }
@@ -1222,7 +1247,6 @@ export class MainScene extends Phaser.Scene{
         let x = this.GetRandomInt(7)
         let y = this.GetRandomInt(7)
         let blockname = this.GetTexture(this.board[x][y]).slice(0, -4) + "_special.png"
-        console.log("SPECIAL" + blockname)
         if(this.textures.get('piece').getFrameNames().includes(blockname)){
             this.idleboard[x][y].setTexture('piece', blockname )
         }
@@ -1278,86 +1302,54 @@ export class MainScene extends Phaser.Scene{
     }
 
 
-    GetBestPieces(){
-        //lista de piezas
-        let trueList = []
-        let listPieces = []
-        let actualScore = 0
-        let numDif = 200
+    GetBestPieces() {
+        let trueList = [];
+        let actualScore = -1;
+        const numDif = JUICE_CONFIG.GET_BEST_PIECES_ITERATIONS;
+        const scratchBoard = Array.from({ length: this.boardSize }, () => new Array(this.boardSize));
 
-
-
-        for(let it = 0; it < numDif; it++){
-            listPieces = []
-            //ciclo para buscar las 3 piezas
-            //console.log("Test =========================================")
-            //copiar el tablero
-            let newBoard = []
-            for (let i = 0; i < this.boardSize; i++)newBoard[i] = this.boardMatrix[i].slice()
-            //Copiar counters
-            let newLineCounterY = this.lineCounterX.slice()
-            let newLineCounterX = this.lineCounterY.slice()
-            //console.log(newLineCounterX)
-            //console.log(newLineCounterY)
-            //console.log(newBoard)
-
-            let scoreAcum = 0
-
-            for(let i = 0; i < 3; i++){
-                let forBreak = false
-                //Obtener las posiciones y randomizarlas
-                this.positions = this.ObtainPositions(newBoard)
-                this.ShuffleArray(this.positions)
-                let iterator = 0
-                let y = ~~(this.positions[i]/this.boardSize)
-
-                let x = this.positions[i]%this.boardSize
-                //console.log("coordenadas " + x.toString() + " y " + y.toString() )
-                this.ShuffleArray(this.piecesList)
-                //Revisar si las pieza entran
-                for(let j = 0; j<this.piecesList.length; j++){
-                    if(this.CheckPiece(newBoard,this.piecesList[j],x,y)){
-                        let score = this.InsertPieceBoard(newBoard,newLineCounterX,newLineCounterY,this.piecesList[j],x,y)
-                        //console.log(newLineCounterX)
-                        //console.log(newLineCounterY)
-                        //console.log(newBoard)
-                        listPieces.push(this.piecesList[j])
-                        scoreAcum+= score
-                        forBreak = true
-                        //console.log("selected piece is " + this.piecesList[j])
-                        //console.log("sum " + scoreAcum.toString() + " mas " + score.toString())
-                        break
+        for (let it = 0; it < numDif; it++) {
+            const listPieces = [];
+            for (let i = 0; i < this.boardSize; i++) {
+                for (let j = 0; j < this.boardSize; j++) {
+                    scratchBoard[i][j] = this.boardMatrix[i][j];
+                }
+            }
+            const scratchLineX = [...this.lineCounterY];
+            const scratchLineY = [...this.lineCounterX];
+            let scoreAcum = 0;
+            for (let i = 0; i < 3; i++) {
+                let found = false;
+                const positions = this.ObtainPositions(scratchBoard);
+                this.ShuffleArray(positions);
+                this.ShuffleArray(this.piecesList);
+                for (let j = 0; j < Math.min(this.piecesList.length, JUICE_CONFIG.GET_BEST_PIECES_SAMPLE_SIZE); j++) {
+                    const pIdx = positions[i % positions.length];
+                    const x = pIdx % this.boardSize;
+                    const y = ~~(pIdx / this.boardSize);
+                    if (this.CheckPiece(scratchBoard, this.piecesList[j], x, y)) {
+                        scoreAcum += this.InsertPieceBoard(scratchBoard, scratchLineX, scratchLineY, this.piecesList[j], x, y);
+                        listPieces.push(this.piecesList[j]);
+                        found = true;
+                        break;
                     }
-
                 }
-                if(!forBreak){
-                    listPieces.push(this.piecesList[0])
-                }
-
-
+                if (!found) listPieces.push(this.piecesList[0]);
             }
-            while(listPieces.length<3){
-                this.ShuffleArray(this.piecesList)
-                listPieces.push(this.piecesList[0])
-            }
-            if(scoreAcum > actualScore){
-                trueList = listPieces
-                actualScore = scoreAcum
+            if (scoreAcum > actualScore) {
+                trueList = listPieces;
+                actualScore = scoreAcum;
             }
         }
-
-        let q = new Queue()
-        for(let j = 0; j < trueList.length;j++){
-            q.enqueue(trueList[j])
-        }
-
-        return q
+        const q = new Queue();
+        trueList.forEach(p => q.enqueue(p));
+        return q;
     }
 
 
     CheckValue(piece, x,y){
-        this.lineCounterXadd = [0,0,0,0,0,0,0,0]
-        this.lineCounterYadd = [0,0,0,0,0,0,0,0]
+        this.lineCounterXadd = Array(this.boardSize).fill(0)
+        this.lineCounterYadd = Array(this.boardSize).fill(0)
 
         let counterPoints = 0
         for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++){
@@ -1456,13 +1448,10 @@ export class MainScene extends Phaser.Scene{
     }
 
     ShowTime(){
-        console.log("TIMER IS WORKING")
         this.sliderTween?.remove();
         this.sliderTween = null;
         this.maxTimePerTurn-=.2
         this.timeSlider.childrenMap.indicator.setTexture('timerBar','verde.png')
-        console.log("TIMER " + this.maxTimePerTurn +" VS " + this.level2Time)
-        console.log("TIMER " + this.maxTimePerTurn +" VS " + this.level1Time)
         if(this.maxTimePerTurn<this.minTimePerTurn)this.maxTimePerTurn=this.minTimePerTurn
         //else if(this.maxTimePerTurn<this.level2Time){
            // this.timeSlider.childrenMap.indicator.setTexture('timerBar','rojo.png')
@@ -1517,7 +1506,6 @@ export class MainScene extends Phaser.Scene{
             },
             onComplete: () => {
 
-                console.log("¡Tiempo agotado!")
                 this.StartGameOver()
                 this.sliderTween?.remove();
                 this.sliderTween = null;
@@ -1551,22 +1539,24 @@ export class MainScene extends Phaser.Scene{
             this.ghostContainer.setVisible(false);
             return;
         }
-
         this.ghostContainer.setVisible(true);
-        this.ghostContainer.setPosition(this.LAYOUT.OFFSET_X, this.LAYOUT.OFFSET_Y);
-
+        const targetX = this.LAYOUT.OFFSET_X + (x * this.LAYOUT.SQUARE_SIZE);
+        const targetY = this.LAYOUT.OFFSET_Y + (y * this.LAYOUT.SQUARE_SIZE);
+        this.ghostContainer.x = Phaser.Math.Linear(this.ghostContainer.x, targetX, JUICE_CONFIG.GHOST_PIECE_LERP_FACTOR);
+        this.ghostContainer.y = Phaser.Math.Linear(this.ghostContainer.y, targetY, JUICE_CONFIG.GHOST_PIECE_LERP_FACTOR);
         for (let i = 0; i < JUICE_CONFIG.PIECE_DIMENSION; i++) {
             for (let j = 0; j < JUICE_CONFIG.PIECE_DIMENSION; j++) {
                 let ghostSquare = this.ghostSquares[i][j];
                 if (shape.charAt((JUICE_CONFIG.PIECE_DIMENSION * i) + j) !== '0') {
                     ghostSquare.setVisible(true);
-                    ghostSquare.setPosition((j + x) * this.LAYOUT.SQUARE_SIZE, (i + y) * this.LAYOUT.SQUARE_SIZE);
+                    ghostSquare.setPosition(j * this.LAYOUT.SQUARE_SIZE, i * this.LAYOUT.SQUARE_SIZE);
                 } else {
                     ghostSquare.setVisible(false);
                 }
             }
         }
     }
+
 
     encrypt(data) {
         const encrypt = new JSEncrypt();
@@ -1744,6 +1734,122 @@ export class MainScene extends Phaser.Scene{
 
 
 
+
+    initGameBoard() {
+            //PICTURES
+            this.offsetPictures = 540
+
+            //this.add.image(this.offsetPictures,this.offsetPictures,"table")
+            //this.add.image(this.offsetPictures,this.offsetPictures-1,"table_shadow")
+
+
+
+            //PREVIEW
+            this.add.image(this.offsetPictures+400,this.offsetPictures+10,"preview_space").setDepth(3)
+
+            this.halfBoxX = (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_X-(this.LAYOUT.SQUARE_SIZE/2)
+
+            this.halfBoxY = (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_Y-(this.LAYOUT.SQUARE_SIZE/2)
+            // console.log("HALF" + this.halfBoxX + "," + this.halfBoxY)
+            this.add.image(this.offsetPictures,this.offsetPictures,"b_box").setDepth(1)
+            let boardTable = this.add.image(this.offsetPictures-120-this.halfBoxX,this.offsetPictures-this.halfBoxY,"table").setDepth(3)
+
+            //FINAL
+            this.finalScreen = this.add.image(540, -650, 'final').setDepth(7);
+
+            //TABLE DECOR
+            this.add.image(this.offsetPictures-26,this.offsetPictures-455,"table_decor","parchados decor_a.png").setDepth(2)
+            this.add.image(this.offsetPictures-45,this.offsetPictures+448,"table_decor","parchados decor_b.png").setDepth(2)
+
+            this.add.image(this.offsetPictures-450,this.offsetPictures+430,"table_decor","telalogo.png").setDepth(4)
+            this.add.image(this.offsetPictures-500,this.offsetPictures+480,"table_decor","logo_gameplay.png").setDepth(4).setScale(1.4)
+            this.add.image(this.offsetPictures-512,this.offsetPictures-505,"table_decor","parchados decor_d.png").setDepth(4)
+            this.add.image(this.offsetPictures+517,this.offsetPictures-445,"table_decor","parchados decor_e.png").setDepth(4)
+            this.add.image(this.offsetPictures+500,this.offsetPictures+450,"table_decor","parchados decor_f.png").setDepth(4)
+
+            //POSITIONS
+            this.positions = []
+            for(let i =0; i < this.boardSize*this.boardSize;i++){
+                this.positions.push(i)
+
+            }
+
+            //CREATE LINECOUNTERS
+
+            this.lineCounterX = Array(this.boardSize).fill(0);
+            this.lineCounterY = Array(this.boardSize).fill(0);
+            this.lineCounterXadd = Array(this.boardSize).fill(0);
+            this.lineCounterYadd = Array(this.boardSize).fill(0);
+            this.piecesToClear = []
+            this.linesToClear = []
+            this.colorsToRestore = []
+            //CREATE BOARD
+            this.board = []
+            this.idleboard = []
+            this.boardContainer = this.add.container(0,0)
+            this.idleBoardContainer = this.add.container(0,0)
+            this.boardContainer.add(boardTable)
+            for(let i = 0; i < this.boardSize; i++){
+                this.board[i] = []
+                this.idleboard[i] = []
+                for(let j = 0; j < this.boardSize; j++){
+                    this.board[i][j] = this.add.sprite(((i-this.boardSize/2)*this.LAYOUT.SQUARE_SIZE)+(this.LAYOUT.SQUARE_SIZE/2), ((j-this.boardSize/2)*this.LAYOUT.SQUARE_SIZE)+(this.LAYOUT.SQUARE_SIZE/2),"piece", this.colorsList[0])
+                    this.idleboard[i][j] = this.add.sprite((i*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_X, (j*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_Y,"piece", this.colorsList[0]).setVisible(false)
+                    //this.board[i][j].visible = false
+                    this.board[i][j].name = i.toString()+j.toString()+this.colorsList[0]
+                    this.boardContainer.add(this.board[i][j])
+                    this.idleBoardContainer.add(this.idleboard[i][j])
+                    this.board[i][j].on(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + 'bomb', function () {
+                        this.board[i][j].setTexture(this.powerUpsList[0])
+
+                        this.SetName(this.board[i][j],this.powerUpsList[0])
+
+                    }, this);
+                    this.board[i][j].on(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + 'reduct', function () {
+                        this.board[i][j].setTexture(this.powerUpsList[1])
+
+                        this.SetName(this.board[i][j],this.powerUpsList[1])
+
+                    }, this);
+                }
+            }
+            this.boardContainer.x += (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_X-(this.LAYOUT.SQUARE_SIZE/2)
+            this.boardContainer.y += (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_Y-(this.LAYOUT.SQUARE_SIZE/2)
+            this.boardContainer.setDepth(3)
+            this.idleBoardContainer.setDepth(4)
+            this.boardMatrix = []
+            for(let i = 0; i < this.boardSize; i++){
+                this.boardMatrix[i] = []
+                for(let j = 0; j < this.boardSize; j++){
+                    this.boardMatrix[i][j] = 0
+                }
+            }
+            //ANIMATION BOARD
+            this.animationBoard = []
+            this.animationBoardContainer = this.add.container(0,0)
+            for(let i = 0; i < this.boardSize; i++){
+                this.animationBoard[i] = []
+                for(let j = 0; j < this.boardSize; j++){
+                    this.animationBoard[i][j] = this.add.sprite(((i-this.boardSize/2)*this.LAYOUT.SQUARE_SIZE)+(this.LAYOUT.SQUARE_SIZE/2), ((j-this.boardSize/2)*this.LAYOUT.SQUARE_SIZE)+(this.LAYOUT.SQUARE_SIZE/2),"piece", this.colorsList[0]).setOrigin(.5)
+
+
+                    this.animationBoard[i][j].visible = false
+                    this.animationBoardContainer.add(this.animationBoard[i][j])
+                    this.animationBoard[i][j].on(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + 'destroyFx', function () {
+                        this.animationBoard[i][j].setVisible(false);
+                    }, this);
+                    this.animationBoard[i][j].on(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + 'bombFx', function () {
+                        this.animationBoard[i][j].setVisible(false);
+                    }, this);
+                }
+            }
+            //this.MakeAnimation(1,7,"destroyFx")
+            //this.MakeAnimation(3,7,"bombFx")
+            this.animationBoardContainer.x += (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_X-(this.LAYOUT.SQUARE_SIZE/2)
+            this.animationBoardContainer.y += (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_Y-(this.LAYOUT.SQUARE_SIZE/2)-10
+            this.animationBoardContainer.setDepth(4)
+
+    }
     create(){
 
         //CAMBIAR NOMBRE CUANDO SEA NECESARIO
@@ -1784,7 +1890,7 @@ export class MainScene extends Phaser.Scene{
         this.lastPointerX = 0
         this.lastPointerY = 0
 
-        this.piecesList = []
+        this.piecesList = [...PIECE_SHAPES]
         this.powerUpsInGame = {}
         this.queuePieces = new Queue()
 
@@ -1810,7 +1916,6 @@ export class MainScene extends Phaser.Scene{
         this.minTimePerTurn = 5
         this.maxTimePerTurn = 25
         this.level1Time =(((this.maxTimePerTurn-this.minTimePerTurn)/3)*2)+this.minTimePerTurn
-        console.log("TIMERS " + this.level1Time)
         this.level2Time =((this.maxTimePerTurn-this.minTimePerTurn)/3)+this.minTimePerTurn
 
         //THE FIRST ELEMENT MUST BE THE EMPTY SPACE
@@ -1947,119 +2052,7 @@ export class MainScene extends Phaser.Scene{
             repeat: -1 // Reproducir la animación solo una vez
         });
 
-        //PICTURES
-        this.offsetPictures = 540
-
-        //this.add.image(this.offsetPictures,this.offsetPictures,"table")
-        //this.add.image(this.offsetPictures,this.offsetPictures-1,"table_shadow")
-
-
-
-        //PREVIEW
-        this.add.image(this.offsetPictures+400,this.offsetPictures+10,"preview_space").setDepth(3)
-
-        this.halfBoxX = (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_X-(this.LAYOUT.SQUARE_SIZE/2)
-
-        this.halfBoxY = (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_Y-(this.LAYOUT.SQUARE_SIZE/2)
-        console.log("HALF"+this.halfBox)
-        this.add.image(this.offsetPictures,this.offsetPictures,"b_box").setDepth(1)
-        let boardTable = this.add.image(this.offsetPictures-120-this.halfBoxX,this.offsetPictures-this.halfBoxY,"table").setDepth(3)
-
-        //FINAL
-        this.finalScreen = this.add.image(540, -650, 'final').setDepth(7);
-
-        //TABLE DECOR
-        this.add.image(this.offsetPictures-26,this.offsetPictures-455,"table_decor","parchados decor_a.png").setDepth(2)
-        this.add.image(this.offsetPictures-45,this.offsetPictures+448,"table_decor","parchados decor_b.png").setDepth(2)
-
-        this.add.image(this.offsetPictures-450,this.offsetPictures+430,"table_decor","telalogo.png").setDepth(4)
-        this.add.image(this.offsetPictures-500,this.offsetPictures+480,"table_decor","logo_gameplay.png").setDepth(4).setScale(1.4)
-        this.add.image(this.offsetPictures-512,this.offsetPictures-505,"table_decor","parchados decor_d.png").setDepth(4)
-        this.add.image(this.offsetPictures+517,this.offsetPictures-445,"table_decor","parchados decor_e.png").setDepth(4)
-        this.add.image(this.offsetPictures+500,this.offsetPictures+450,"table_decor","parchados decor_f.png").setDepth(4)
-
-        //POSITIONS
-        this.positions = []
-        for(let i =0; i < this.boardSize*this.boardSize;i++){
-            this.positions.push(i)
-
-        }
-
-        //CREATE LINECOUNTERS
-
-        this.lineCounterX = [0,0,0,0,0,0,0,0]
-        this.lineCounterY = [0,0,0,0,0,0,0,0]
-        this.lineCounterXadd = [0,0,0,0,0,0,0,0]
-        this.lineCounterYadd = [0,0,0,0,0,0,0,0]
-        this.piecesToClear = []
-        this.linesToClear = []
-        this.colorsToRestore = []
-        //CREATE BOARD
-        this.board = []
-        this.idleboard = []
-        this.boardContainer = this.add.container(0,0)
-        this.idleBoardContainer = this.add.container(0,0)
-        this.boardContainer.add(boardTable)
-        for(let i = 0; i < this.boardSize; i++){
-            this.board[i] = []
-            this.idleboard[i] = []
-            for(let j = 0; j < this.boardSize; j++){
-                this.board[i][j] = this.add.sprite(((i-this.boardSize/2)*this.LAYOUT.SQUARE_SIZE)+(this.LAYOUT.SQUARE_SIZE/2), ((j-this.boardSize/2)*this.LAYOUT.SQUARE_SIZE)+(this.LAYOUT.SQUARE_SIZE/2),"piece", this.colorsList[0])
-                this.idleboard[i][j] = this.add.sprite((i*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_X, (j*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_Y,"piece", this.colorsList[0]).setVisible(false)
-                //this.board[i][j].visible = false
-                this.board[i][j].name = i.toString()+j.toString()+this.colorsList[0]
-                this.boardContainer.add(this.board[i][j])
-                this.idleBoardContainer.add(this.idleboard[i][j])
-                this.board[i][j].on(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + 'bomb', function () {
-                    this.board[i][j].setTexture(this.powerUpsList[0])
-
-                    this.SetName(this.board[i][j],this.powerUpsList[0])
-
-                }, this);
-                this.board[i][j].on(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + 'reduct', function () {
-                    this.board[i][j].setTexture(this.powerUpsList[1])
-
-                    this.SetName(this.board[i][j],this.powerUpsList[1])
-
-                }, this);
-            }
-        }
-        this.boardContainer.x += (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_X-(this.LAYOUT.SQUARE_SIZE/2)
-        this.boardContainer.y += (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_Y-(this.LAYOUT.SQUARE_SIZE/2)
-        this.boardContainer.setDepth(3)
-        this.idleBoardContainer.setDepth(4)
-        this.boardMatrix = []
-        for(let i = 0; i < this.boardSize; i++){
-            this.boardMatrix[i] = []
-            for(let j = 0; j < this.boardSize; j++){
-                this.boardMatrix[i][j] = 0
-            }
-        }
-        //ANIMATION BOARD
-        this.animationBoard = []
-        this.animationBoardContainer = this.add.container(0,0)
-        for(let i = 0; i < this.boardSize; i++){
-            this.animationBoard[i] = []
-            for(let j = 0; j < this.boardSize; j++){
-                this.animationBoard[i][j] = this.add.sprite(((i-this.boardSize/2)*this.LAYOUT.SQUARE_SIZE)+(this.LAYOUT.SQUARE_SIZE/2), ((j-this.boardSize/2)*this.LAYOUT.SQUARE_SIZE)+(this.LAYOUT.SQUARE_SIZE/2),"piece", this.colorsList[0]).setOrigin(.5)
-
-
-                this.animationBoard[i][j].visible = false
-                this.animationBoardContainer.add(this.animationBoard[i][j])
-                this.animationBoard[i][j].on(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + 'destroyFx', function () {
-                    this.animationBoard[i][j].setVisible(false);
-                }, this);
-                this.animationBoard[i][j].on(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + 'bombFx', function () {
-                    this.animationBoard[i][j].setVisible(false);
-                }, this);
-            }
-        }
-        //this.MakeAnimation(1,7,"destroyFx")
-        //this.MakeAnimation(3,7,"bombFx")
-        this.animationBoardContainer.x += (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_X-(this.LAYOUT.SQUARE_SIZE/2)
-        this.animationBoardContainer.y += (this.boardSize/2*this.LAYOUT.SQUARE_SIZE)+this.LAYOUT.OFFSET_Y-(this.LAYOUT.SQUARE_SIZE/2)-10
-        this.animationBoardContainer.setDepth(4)
-
+        this.initGameBoard();
         this.option1anim = this.add.sprite(965-23, 340-27,"piece", this.colorsList[0]).setOrigin(.5).setDepth(6).setScale(2)
         this.option1anim.visible = false
         this.option1anim.on(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + 'reductFx', function () {
@@ -2103,48 +2096,7 @@ export class MainScene extends Phaser.Scene{
         this.time.addEvent({ delay: 5000, callback: this.ShineBlock, callbackScope: this, loop: true })
         this.time.addEvent({ delay: 5000, callback: this.SpecialBlock, callbackScope: this, loop: true })
         //CREATE PIECES AND COLORS
-        this.piecesList = ["0010000100001000010000100", //Linea vertical
-                            "0010000100001000010000000", //Linea vertical 4X4
-                            "0000000100001000010000000", //Linea vertical 3X3
-                            "0000000100001000000000000", //Linea vertical 2X2
-                            "0000000000111110000000000", //Linea horizontal
-                            "0000000000111100000000000", //Linea horizontal 4X4
-                            "0000000000011100000000000", //Linea horizontal 3X3
-                            "0000000000011000000000000", //Linea horizontal 2X2
-                            "0000001110011100111000000", //Cuadrado 3x3
-                            "0000001100011000000000000", //Cuadrado 2x2
-                            "0000001100011000110000000", //Cuadrado 2x3
-                            "0000000000011100111000000", //Cuadrado 3x2
-                            "0000000000001000000000000", //Cuadrado 1x1
-                            "0000000100011100000000000", //T invertida
-                            "0000000000011100010000000", //T 
-                            "0000001000011000100000000", //T der
-                            "0000000100011000010000000", //T izq
-                            "0000001000010000110000000", //L
-                            "0000000010011100000000000", //L arriba
-                            "0000001100001000010000000", //L izq
-                            "0000000000011100100000000", //L abajo
-                            "0000000100001000110000000", //LI
-                            "0000001000011100000000000", //LI arriba
-                            "0000001100010000100000000", //LI izq
-                            "0000000000011100001000000", //LI abajo
-                            "0000001000011000010000000", //S
-                            "0000000110011000000000000", //SI
-                            "0000000100011000100000000", //Z
-                            "0000001100001100000000000", //ZI
-                            "0000001000011000000000000", //l
-                            "0000000100011000000000000", //l arriba
-                            "0000001100001000000000000", //l izq
-                            "0000001100010000000000000", //l der
-                            "0000001000001000000000000", //dos diagonal
-                            "0000000100010000000000000", //dos diagonal inv
-                            "0000001000010000111000000", //L grande
-                            "0000000010000100111000000", //L grande arriba
-                            "0000001110000100001000000", //L grande izq
-                            "0000001110010000100000000", //L grande der
-
-
-                            ]
+        // this.piecesList initialized above
         this.ShuffleArray(this.piecesList)
 
 
@@ -2274,12 +2226,10 @@ export class MainScene extends Phaser.Scene{
 
         if (this.sys.game.device.os.android || this.sys.game.device.os.iOS) {
             // Código específico para dispositivos móviles
-            console.log("Ejecutando en un dispositivo móvil");
             this.pointerAdd = this.LAYOUT.SQUARE_SIZE*2
             // Puedes agregar aquí el código específico que deseas ejecutar solo en dispositivos móviles
         } else {
             // Código para dispositivos no móviles
-            console.log("Ejecutando en un dispositivo no móvil");
         }
 
 
@@ -2296,7 +2246,6 @@ export class MainScene extends Phaser.Scene{
         this.input.on('dragstart', function (pointer, gameObject) {
             if(!this.isPaused){
                 this.audioManager.preview.play()
-                console.log(gameObject.parentContainer.name)
                 gameObject.parentContainer.visible = false
                 this.piece = this.optionsPieces[parseInt(gameObject.parentContainer.name)]
                 this.optionsBools[parseInt(gameObject.parentContainer.name)]= false
@@ -2331,7 +2280,6 @@ export class MainScene extends Phaser.Scene{
 
         this.input.on('dragend', function (pointer, gameObject) {
             if(!this.isPaused){
-                console.log(gameObject.parentContainer.name)
                 this.canCheck = false
                 pointerContainer.visible = false
                 pointerContainer.x = -800
@@ -2373,8 +2321,8 @@ export class MainScene extends Phaser.Scene{
             this.lastPointerX = this.pointerX
             this.lastPointerY = this.pointerY
 
-            this.lineCounterXadd = [0,0,0,0,0,0,0,0]
-            this.lineCounterYadd = [0,0,0,0,0,0,0,0]
+            this.lineCounterXadd = Array(this.boardSize).fill(0)
+            this.lineCounterYadd = Array(this.boardSize).fill(0)
             this.linesToClear = []
             this.StopVibration()
             this.RestoreColors();
