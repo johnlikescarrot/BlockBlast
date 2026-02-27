@@ -105,7 +105,7 @@ export class UIScene extends Phaser.Scene
                             duration: 800,
                             ease: "Quint.easeIn",
                             onComplete: () => {
-                                this.splashScreen.postFX.remove(wipe);
+                                if (this.splashScreen.postFX) this.splashScreen.postFX.remove(wipe);
                                 this.graphics.setVisible(false);
                                 this.splashScreen.setVisible(false);
                             }

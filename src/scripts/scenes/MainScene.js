@@ -566,13 +566,13 @@ export class MainScene extends Phaser.Scene{
 
     BreakLine(x, y) {
         let comboCount = this.linesToClear.length;
+        let shakeIntensity = comboCount * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE * 1.5;
         if (this.linesToClear.length < 1 || this.gamefinish) {
             this.cameras.main.setZoom(1);
             this.FinishTurn();
             return;
         }
         if (this.animationsIterator === 0) {
-            let shakeIntensity = comboCount * JUICE_CONFIG.SHAKE_INTENSITY_PER_LINE * 1.5;
             this.cameras.main.zoomTo(1.05, 100, "Sine.easeInOut", true);
             this.PauseTimer();
             this.cameras.main.shake(JUICE_CONFIG.SHAKE_DURATION, shakeIntensity);
